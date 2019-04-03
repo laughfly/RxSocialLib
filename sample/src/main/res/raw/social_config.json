@@ -1,0 +1,22 @@
+[
+  {
+    "platform": "qq",
+    "appid": "yourid",
+    "appsecret": "",
+    "scope": "get_simple_userinfo"
+  },
+  {
+    "platform": "weixin",
+    "appid": "yourid",
+    "appsecret": "",
+    "scope": "snsapi_userinfo",
+    "state": "wechat_sdk_live"
+  },
+  {
+    "platform": "weibo",
+    "appid": "yourid",
+    "appsecret": "",
+    "scope": "get_token_info",
+    "redirectUrl": "https://api.weibo.com/oauth2/default.html"
+  }
+]

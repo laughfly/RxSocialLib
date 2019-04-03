@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.laughfly.rxsociallib.sample.MainActivity">
+
+    <Button
+        android:id="@+id/qq_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="76dp"
+        android:drawableStart="@mipmap/ic_qq"
+        android:text="分享"
+        android:onClick="shareTo"
+        app:layout_constraintEnd_toStartOf="@+id/qq_login"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints" />
+
+    <Button
+        android:id="@+id/qq_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:drawableStart="@mipmap/ic_qq"
+        android:text="登录"
+        android:onClick="loginWith"
+        app:layout_constraintBottom_toBottomOf="@+id/qq_share"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/qq_share"
+        app:layout_constraintTop_toTopOf="@+id/qq_share"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/weixin_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="48dp"
+        android:drawableStart="@mipmap/ic_weixin"
+        android:text="分享"
+        android:onClick="shareTo"
+        app:layout_constraintEnd_toStartOf="@+id/weixin_login"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/qq_share" />
+
+    <Button
+        android:id="@+id/weixin_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:drawableStart="@mipmap/ic_weixin"
+        android:text="登录"
+        android:onClick="loginWith"
+        app:layout_constraintBottom_toBottomOf="@+id/weixin_share"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/weixin_share"
+        app:layout_constraintTop_toTopOf="@+id/weixin_share"
+        app:layout_constraintVertical_bias="1.0" />
+
+    <Button
+        android:id="@+id/weibo_share"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="60dp"
+        android:drawableStart="@mipmap/ic_weibo"
+        android:text="分享"
+        android:onClick="shareTo"
+        app:layout_constraintEnd_toStartOf="@+id/weibo_login"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/weixin_share" />
+
+    <Button
+        android:id="@+id/weibo_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:drawableStart="@mipmap/ic_weibo"
+        android:text="登录"
+        android:onClick="loginWith"
+        app:layout_constraintBottom_toBottomOf="@+id/weibo_share"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/weibo_share"
+        app:layout_constraintTop_toTopOf="@+id/weibo_share"
+        app:layout_constraintVertical_bias="1.0" />
+</android.support.constraint.ConstraintLayout>

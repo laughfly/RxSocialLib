@@ -1,0 +1,152 @@
+package com.laughfly.rxsociallib.share;
+
+import android.content.Intent;
+import android.graphics.Bitmap;
+
+import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.delegate.WeiboDelegateActivity;
+import com.laughfly.rxsociallib.exception.SocialShareException;
+import com.sina.weibo.sdk.WbSdk;
+import com.sina.weibo.sdk.api.ImageObject;
+import com.sina.weibo.sdk.api.TextObject;
+import com.sina.weibo.sdk.api.WeiboMultiMessage;
+import com.sina.weibo.sdk.auth.AuthInfo;
+import com.sina.weibo.sdk.share.WbShareCallback;
+import com.sina.weibo.sdk.share.WbShareHandler;
+
+/**
+ * 微博分享
+ * author:caowy
+ * date:2018-05-26
+ */
+public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements WbShareCallback {
+
+    private WbShareHandler mWbShareHandler;
+
+    public WeiboShare(ShareBuilder builder) {
+        super(builder);
+    }
+
+    @Override
+    protected void startImpl() {
+        SocialUtils.runOnBackground(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    if(!WbSdk.isWbInstall(mBuilder.getContext())) {
+                        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+                        return;
+                    }
+
+                    WbSdk.install(mBuilder.getContext(),
+                        new AuthInfo(mBuilder.getContext() ,mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
+
+                    SocialUtils.runOnUi(new Runnable() {
+                        @Override
+                        public void run() {
+                            WeiboDelegateActivity.start(getContext(), WeiboShare.this);
+                        }
+                    });
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
+    }
+
+    @Override
+    protected void finishImpl() {
+
+    }
+
+    @Override
+    public void doOnDelegateCreate(final WeiboDelegateActivity activity) {
+        SocialUtils.runOnBackground(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    shareImpl(activity);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
+    }
+
+    private void shareImpl(WeiboDelegateActivity activity) {
+        mWbShareHandler = new WbShareHandler(activity);
+        mWbShareHandler.registerApp();
+
+        WeiboMultiMessage weiboMessage = new WeiboMultiMessage();
+        if (mBuilder.hasText()) {
+            weiboMessage.textObject = createTextObject(mBuilder);
+        }
+        if (mBuilder.hasImage()) {
+            weiboMessage.imageObject = createImageObj(mBuilder);
+        }
+        mWbShareHandler.shareMessage(weiboMessage, false);
+    }
+
+    private TextObject createTextObject(ShareBuilder builder) {
+        TextObject textObject = new TextObject();
+        textObject.text = builder.getTitle() != null ? builder.getTitle() : builder.getText() != null ?
+            builder.getText() : builder.getExText();
+        if(builder.getPageUrl() != null) {
+            textObject.text = textObject.text + builder.getPageUrl();
+        }
+        return textObject;
+    }
+
+    private ImageObject createImageObj(ShareBuilder builder) {
+        ImageObject imageObject = new ImageObject();
+        Bitmap imageBitmap = builder.getImageBitmap();
+        String imageUri = builder.getImageUri();
+        if (imageBitmap != null) {
+            imageObject.setImageObject(imageBitmap);
+            return imageObject;
+        } else if (imageUri != null) {
+            imageObject.setImageObject(SocialUtils.loadBitmap(imageUri));
+            return imageObject;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode != 0) {
+            SocialUtils.postOnUi(new Runnable() {
+                @Override
+                public void run() {
+                    finishWithCancel();
+                }
+            }, 100);
+            return;
+        }
+        SocialUtils.removeAllUiTasks();
+        try {
+            mWbShareHandler.doResultIntent(data, this);
+        } catch (Exception e) {
+            e.printStackTrace();
+            finishWithError(e);
+        }
+    }
+
+    @Override
+    public void onWbShareSuccess() {
+        finishWithSuccess(new SocialShareResult(getPlatform()));
+    }
+
+    @Override
+    public void onWbShareCancel() {
+        finishWithCancel();
+    }
+
+    @Override
+    public void onWbShareFail() {
+        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_REQUEST_FAIL));
+    }
+}
