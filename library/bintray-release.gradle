@@ -4,7 +4,7 @@ publish {
     userOrg = 'cwyfly2'
     groupId = 'com.laughfly.rxsociallib'
     artifactId = 'rxsocial'
-    publishVersion = '0.1.1'
+    publishVersion = '0.1.2'
     desc = ''
     website = 'https://github.com/laughfly/RxSocialLib'
 }
