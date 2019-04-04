@@ -2,7 +2,7 @@ package com.laughfly.rxsociallib.platform.weibo;
 
 import android.content.Intent;
 
-import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
@@ -79,7 +79,7 @@ public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements
                 } catch (NumberFormatException e) {
                     e.printStackTrace();
                 }
-                finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, code, "", accessToken));
+                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, code, "", accessToken));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -94,6 +94,6 @@ public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements
 
     @Override
     public void onFailure(WbConnectErrorMessage wbConnectErrorMessage) {
-        finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_REQUEST_FAIL, Integer.parseInt(wbConnectErrorMessage.getErrorCode()), wbConnectErrorMessage.getErrorMessage(), wbConnectErrorMessage));
+        finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL, Integer.parseInt(wbConnectErrorMessage.getErrorCode()), wbConnectErrorMessage.getErrorMessage(), wbConnectErrorMessage));
     }
 }

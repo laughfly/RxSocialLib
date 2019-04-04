@@ -3,7 +3,7 @@ package com.laughfly.rxsociallib.platform.weibo;
 import android.content.Intent;
 import android.graphics.Bitmap;
 
-import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialShareException;
@@ -34,7 +34,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
     @Override
     protected void startImpl() {
         if (!WbSdk.isWbInstall(mBuilder.getContext())) {
-            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
 
@@ -136,6 +136,6 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     @Override
     public void onWbShareFail() {
-        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_REQUEST_FAIL));
+        finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
     }
 }

@@ -1,7 +1,7 @@
 package com.laughfly.rxsociallib.login;
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.delegate.SocialActivity;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.SocialAction;
@@ -20,12 +20,12 @@ public abstract class AbsSocialLogin<Delegate extends SocialActivity> extends So
 
     @Override
     protected void finishWithCancel() {
-        finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_USER_CANCEL));
+        finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_USER_CANCEL));
     }
 
     @Override
     protected void finishWithNoResult() {
-        finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_NO_RESULT));
+        finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_NO_RESULT));
     }
 
     @Override

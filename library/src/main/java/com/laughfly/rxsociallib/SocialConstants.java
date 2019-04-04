@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
  * author:caowy
  * date:2018-05-04
  */
-public class ErrConstants {
+public class SocialConstants {
 
     public static final int ERR_OK = 0;
 
@@ -41,4 +41,11 @@ public class ErrConstants {
     ERR_USER_CANCEL, ERR_NO_RESULT, ERR_REQUEST_FAIL, ERR_AUTH_DENIED, ERR_BAN, ERR_CONTEXT})
     public @interface ErrCode{}
 
+    public static final int MINIPROGRAM_TYPE_RELEASE = 0;
+    public static final int MINIPROGRAM_TYPE_TEST = 1;
+    public static final int MINIPROGRAM_TYPE_PREVIEW = 2;
+
+    @Retention(SOURCE)
+    @IntDef(value = {MINIPROGRAM_TYPE_PREVIEW, MINIPROGRAM_TYPE_RELEASE, MINIPROGRAM_TYPE_TEST})
+    public @interface MiniProgramType{}
 }

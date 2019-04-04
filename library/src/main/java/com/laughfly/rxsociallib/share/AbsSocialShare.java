@@ -1,8 +1,8 @@
 package com.laughfly.rxsociallib.share;
 
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.delegate.SocialActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.internal.SocialAction;
@@ -28,12 +28,12 @@ public abstract class AbsSocialShare<Delegate extends SocialActivity> extends So
 
     @Override
     protected void finishWithCancel() {
-        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_USER_CANCEL));
+        finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_USER_CANCEL));
     }
 
     @Override
     protected void finishWithNoResult() {
-        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_NO_RESULT));
+        finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_NO_RESULT));
     }
 
     @Override

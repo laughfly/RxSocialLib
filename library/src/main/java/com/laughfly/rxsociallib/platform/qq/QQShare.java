@@ -4,8 +4,9 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.Platform;
+import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
@@ -48,7 +49,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
     @Override
     protected void startImpl() {
         if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
-            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
         String appkey = mBuilder.getAppId();
@@ -61,14 +62,19 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
     }
 
     @Override
-    public void onDelegateCreate(QQDelegateActivity activity) {
+    public void onDelegateCreate(final QQDelegateActivity activity) {
         super.onDelegateCreate(activity);
-        try {
-            shareToQQ(activity);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
+        SocialThreads.runOnThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    shareToQQ(activity);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
     }
 
     private void shareToQQ(QQDelegateActivity activity) {
@@ -149,12 +155,12 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     @Override
     public void onError(UiError uiError) {
-        @ErrConstants.ErrCode
+        @SocialConstants.ErrCode
         int errorCode;
         String msg = uiError != null ? uiError.errorMessage : "";
         int platformErrCode = uiError != null ? uiError.errorCode : -1;
         if (uiError == null) {
-            errorCode = ErrConstants.ERR_OTHER;
+            errorCode = SocialConstants.ERR_OTHER;
         } else {
             switch (platformErrCode) {
                 case 110404://没有传入AppId
@@ -162,13 +168,13 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
                 case 110406://授权未通过
                 case 100044://签名错误
                 case 110503://获取授权码失败
-                    errorCode = ErrConstants.ERR_AUTH_DENIED;
+                    errorCode = SocialConstants.ERR_AUTH_DENIED;
                     break;
                 case 110401://应用未安装
-                    errorCode = ErrConstants.ERR_APP_NOT_INSTALL;
+                    errorCode = SocialConstants.ERR_APP_NOT_INSTALL;
                     break;
                 default://其他错误
-                    errorCode = ErrConstants.ERR_OTHER;
+                    errorCode = SocialConstants.ERR_OTHER;
                     break;
             }
         }

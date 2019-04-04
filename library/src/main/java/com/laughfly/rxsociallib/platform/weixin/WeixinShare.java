@@ -5,10 +5,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialConfig;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
@@ -62,7 +62,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
             mWXApi.registerApp(appId);
         }
         if (!mWXApi.isWXAppInstalled()) {
-            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
         WeixinDelegateActivity.setTheResultHandler(WeixinShare.this);
@@ -97,7 +97,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         req.scene = mBuilder.getPlatform() == Platform.WEIXIN_MOMENTS ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
         boolean sendReq = mWXApi.sendReq(req);
         if (!sendReq) {
-            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_REQUEST_FAIL));
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
         }
 
     }
@@ -288,10 +288,10 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
                 finishWithCancel();
                 break;
             case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                finishWithError(new SocialException(getPlatform(), ErrConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
                 break;
             default:
-                finishWithError(new SocialException(getPlatform(), ErrConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
                 break;
         }
     }

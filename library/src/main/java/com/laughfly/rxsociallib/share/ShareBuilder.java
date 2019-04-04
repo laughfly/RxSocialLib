@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 import com.laughfly.rxsociallib.platform.qq.QQShare;
@@ -216,7 +217,7 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return get("miniProgramUserName");
     }
 
-    public ShareBuilder setMiniProgramType(int type) {
+    public ShareBuilder setMiniProgramType(@SocialConstants.MiniProgramType int type) {
         put("miniProgramType", type);
         return this;
     }

@@ -2,9 +2,9 @@ package com.laughfly.rxsociallib.platform.qq;
 
 import android.content.Intent;
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.Platform;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
@@ -38,7 +38,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
     @Override
     protected void startImpl() {
         if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
-            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
 
@@ -106,7 +106,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
             }
         } else {
             Logger.e("SocialLogin", "QQ, errCode=" + ret);
-            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
         }
     }
 
@@ -130,17 +130,17 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
                 result.resultObject = o;
                 finishWithSuccess(result);
             } else {
-                finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
+                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
             }
         } else {
             Logger.e("SocialLogin", "QQ, errCode=" + ret);
-            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
         }
     }
 
     @Override
     public void onError(UiError uiError) {
-        finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, uiError.errorCode, uiError.errorMessage, uiError));
+        finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, uiError.errorCode, uiError.errorMessage, uiError));
     }
 
     @Override

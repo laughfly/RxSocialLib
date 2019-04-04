@@ -2,8 +2,8 @@ package com.laughfly.rxsociallib.platform.weixin;
 
 import android.content.Intent;
 
-import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.Logger;
+import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
@@ -49,7 +49,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
         mWXAPI.registerApp(mBuilder.getAppId());
 
         if (!mWXAPI.isWXAppInstalled()) {
-            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
 
@@ -58,7 +58,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
         req.state = mBuilder.getState();
         boolean sendReq = mWXAPI.sendReq(req);
         if (!sendReq) {
-            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_REQUEST_FAIL));
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
         }
     }
 
@@ -117,11 +117,11 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
                         break;
                     default:
                         Logger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
-                        finishWithError(new SocialException(getPlatform(), ErrConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
+                        finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
                         break;
                 }
             } else {
-                finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER));
+                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER));
             }
         } catch (Exception e) {
             e.printStackTrace();
