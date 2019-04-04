@@ -1,9 +1,12 @@
-package com.laughfly.rxsociallib.delegate;
+package com.laughfly.rxsociallib.platform.weibo;
 
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
+
+import com.laughfly.rxsociallib.delegate.ResultHandler;
+import com.laughfly.rxsociallib.delegate.SocialActivity;
 
 import java.lang.ref.WeakReference;
 
@@ -12,7 +15,7 @@ import java.lang.ref.WeakReference;
  * author:caowy
  * date:2018-05-26
  */
-public class WeiboDelegateActivity extends SocialActivity{
+public class WeiboDelegateActivity extends SocialActivity {
 
 
     @MainThread

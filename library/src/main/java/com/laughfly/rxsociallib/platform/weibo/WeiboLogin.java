@@ -1,12 +1,13 @@
-package com.laughfly.rxsociallib.login;
+package com.laughfly.rxsociallib.platform.weibo;
 
 import android.content.Intent;
 
 import com.laughfly.rxsociallib.ErrConstants;
-import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.WeiboDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessToken;
+import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginBuilder;
+import com.laughfly.rxsociallib.login.SocialLoginResult;
 import com.sina.weibo.sdk.WbSdk;
 import com.sina.weibo.sdk.auth.AuthInfo;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
@@ -19,29 +20,19 @@ import com.sina.weibo.sdk.auth.sso.SsoHandler;
  * author:caowy
  * date:2018-05-26
  */
-public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements WbAuthListener{
+public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements WbAuthListener {
 
     private SsoHandler mSsoHandler;
 
-    WeiboLogin(LoginBuilder builder) {
+    public WeiboLogin(LoginBuilder builder) {
         super(builder);
     }
 
     @Override
     protected void startImpl() {
-        SocialUtils.runOnUi(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    WbSdk.install(mBuilder.getContext(),
-                        new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
-                    WeiboDelegateActivity.start(mBuilder.getContext(), WeiboLogin.this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
+        WbSdk.install(mBuilder.getContext(),
+            new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
+        WeiboDelegateActivity.start(mBuilder.getContext(), WeiboLogin.this);
     }
 
     @Override
@@ -50,7 +41,7 @@ public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode == 0) return;
+        if (requestCode == 0) return;
         try {
             mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
         } catch (Exception e) {
@@ -60,7 +51,8 @@ public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements
     }
 
     @Override
-    public void doOnDelegateCreate(WeiboDelegateActivity activity) {
+    public void onDelegateCreate(WeiboDelegateActivity activity) {
+        super.onDelegateCreate(activity);
         try {
             mSsoHandler = new SsoHandler(activity);
             mSsoHandler.authorize(this);

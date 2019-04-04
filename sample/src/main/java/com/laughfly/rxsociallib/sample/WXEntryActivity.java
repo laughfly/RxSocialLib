@@ -10,7 +10,7 @@ package com.laughfly.rxsociallib.sample;
 
 
 
-import com.laughfly.rxsociallib.delegate.WeixinDelegateActivity;
+import com.laughfly.rxsociallib.platform.weixin.WeixinDelegateActivity;
 
 
 /** 微信客户端回调activity示例 */

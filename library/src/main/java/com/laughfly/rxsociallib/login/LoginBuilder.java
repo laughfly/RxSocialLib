@@ -7,6 +7,9 @@ import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
+import com.laughfly.rxsociallib.platform.qq.QQLogin;
+import com.laughfly.rxsociallib.platform.weibo.WeiboLogin;
+import com.laughfly.rxsociallib.platform.weixin.WeixinLogin;
 
 import rx.Observable;
 

@@ -1,9 +1,11 @@
-package com.laughfly.rxsociallib.delegate;
+package com.laughfly.rxsociallib.platform.weixin;
 
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.laughfly.rxsociallib.PrintLog;
+import com.laughfly.rxsociallib.Logger;
+import com.laughfly.rxsociallib.delegate.ResultHandler;
+import com.laughfly.rxsociallib.delegate.SocialActivity;
 
 import java.lang.ref.WeakReference;
 
@@ -18,9 +20,6 @@ public class WeixinDelegateActivity extends SocialActivity {
 
     /**
      * 设置回调监听
-     * author:caowy
-     * date:2018-05-26
-     *
      * @param handler
      */
     public static void setTheResultHandler(ResultHandler<WeixinDelegateActivity> handler) {
@@ -29,7 +28,7 @@ public class WeixinDelegateActivity extends SocialActivity {
 
     @Override
     protected void onCreateImpl(Bundle savedInstanceState) {
-        PrintLog.w(TAG, "onCreateImpl, " + getIntent().getExtras());
+        Logger.w(TAG, "onCreateImpl, " + getIntent().getExtras());
         invokeHandleResult(0, 0, getIntent());
     }
 
@@ -38,7 +37,7 @@ public class WeixinDelegateActivity extends SocialActivity {
         super.onNewIntent(intent);
         setIntent(intent);
         invokeHandleResult(0, 0, intent);
-        PrintLog.w(TAG, "onNewIntent, " + intent.getExtras());
+        Logger.w(TAG, "onNewIntent, " + intent.getExtras());
     }
 
 }

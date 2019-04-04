@@ -3,16 +3,16 @@ package com.laughfly.rxsociallib;
 import android.text.TextUtils;
 import android.util.Log;
 
-public class PrintLog {
+public class Logger {
 
-    private static boolean sPrintLog = false;
+    private static boolean sShowLog = false;
 
-    public static void setPrintLogEnabled(boolean enable) {
-        PrintLog.sPrintLog = enable;
+    public static void setLogEnabled(boolean enable) {
+        Logger.sShowLog = enable;
     }
 
     public static void i(String tag, String msg) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.i(tag, "NULL");
             } else {
@@ -23,7 +23,7 @@ public class PrintLog {
 
 
     public static void v(String tag, String msg) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.v(tag, "msg is NULL");
             } else {
@@ -33,7 +33,7 @@ public class PrintLog {
     }
 
     public static void d(String tag, String msg) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.d(tag, "msg is NULL");
             } else {
@@ -48,7 +48,7 @@ public class PrintLog {
     }
 
     public static void w(String tag, String msg, Exception ex) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.w(tag, "NULL", ex);
             } else {
@@ -58,7 +58,7 @@ public class PrintLog {
     }
 
     public static void w(String tag, String msg) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.w(tag, "NULL");
             } else {
@@ -68,7 +68,7 @@ public class PrintLog {
     }
 
     public static void e(String tag, String msg) {
-        if (PrintLog.sPrintLog) {
+        if (Logger.sShowLog) {
             if (TextUtils.isEmpty(msg)) {
                 Log.e(tag, "NULL");
             } else {

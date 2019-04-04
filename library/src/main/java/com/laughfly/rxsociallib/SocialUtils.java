@@ -7,8 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
 import android.os.Environment;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.TextUtils;
 
 import java.io.BufferedInputStream;
@@ -21,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -32,14 +28,6 @@ import javax.microedition.khronos.opengles.GL10;
  * date:2018-04-20
  */
 public class SocialUtils {
-    /**
-     *
-     */
-    private static ExecutorService sExecutorService;
-    /**
-     *
-     */
-    private static Handler sUiHandler;
 
     public static boolean isEmpty(CharSequence charSequence) {
         return charSequence != null && charSequence.length() > 0;
@@ -63,48 +51,6 @@ public class SocialUtils {
         }
         return null;
     }
-
-    public static synchronized void runOnBackground(Runnable r) {
-        if (sExecutorService == null) {
-            sExecutorService = Executors.newCachedThreadPool();
-        }
-        sExecutorService.execute(r);
-    }
-
-    private static void createHandler() {
-        if (sUiHandler == null) {
-            synchronized (SocialUtils.class) {
-                if (sUiHandler == null) {
-                    sUiHandler = new Handler(Looper.getMainLooper());
-                }
-            }
-        }
-    }
-
-    public static void runOnUi(Runnable runnable) {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            createHandler();
-            sUiHandler.post(runnable);
-        } else {
-            runnable.run();
-        }
-    }
-
-    public static void postOnUi(Runnable task, long delayMillis) {
-        createHandler();
-        sUiHandler.postDelayed(task, delayMillis);
-    }
-
-    public static void removeUiTask(Runnable r) {
-        createHandler();
-        sUiHandler.removeCallbacks(r);
-    }
-
-    public static void removeAllUiTasks() {
-        createHandler();
-        sUiHandler.removeCallbacksAndMessages(null);
-    }
-
 
     public static boolean downloadFile(String imageUrl, String downloadPath) {
         InputStream inputStream = null;

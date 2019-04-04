@@ -1,15 +1,18 @@
-package com.laughfly.rxsociallib.login;
+package com.laughfly.rxsociallib.platform.qq;
 
 import android.content.Intent;
 
 import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.Platform;
-import com.laughfly.rxsociallib.PrintLog;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.QQDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
+import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginBuilder;
+import com.laughfly.rxsociallib.login.SocialLoginResult;
 import com.tencent.connect.UserInfo;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
@@ -28,27 +31,18 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
 
     private SocialLoginResult mResult;
 
-    QQLogin(LoginBuilder builder) {
+    public QQLogin(LoginBuilder builder) {
         super(builder);
     }
 
     @Override
     protected void startImpl() {
-        SocialUtils.runOnUi(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if(!SocialUtils.isQQInstalled(mBuilder.getContext())) {
-                        finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
-                        return;
-                    }
-                    QQDelegateActivity.start(mBuilder.getContext(), QQLogin.this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
+        if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
+            finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            return;
+        }
+
+        QQDelegateActivity.start(mBuilder.getContext(), QQLogin.this);
     }
 
     @Override
@@ -58,7 +52,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
     @Override
     public void onComplete(Object o) {
         try {
-            if(mBuilder.isFetchUserProfile()) {
+            if (mBuilder.isFetchUserProfile()) {
                 fetchUserProfile(o);
             } else {
                 fetchBaseProfile(o);
@@ -73,13 +67,13 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
         JSONObject jsonObject = (JSONObject) o;
         int ret = jsonObject.optInt("ret");
         String msg = jsonObject.optString("msg");
-        if(ret == 0) {
+        if (ret == 0) {
             if (mResult == null) {
                 mResult = new SocialLoginResult();
                 mResult.platform = getPlatform();
             }
             String accessToken = jsonObject.optString("access_token");
-            if(accessToken != null && accessToken.length() > 0) { //拿到accessToken
+            if (accessToken != null && accessToken.length() > 0) { //拿到accessToken
                 //从QQ获得用户信息，进行鉴权
                 String openid = jsonObject.optString("openid");
                 long expiresIn = jsonObject.optLong("expires_in");
@@ -103,7 +97,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
 
                 com.laughfly.rxsociallib.login.UserInfo userInfo = new com.laughfly.rxsociallib.login.UserInfo();
                 userInfo.nickname = (nickname);
-                userInfo.gender = "男".equals(gender) ? 1 :  "女".equals(gender) ? 0 : 2;
+                userInfo.gender = "男".equals(gender) ? 1 : "女".equals(gender) ? 0 : 2;
                 userInfo.avatarUrl = !SocialUtils.isEmpty(figureurl_qq_2) ? figureurl_qq_2 : figureurl_qq_1;
                 mResult.userInfo = userInfo;
 
@@ -111,7 +105,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
                 finishWithSuccess(mResult);
             }
         } else {
-            PrintLog.e("SocialLogin", "QQ, errCode=" + ret);
+            Logger.e("SocialLogin", "QQ, errCode=" + ret);
             finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
         }
     }
@@ -120,11 +114,11 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
         JSONObject jsonObject = (JSONObject) o;
         int ret = jsonObject.optInt("ret");
         String msg = jsonObject.optString("msg");
-        if(ret == 0) {
+        if (ret == 0) {
             SocialLoginResult result = new SocialLoginResult();
             result.platform = getPlatform();
             String accessToken = jsonObject.optString("access_token");
-            if(accessToken != null && accessToken.length() > 0) { //拿到accessToken
+            if (accessToken != null && accessToken.length() > 0) { //拿到accessToken
                 String openid = jsonObject.optString("openid");
                 long expiresIn = jsonObject.optLong("expires_in");
                 AccessToken _accessToken = new AccessToken();
@@ -138,8 +132,8 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
             } else {
                 finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
             }
-        }else {
-            PrintLog.e("SocialLogin", "QQ, errCode=" + ret);
+        } else {
+            Logger.e("SocialLogin", "QQ, errCode=" + ret);
             finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_OTHER, ret, msg, o));
         }
     }
@@ -165,17 +159,18 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
     }
 
     @Override
-    public void doOnDelegateCreate(final QQDelegateActivity activity) {
-        SocialUtils.runOnBackground(new Runnable() {
+    public void onDelegateCreate(final QQDelegateActivity activity) {
+        super.onDelegateCreate(activity);
+        SocialThreads.runOnThread(new Runnable() {
             @Override
             public void run() {
                 try {
                     mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
                     AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), Platform.QQ);
-                    if(accessToken != null) {
+                    if (accessToken != null) {
                         mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
                         mTencent.setOpenId(accessToken.openId);
-                        if(mTencent.isSessionValid()) {
+                        if (mTencent.isSessionValid()) {
                             mTencent.logout(mBuilder.getContext());
                         }
                     }

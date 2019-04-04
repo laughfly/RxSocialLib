@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.share;
+package com.laughfly.rxsociallib.platform.qq;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -7,13 +7,16 @@ import android.text.TextUtils;
 import com.laughfly.rxsociallib.ErrConstants;
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.QQDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
+import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareBuilder;
+import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_APP_NAME;
+import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_ARK_INFO;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_AUDIO_URL;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_EXT_INT;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN;
@@ -24,6 +27,7 @@ import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_KEY_TYPE;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_SUMMARY;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TARGET_URL;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TITLE;
+import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_APP;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_AUDIO;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_DEFAULT;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_IMAGE;
@@ -33,7 +37,7 @@ import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_IMAGE;
  * author:caowy
  * date:2018-05-11
  */
-public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiListener{
+public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiListener {
 
     private Tencent mTencent;
 
@@ -43,18 +47,13 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     @Override
     protected void startImpl() {
-        try {
-            if(!SocialUtils.isQQInstalled(mBuilder.getContext())) {
-                finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
-                return;
-            }
-            String appkey = mBuilder.getAppId();
-            mTencent = Tencent.createInstance(appkey, mBuilder.getContext());
-            QQDelegateActivity.start(getBuilder().getContext(), QQShare.this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
+        if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
+            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            return;
         }
+        String appkey = mBuilder.getAppId();
+        mTencent = Tencent.createInstance(appkey, mBuilder.getContext());
+        QQDelegateActivity.start(getBuilder().getContext(), QQShare.this);
     }
 
     @Override
@@ -62,7 +61,8 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
     }
 
     @Override
-    public void doOnDelegateCreate(QQDelegateActivity activity) {
+    public void onDelegateCreate(QQDelegateActivity activity) {
+        super.onDelegateCreate(activity);
         try {
             shareToQQ(activity);
         } catch (Exception e) {
@@ -76,16 +76,22 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
         String imageUri = mBuilder.getImageUri();
         String audioUri = mBuilder.getAudioUri();
+        String arkInfo = mBuilder.getArkInfo();
 
-        //是否分享图片
+        //分享图片
         boolean shareImage = SocialUtils.isLocalUri(imageUri);
+        //分享音频
         boolean shareAudio = !TextUtils.isEmpty(audioUri);
+        //分享app
+        boolean shareApp = !TextUtils.isEmpty(arkInfo);
 
         int shareType;
         if (shareImage) {
             shareType = SHARE_TO_QQ_TYPE_IMAGE;
         } else if (shareAudio) {
             shareType = SHARE_TO_QQ_TYPE_AUDIO;
+        } else if (shareApp) {
+            shareType = SHARE_TO_QQ_TYPE_APP;
         } else {
             shareType = SHARE_TO_QQ_TYPE_DEFAULT;
         }
@@ -103,6 +109,8 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
         if (shareAudio) {
             params.putString(SHARE_TO_QQ_AUDIO_URL, audioUri);
+        } else if(shareApp) {
+            params.putString(SHARE_TO_QQ_ARK_INFO, arkInfo);
         }
 
         if (mBuilder.getAppName() != null) {
@@ -122,7 +130,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
     public void handleResult(int requestCode, int resultCode, Intent data) {
         try {
             //分享成功停留在QQ，并直接通过任务管理切换回APP
-            if(requestCode == 0 && 0 == resultCode && data == null) {
+            if (requestCode == 0 && 0 == resultCode && data == null) {
                 finishWithNoResult();
             } else {
                 Tencent.onActivityResultData(requestCode, resultCode, data, QQShare.this);

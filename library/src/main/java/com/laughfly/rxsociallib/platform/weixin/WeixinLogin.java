@@ -1,15 +1,18 @@
-package com.laughfly.rxsociallib.login;
+package com.laughfly.rxsociallib.platform.weixin;
 
 import android.content.Intent;
 
 import com.laughfly.rxsociallib.ErrConstants;
-import com.laughfly.rxsociallib.PrintLog;
+import com.laughfly.rxsociallib.Logger;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.WeixinDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessToken;
-import com.laughfly.rxsociallib.internal.WXLossResultWorkaround;
+import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginBuilder;
+import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.login.UserInfo;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendAuth;
@@ -31,7 +34,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
 
     private WXLossResultWorkaround mWXLossResultWorkaround;
 
-    WeixinLogin(LoginBuilder builder) {
+    public WeixinLogin(LoginBuilder builder) {
         super(builder);
     }
 
@@ -39,9 +42,12 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
     protected void startImpl() {
         mWXLossResultWorkaround = new WXLossResultWorkaround(getContext(), this);
         mWXLossResultWorkaround.start();
+
         WeixinDelegateActivity.setTheResultHandler(WeixinLogin.this);
+
         mWXAPI = WXAPIFactory.createWXAPI(mBuilder.getContext(), mBuilder.getAppId(), true);
         mWXAPI.registerApp(mBuilder.getAppId());
+
         if (!mWXAPI.isWXAppInstalled()) {
             finishWithError(new SocialLoginException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
             return;
@@ -68,18 +74,12 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
     }
 
     @Override
-    protected void doOnDelegateCreate(WeixinDelegateActivity weixinDelegateActivity) {
-
-    }
-
-    @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
         try {
-            if (mWXLossResultWorkaround != null) {
-                mWXLossResultWorkaround.setHaveResult(true);
-                mWXLossResultWorkaround.stop();
-            }
-            PrintLog.d("Weixin", "req=" + requestCode + ", res=" + resultCode + ", data=" + data);
+            Logger.d("Weixin", "req=" + requestCode + ", res=" + resultCode + ", data=" + data);
+
+            mWXLossResultWorkaround.stop();
+
             mWXAPI.handleIntent(data, this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,7 +103,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
                 final SendAuth.Resp resp = (SendAuth.Resp) baseResp;
                 switch (resp.errCode) {
                     case 0:
-                        SocialUtils.runOnBackground(new Runnable() {
+                        SocialThreads.runOnThread(new Runnable() {
                             @Override
                             public void run() {
                                 doOnComplete(resp);
@@ -112,11 +112,11 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
                         break;
                     case -2:
                     case -4:
-                        PrintLog.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
+                        Logger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
                         finishWithCancel();
                         break;
                     default:
-                        PrintLog.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
+                        Logger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
                         finishWithError(new SocialException(getPlatform(), ErrConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
                         break;
                 }
@@ -201,7 +201,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
 
     @Override
     public void onCallback() {
-        SocialUtils.runOnBackground(new Runnable() {
+        SocialThreads.runOnThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -210,7 +210,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
                     e.printStackTrace();
                 }
                 try {
-                    if (mWXLossResultWorkaround != null && !mWXLossResultWorkaround.haveResult())
+                    if (!mWXLossResultWorkaround.haveResult())
                         finishWithNoResult();
                 } catch (Exception e) {
                     e.printStackTrace();

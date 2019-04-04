@@ -3,7 +3,8 @@ package com.laughfly.rxsociallib.delegate;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Handler;
+
+import com.laughfly.rxsociallib.SocialThreads;
 
 import java.lang.ref.WeakReference;
 
@@ -29,23 +30,16 @@ public abstract class SocialActivity extends Activity {
      */
     private ResultHandler mResultHandler;
 
-    /**
-     *
-     */
-    private Handler mUiHandler;
-
     private boolean mHaveResult;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         try {
             super.onCreate(savedInstanceState);
-            mUiHandler = new Handler();
             ResultHandler<?> tempResultHandler = sTempResultHandler != null ? sTempResultHandler.get() : null;
             //可能是App重启
             if (tempResultHandler == null && mResultHandler == null) {
                 invokeNoResult();
-                return;
             } else {
                 if(tempResultHandler != null) {
                     setResultHandler(tempResultHandler);
@@ -67,7 +61,7 @@ public abstract class SocialActivity extends Activity {
     public void invokeHandleResult(int requestCode, int resultCode, Intent data) {
         mHaveResult = data != null;
         if(mHaveResult) {
-            mUiHandler.removeCallbacksAndMessages(null);
+            SocialThreads.removeUiRunnable(this);
         }
         final ResultHandler resultHandler = mResultHandler;
         if (resultHandler != null) {
@@ -111,7 +105,7 @@ public abstract class SocialActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        mUiHandler.removeCallbacksAndMessages(null);
+        SocialThreads.removeUiRunnable(this);
         if (mResultHandler != null) {
             mResultHandler.onDelegateDestroy(this);
         }
@@ -120,14 +114,14 @@ public abstract class SocialActivity extends Activity {
 
     protected void onResumeFromPause() {
         if(!mHaveResult) {
-            mUiHandler.postDelayed(new Runnable() {
+            SocialThreads.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     if (!isFinishing() && !mHaveResult) {
                         invokeNoResult();
                     }
                 }
-            }, 300);
+            }, SocialActivity.this, 300);
         }
     }
 }

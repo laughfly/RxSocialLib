@@ -7,12 +7,12 @@
 
     <application>
         <activity
-            android:name="com.laughfly.rxsociallib.delegate.QQDelegateActivity"
+            android:name="com.laughfly.rxsociallib.platform.qq.QQDelegateActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:screenOrientation="behind"
             android:theme="@style/Ghost"/>
         <activity
-            android:name="com.laughfly.rxsociallib.delegate.WeiboDelegateActivity"
+            android:name="com.laughfly.rxsociallib.platform.weibo.WeiboDelegateActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:screenOrientation="behind"
             android:theme="@style/Ghost">
@@ -26,21 +26,21 @@
             </intent-filter>
         </activity>
 
-        <!--QQ SDK -->
-        <activity
-            android:name="com.tencent.tauth.AuthActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
-            android:launchMode="singleTask"
-            android:noHistory="true"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
+        <!--&lt;!&ndash;QQ SDK &ndash;&gt;-->
+        <!--<activity-->
+            <!--android:name="com.tencent.tauth.AuthActivity"-->
+            <!--android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"-->
+            <!--android:launchMode="singleTask"-->
+            <!--android:noHistory="true"-->
+            <!--android:screenOrientation="portrait">-->
+            <!--<intent-filter>-->
+                <!--<action android:name="android.intent.action.VIEW"/>-->
 
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="tencent222222" />
-            </intent-filter>
-        </activity>
+                <!--<category android:name="android.intent.category.DEFAULT"/>-->
+                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
+                <!--<data android:scheme="tencent" />-->
+            <!--</intent-filter>-->
+        <!--</activity>-->
         <activity
             android:name="com.tencent.connect.common.AssistActivity"
             android:configChanges="orientation|keyboardHidden"

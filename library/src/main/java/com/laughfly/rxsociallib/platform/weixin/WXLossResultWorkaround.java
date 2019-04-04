@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.internal;
+package com.laughfly.rxsociallib.platform.weixin;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -8,7 +8,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import com.laughfly.rxsociallib.CompatUtils;
-import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.SocialThreads;
 
 import java.lang.ref.WeakReference;
 
@@ -73,6 +73,7 @@ public class WXLossResultWorkaround {
             Application application = (Application) getContext().getApplicationContext();
             application.unregisterActivityLifecycleCallbacks(mActivityCallback);
         }
+        SocialThreads.removeUiRunnable(this);
     }
 
     public interface Callback {
@@ -95,7 +96,7 @@ public class WXLossResultWorkaround {
         @Override
         public void onActivityResumed(Activity activity) {
             if (activity == getContext() || mPackageName.equals(activity.getPackageName())) {
-                SocialUtils.postOnUi(new Runnable() {
+                SocialThreads.postOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -106,7 +107,7 @@ public class WXLossResultWorkaround {
                             e.printStackTrace();
                         }
                     }
-                }, 500);
+                }, WXLossResultWorkaround.this, 500);
             }
         }
 

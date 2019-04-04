@@ -4,7 +4,7 @@ import android.content.Context;
 
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialCallback;
-import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.delegate.ResultHandler;
 import com.laughfly.rxsociallib.delegate.SocialActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
@@ -93,14 +93,8 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
     }
 
     @Override
-    public final void onDelegateCreate(Delegate delegate) {
+    public void onDelegateCreate(Delegate delegate) {
         mDelegateRef = new WeakReference<>(delegate);
-        try {
-            doOnDelegateCreate(delegate);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
     }
 
     @Override
@@ -110,13 +104,19 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
 
 
     public void start() {
-        try {
-            startImpl();
-            mCallback.onStart(mBuilder.getPlatform());
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
+        SocialThreads.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    startImpl();
+                    mCallback.onStart(mBuilder.getPlatform());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
+
     }
 
     protected void finishWithSuccess(Result result) {
@@ -137,7 +137,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
         }
         final Delegate delegate = getDelegate();
         if (delegate != null) {
-            SocialUtils.runOnUi(new Runnable() {
+            SocialThreads.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     delegate.finish();
@@ -184,7 +184,5 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
      * 操作结束
      */
     protected abstract void finishImpl();
-
-    protected abstract void doOnDelegateCreate(Delegate delegate);
 
 }

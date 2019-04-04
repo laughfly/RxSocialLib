@@ -53,7 +53,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onStart(final Platform platform) {
             if(callback != null) {
-                SocialUtils.runOnUi(new Runnable() {
+                SocialThreads.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onStart(platform);
@@ -65,7 +65,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onError(final Platform platform, final SocialException e) {
             if(callback != null) {
-                SocialUtils.runOnUi(new Runnable() {
+                SocialThreads.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onError(platform, e);
@@ -77,7 +77,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onSuccess(final Platform platform, final T resp) {
             if(callback != null) {
-                SocialUtils.runOnUi(new Runnable() {
+                SocialThreads.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onSuccess(platform, resp);
@@ -89,7 +89,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onFinish(final Platform platform) {
             if(callback != null) {
-                SocialUtils.runOnUi(new Runnable() {
+                SocialThreads.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onFinish(platform);

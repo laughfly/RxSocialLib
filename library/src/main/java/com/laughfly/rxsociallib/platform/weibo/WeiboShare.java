@@ -1,12 +1,15 @@
-package com.laughfly.rxsociallib.share;
+package com.laughfly.rxsociallib.platform.weibo;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
 
 import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.WeiboDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
+import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareBuilder;
+import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.sina.weibo.sdk.WbSdk;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.TextObject;
@@ -30,30 +33,15 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     @Override
     protected void startImpl() {
-        SocialUtils.runOnBackground(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    if(!WbSdk.isWbInstall(mBuilder.getContext())) {
-                        finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
-                        return;
-                    }
+        if (!WbSdk.isWbInstall(mBuilder.getContext())) {
+            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            return;
+        }
 
-                    WbSdk.install(mBuilder.getContext(),
-                        new AuthInfo(mBuilder.getContext() ,mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
+        WbSdk.install(mBuilder.getContext(),
+            new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
 
-                    SocialUtils.runOnUi(new Runnable() {
-                        @Override
-                        public void run() {
-                            WeiboDelegateActivity.start(getContext(), WeiboShare.this);
-                        }
-                    });
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
+        WeiboDelegateActivity.start(getContext(), WeiboShare.this);
     }
 
     @Override
@@ -62,8 +50,9 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
     }
 
     @Override
-    public void doOnDelegateCreate(final WeiboDelegateActivity activity) {
-        SocialUtils.runOnBackground(new Runnable() {
+    public void onDelegateCreate(final WeiboDelegateActivity activity) {
+        super.onDelegateCreate(activity);
+        SocialThreads.runOnThread(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -94,7 +83,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         TextObject textObject = new TextObject();
         textObject.text = builder.getTitle() != null ? builder.getTitle() : builder.getText() != null ?
             builder.getText() : builder.getExText();
-        if(builder.getPageUrl() != null) {
+        if (builder.getPageUrl() != null) {
             textObject.text = textObject.text + builder.getPageUrl();
         }
         return textObject;
@@ -117,16 +106,16 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode != 0) {
-            SocialUtils.postOnUi(new Runnable() {
+        if (requestCode != 0) {
+            SocialThreads.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     finishWithCancel();
                 }
-            }, 100);
+            }, WeiboShare.this, 100);
             return;
         }
-        SocialUtils.removeAllUiTasks();
+        SocialThreads.removeUiRunnable(WeiboShare.this);
         try {
             mWbShareHandler.doResultIntent(data, this);
         } catch (Exception e) {

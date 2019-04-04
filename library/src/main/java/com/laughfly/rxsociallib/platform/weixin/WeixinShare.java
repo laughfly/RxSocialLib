@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.share;
+package com.laughfly.rxsociallib.platform.weixin;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -6,22 +6,26 @@ import android.graphics.BitmapFactory;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.ErrConstants;
+import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.Platform;
-import com.laughfly.rxsociallib.PrintLog;
 import com.laughfly.rxsociallib.SocialConfig;
+import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.WeixinDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialShareException;
-import com.laughfly.rxsociallib.internal.WXLossResultWorkaround;
+import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareBuilder;
+import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
+import com.tencent.mm.opensdk.modelmsg.WXFileObject;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXMiniProgramObject;
 import com.tencent.mm.opensdk.modelmsg.WXMusicObject;
 import com.tencent.mm.opensdk.modelmsg.WXTextObject;
+import com.tencent.mm.opensdk.modelmsg.WXVideoObject;
 import com.tencent.mm.opensdk.modelmsg.WXWebpageObject;
 import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
@@ -35,10 +39,13 @@ import static android.text.TextUtils.isEmpty;
  * date:2018-05-26
  */
 public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implements IWXAPIEventHandler
-        , WXLossResultWorkaround.Callback {
+    , WXLossResultWorkaround.Callback {
 
     private IWXAPI mWXApi;
 
+    /**
+     * 对没有返回结果的特殊处理
+     */
     private WXLossResultWorkaround mWXLossResultWorkaround;
 
     public WeixinShare(ShareBuilder builder) {
@@ -47,51 +54,41 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
 
     @Override
     protected void startImpl() {
-        try {
-            mWXLossResultWorkaround = new WXLossResultWorkaround(mBuilder.getContext(), this);
-            mWXLossResultWorkaround.start();
-            SocialUtils.runOnBackground(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        if (mWXApi == null) {
-                            String appId = mBuilder.getAppId();
-                            mWXApi = WXAPIFactory.createWXAPI(getContext(), appId, true);
-                            mWXApi.registerApp(appId);
-                        }
-                        if (!mWXApi.isWXAppInstalled()) {
-                            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
-                            return;
-                        }
-                        WeixinDelegateActivity.setTheResultHandler(WeixinShare.this);
-                        shareImpl();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        finishWithError(e);
-                    }
-                }
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
+        mWXLossResultWorkaround = new WXLossResultWorkaround(mBuilder.getContext(), this);
+        mWXLossResultWorkaround.start();
+        if (mWXApi == null) {
+            String appId = mBuilder.getAppId();
+            mWXApi = WXAPIFactory.createWXAPI(getContext(), appId, true);
+            mWXApi.registerApp(appId);
         }
-    }
-
-    private boolean supportMiniProgram() {
-        return mWXApi.getWXAppSupportAPI() >= 620756993;//微信6.5.6（620756993）
+        if (!mWXApi.isWXAppInstalled()) {
+            finishWithError(new SocialShareException(getPlatform(), ErrConstants.ERR_APP_NOT_INSTALL));
+            return;
+        }
+        WeixinDelegateActivity.setTheResultHandler(WeixinShare.this);
+        SocialThreads.runOnThread(new Runnable() {
+            @Override
+            public void run() {
+                shareImpl();
+            }
+        });
     }
 
     private void shareImpl() {
         WXMediaMessage mediaMessage;
         if (mBuilder.getMiniProgramPath() != null) {//小程序
             mediaMessage = createMiniProgramObject();
-        } else if (mBuilder.getAudioUri() != null) {
+        } else if (mBuilder.getAudioUri() != null) {//音频
             mediaMessage = createAudioObject();
-        }  else if (!isEmpty(mBuilder.getPageUrl())) {//网页
+        } else if (!isEmpty(mBuilder.getPageUrl())) {//网页
             mediaMessage = createWebpageObject();
-        } else if (mBuilder.hasImage()) {
+        } else if (mBuilder.hasImage()) {//图片
             mediaMessage = createImageObject();
-        }else {
+        } else if(!isEmpty(mBuilder.getVideoUrl())){
+            mediaMessage = createVideoObject();
+        } else if(!isEmpty(mBuilder.getFilePath())){
+            mediaMessage = createFileObject();
+        }else {//文字
             mediaMessage = createTextObject();
         }
         SendMessageToWX.Req req = new SendMessageToWX.Req();
@@ -105,6 +102,9 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
 
     }
 
+    /**
+     * 分享音频
+     */
     private WXMediaMessage createAudioObject() {
         WXMusicObject musicObject = new WXMusicObject();
         musicObject.musicDataUrl = mBuilder.getAudioUri();
@@ -141,8 +141,6 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
 
     /**
      * 分享图片
-     * author:caowy
-     * date:2018-11-22
      *
      * @return
      */
@@ -162,10 +160,35 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         return mediaMessage;
     }
 
+    private WXMediaMessage createVideoObject() {
+        WXVideoObject videoObject = new WXVideoObject();
+        videoObject.videoUrl = mBuilder.getVideoUrl();
+
+        WXMediaMessage mediaMessage = new WXMediaMessage();
+        mediaMessage.mediaObject = videoObject;
+        mediaMessage.title = mBuilder.getTitle();
+        mediaMessage.description = mBuilder.getText();
+        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
+
+        return mediaMessage;
+    }
+
+    private WXMediaMessage createFileObject() {
+        WXFileObject fileObject = new WXFileObject();
+        fileObject.setFilePath(mBuilder.getFilePath());
+        fileObject.setContentLengthLimit(mBuilder.getFileSizeLimit());
+
+        WXMediaMessage mediaMessage = new WXMediaMessage();
+        mediaMessage.mediaObject = fileObject;
+        mediaMessage.title = mBuilder.getTitle();
+        mediaMessage.description = mBuilder.getText();
+        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
+
+        return mediaMessage;
+    }
+
     /**
      * 分享链接
-     * author:caowy
-     * date:2018-11-22
      *
      * @return
      */
@@ -177,18 +200,13 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         mediaMessage.title = mBuilder.getTitle();
         mediaMessage.description = mBuilder.getText();
         mediaMessage.messageExt = mBuilder.getExText();
-        Bitmap imageBitmap = mBuilder.getImageBitmap();
-        String imageUri = mBuilder.getImageUri();
-        if (imageBitmap != null) {
-            mediaMessage.thumbData = SocialUtils.bitmapToBytes(imageBitmap, SocialConfig.WECHAT_THUMB_LIMIT);
-        } else if(!TextUtils.isEmpty(imageUri)){
-            mediaMessage.thumbData = SocialUtils.loadImageBytes(imageUri, SocialConfig.WECHAT_THUMB_LIMIT);
-        }
+        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
         return mediaMessage;
     }
 
     /**
      * 分享小程序页面
+     *
      * @return
      */
     private WXMediaMessage createMiniProgramObject() {
@@ -201,13 +219,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         WXMediaMessage msg = new WXMediaMessage(programObject);
         msg.title = mBuilder.getTitle();
         msg.description = mBuilder.getText();
-        Bitmap imageBitmap = mBuilder.getThumbBitmap();
-        String imageUri = mBuilder.getMiniProgramImageUrl();
-        if (imageBitmap != null) {
-            msg.thumbData = SocialUtils.bitmapToBytes(imageBitmap, SocialConfig.WECHAT_MINI_PROG_IMAGE_LIMIT);
-        } else {
-            msg.thumbData = SocialUtils.loadImageBytes(imageUri, SocialConfig.WECHAT_MINI_PROG_IMAGE_LIMIT);
-        }
+        msg.thumbData = createThumbData(SocialConfig.WECHAT_MINI_PROG_IMAGE_LIMIT);
         return msg;
     }
 
@@ -219,9 +231,9 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         }
         if (thumbData == null) {
             int thumbResId = mBuilder.getThumbResId();
-            if(thumbResId != 0) {
+            if (thumbResId != 0) {
                 Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), thumbResId);
-                thumbData =  SocialUtils.bitmapToBytes(bitmap, limit);
+                thumbData = SocialUtils.bitmapToBytes(bitmap, limit);
             }
         }
         if (thumbData == null) {
@@ -235,10 +247,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
 
     @Override
     protected void finishImpl() {
-        if (mWXLossResultWorkaround != null) {
-            mWXLossResultWorkaround.setHaveResult(true);
-            mWXLossResultWorkaround.stop();
-        }
+        mWXLossResultWorkaround.stop();
         if (mWXApi != null) {
             mWXApi.detach();
         }
@@ -246,8 +255,8 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
-        PrintLog.d("WeixinShare", "handleResult=" + requestCode + ", result=" + resultCode +
-                ",data=" + data);
+        Logger.d("WeixinShare", "handleResult=" + requestCode + ", result=" + resultCode +
+            ",data=" + data);
         try {
             if (mWXLossResultWorkaround != null) {
                 mWXLossResultWorkaround.setHaveResult(true);
@@ -262,10 +271,6 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
             e.printStackTrace();
             finishWithError(e);
         }
-    }
-
-    @Override
-    public void doOnDelegateCreate(WeixinDelegateActivity weixinDelegateActivity) {
     }
 
     @Override
@@ -294,7 +299,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
     @Override
     public void onCallback() {
         try {
-            if (mWXLossResultWorkaround != null && !mWXLossResultWorkaround.haveResult())
+            if (!mWXLossResultWorkaround.haveResult())
                 finishWithNoResult();
         } catch (Exception e) {
             e.printStackTrace();

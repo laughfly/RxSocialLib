@@ -9,6 +9,9 @@ import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
+import com.laughfly.rxsociallib.platform.qq.QQShare;
+import com.laughfly.rxsociallib.platform.weibo.WeiboShare;
+import com.laughfly.rxsociallib.platform.weixin.WeixinShare;
 
 import rx.Observable;
 
@@ -209,7 +212,7 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return this;
     }
 
-    String getMiniProgramUserName() {
+    public String getMiniProgramUserName() {
         return get("miniProgramUserName");
     }
 
@@ -228,17 +231,8 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return this;
     }
 
-    String getMiniProgramPath() {
+    public String getMiniProgramPath() {
         return get("miniProgramPath");
-    }
-
-    public ShareBuilder setMiniProgramImageUrl(String imageUrl) {
-        put("miniProgramImageUrl", imageUrl);
-        return this;
-    }
-
-    String getMiniProgramImageUrl() {
-        return get("miniProgramImageUrl");
     }
 
     public ShareBuilder setAudioUri(String uri) {
@@ -248,5 +242,41 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
 
     public String getAudioUri() {
         return get("audioUri");
+    }
+
+    public ShareBuilder setVideoUrl(String uri) {
+        put("videoUrl", uri);
+        return this;
+    }
+
+    public String getVideoUrl() {
+        return get("videoUrl");
+    }
+
+    public ShareBuilder setFilePath(String path) {
+        put("filePath", path);
+        return this;
+    }
+
+    public String getFilePath() {
+        return get("filePath");
+    }
+
+    public ShareBuilder setFileSizeLimit(int sizeLimit) {
+        put("fileSizeLimit", sizeLimit);
+        return this;
+    }
+
+    public int getFileSizeLimit() {
+        return get("fileSizeLimit", 104857600);
+    }
+
+    public ShareBuilder setArkInfo(String arkInfo) {
+        put("arkInfo", arkInfo);
+        return this;
+    }
+
+    public String getArkInfo() {
+        return get("arkInfo");
     }
 }
