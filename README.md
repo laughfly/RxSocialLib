@@ -78,9 +78,7 @@ buildscript {
             .toObservable()
 ```
 # 配置
----
-使用插件进行自动化配置
----
+
 参照sample下的social-config.gradle文件进行平台配置
 ```groovy
 apply plugin: 'social-config'
