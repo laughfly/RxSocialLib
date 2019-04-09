@@ -10,10 +10,10 @@ import android.widget.Toast;
 
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.RxSocial;
+import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
 import com.laughfly.rxsociallib.share.SocialShareResult;
-
-import rx.Subscriber;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -31,10 +31,10 @@ public class MainActivity extends AppCompatActivity {
         Platform platform = Platform.QQ;
         switch (view.getId()) {
             case R.id.qq_share:
-                platform = Platform.QQ;
+                platform = Platform.QQZone;
                 break;
             case R.id.weixin_share:
-                platform = Platform.Wechat;
+                platform = Platform.WechatMoments;
                 break;
             case R.id.weibo_share:
                 platform = Platform.Weibo;
@@ -44,21 +44,16 @@ public class MainActivity extends AppCompatActivity {
             .setPlatform(platform)
             .setTitle("分享标题")
             .setText("分享的内容").setPageUrl("http://www.qq.com")
-            .toObservable()
-            .subscribe(new Subscriber<SocialShareResult>() {
-                @Override
-                public void onCompleted() {
+            .start(new SocialCallback<SocialShareResult>() {
 
+                @Override
+                public void onError(Platform platform, SocialException e) {
+                    Toast.makeText(MainActivity.this, "分享失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
-                public void onError(Throwable e) {
-                    Toast.makeText(MainActivity.this, "分享失败", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onNext(SocialShareResult socialShareResult) {
-                    Toast.makeText(MainActivity.this, "分享成功", Toast.LENGTH_LONG).show();
+                public void onSuccess(Platform platform, SocialShareResult resp) {
+                    Toast.makeText(MainActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
                 }
             });
     }
@@ -78,21 +73,15 @@ public class MainActivity extends AppCompatActivity {
         }
         RxSocial.login(this)
             .setPlatform(platform)
-            .toObservable()
-            .subscribe(new Subscriber<SocialLoginResult>() {
+            .start(new SocialCallback<SocialLoginResult>() {
                 @Override
-                public void onCompleted() {
-
+                public void onError(Platform platform, SocialException e) {
+                    Toast.makeText(MainActivity.this, "登录失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
-                public void onError(Throwable e) {
-                    Toast.makeText(MainActivity.this, "登录失败", Toast.LENGTH_LONG).show();
-                }
-
-                @Override
-                public void onNext(SocialLoginResult socialLoginResult) {
-                    Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_LONG).show();
+                public void onSuccess(Platform platform, SocialLoginResult resp) {
+                    Toast.makeText(MainActivity.this, "登录成功\nuid: " + resp.uid, Toast.LENGTH_SHORT).show();
                 }
             });
     }

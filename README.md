@@ -66,12 +66,12 @@ buildscript {
             .start(new SocialCallback<SocialLoginResult>() {
                 @Override
                 public void onError(Platform platform, SocialException e) {
-                    
+                    Toast.makeText(MainActivity.this, "登录失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void onSuccess(Platform platform, SocialLoginResult resp) {
-
+                    Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_SHORT).show();
                 }
             })
             //or
