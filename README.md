@@ -123,7 +123,7 @@ apply from:'social-config.gradle'
 ```
 **刷新，完成！**
 
-##注意事项
+## 注意事项
 修改social-config.gradle里的平台信息后可能需要Rebuild Project才有效果！
 
 # TO DO
