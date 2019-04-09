@@ -26,21 +26,12 @@
             </intent-filter>
         </activity>
 
-        <!--&lt;!&ndash;QQ SDK &ndash;&gt;-->
-        <!--<activity-->
-            <!--android:name="com.tencent.tauth.AuthActivity"-->
-            <!--android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"-->
-            <!--android:launchMode="singleTask"-->
-            <!--android:noHistory="true"-->
-            <!--android:screenOrientation="portrait">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.VIEW"/>-->
+        <activity android:name="com.laughfly.rxsociallib.platform.wechat.WechatDelegateActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="behind"
+            android:theme="@style/Ghost"/>
 
-                <!--<category android:name="android.intent.category.DEFAULT"/>-->
-                <!--<category android:name="android.intent.category.BROWSABLE"/>-->
-                <!--<data android:scheme="tencent" />-->
-            <!--</intent-filter>-->
-        <!--</activity>-->
         <activity
             android:name="com.tencent.connect.common.AssistActivity"
             android:configChanges="orientation|keyboardHidden"

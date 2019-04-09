@@ -2,13 +2,13 @@ package com.laughfly.rxsociallib.platform.qq;
 
 import android.content.Intent;
 
+import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
 import com.laughfly.rxsociallib.login.LoginBuilder;

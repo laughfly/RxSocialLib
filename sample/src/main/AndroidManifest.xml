@@ -20,30 +20,6 @@
             </intent-filter>
         </activity>
 
-        <!--QQ配置-->
-        <activity
-            android:name="com.tencent.tauth.AuthActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
-            android:launchMode="singleTask"
-            android:noHistory="true"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <!--把222222替换成你自己的appid-->
-                <data android:scheme="tencent222222" />
-            </intent-filter>
-        </activity>
-
-        <!-- 微信分享回调 -->
-        <activity
-            android:name=".WXEntryActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="true"
-            android:screenOrientation="behind"
-            android:theme="@style/Ghost"/>
     </application>
 
 </manifest>

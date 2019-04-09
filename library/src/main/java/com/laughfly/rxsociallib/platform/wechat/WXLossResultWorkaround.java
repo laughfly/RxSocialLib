@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.platform.weixin;
+package com.laughfly.rxsociallib.platform.wechat;
 
 import android.annotation.TargetApi;
 import android.app.Activity;

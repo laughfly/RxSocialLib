@@ -2,9 +2,9 @@ package com.laughfly.rxsociallib.platform.weibo;
 
 import android.content.Intent;
 
+import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.login.SocialLoginResult;

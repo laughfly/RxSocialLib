@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.platform.weixin;
+package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -14,7 +14,7 @@ import java.lang.ref.WeakReference;
  * author:caowy
  * date:2018-05-26
  */
-public class WeixinDelegateActivity extends SocialActivity {
+public class WechatDelegateActivity extends SocialActivity {
 
     private String TAG = getClass().getSimpleName();
 
@@ -22,7 +22,7 @@ public class WeixinDelegateActivity extends SocialActivity {
      * 设置回调监听
      * @param handler
      */
-    public static void setTheResultHandler(ResultHandler<WeixinDelegateActivity> handler) {
+    public static void setTheResultHandler(ResultHandler<WechatDelegateActivity> handler) {
         sTempResultHandler = new WeakReference<ResultHandler<?>>(handler);
     }
 

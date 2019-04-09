@@ -1,14 +1,14 @@
-package com.laughfly.rxsociallib.platform.weixin;
+package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
 
+import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
@@ -27,14 +27,14 @@ import org.json.JSONObject;
  * author:caowy
  * date:2018-05-26
  */
-public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implements IWXAPIEventHandler,
+public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implements IWXAPIEventHandler,
     WXLossResultWorkaround.Callback {
 
     private IWXAPI mWXAPI;
 
     private WXLossResultWorkaround mWXLossResultWorkaround;
 
-    public WeixinLogin(LoginBuilder builder) {
+    public WechatLogin(LoginBuilder builder) {
         super(builder);
     }
 
@@ -43,7 +43,7 @@ public class WeixinLogin extends AbsSocialLogin<WeixinDelegateActivity> implemen
         mWXLossResultWorkaround = new WXLossResultWorkaround(getContext(), this);
         mWXLossResultWorkaround.start();
 
-        WeixinDelegateActivity.setTheResultHandler(WeixinLogin.this);
+        WechatDelegateActivity.setTheResultHandler(WechatLogin.this);
 
         mWXAPI = WXAPIFactory.createWXAPI(mBuilder.getContext(), mBuilder.getAppId(), true);
         mWXAPI.registerApp(mBuilder.getAppId());

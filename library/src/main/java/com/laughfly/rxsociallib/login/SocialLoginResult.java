@@ -1,7 +1,7 @@
 package com.laughfly.rxsociallib.login;
 
+import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.Platform;
-import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.internal.SocialResult;
 
 /**

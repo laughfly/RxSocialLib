@@ -3,9 +3,9 @@ apply plugin: 'com.novoda.bintray-release' // must be applied after your artifac
 publish {
     userOrg = 'cwyfly2'
     groupId = 'com.laughfly.rxsociallib'
-    artifactId = 'rxsocial'
+    artifactId = 'rxsocial-plugin'
     publishVersion = '0.2'
     desc = ''
     website = 'https://github.com/laughfly/RxSocialLib'
-    repoName = 'maven'
+    repoName = 'plugins'
 }

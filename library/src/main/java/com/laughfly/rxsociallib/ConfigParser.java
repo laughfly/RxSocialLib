@@ -21,15 +21,9 @@ class ConfigParser {
 
     public static final String FIELD_PLATFORM = "platform";
 
-    public static final String VALUE_PLATFORM_QQ = "qq";
+    public static final String FIELD_APPID = "appId";
 
-    public static final String VALUE_PLATFORM_WEXIN = "weixin";
-
-    public static final String VALUE_PLATFORM_WEIBO = "weibo";
-
-    public static final String FIELD_APPID = "appid";
-
-    public static final String FIELD_APPSECRET = "appsecret";
+    public static final String FIELD_APPSECRET = "appSecret";
 
     public static final String FIELD_SCOPE = "scope";
 
@@ -74,14 +68,11 @@ class ConfigParser {
                 config.state = (jsonObject.optString(FIELD_STATE));
 
                 String platform = jsonObject.optString(FIELD_PLATFORM);
-                if(VALUE_PLATFORM_QQ.equals(platform)) {
-                    platformConfigs.put(Platform.QQ, config);
-                    platformConfigs.put(Platform.QQ_ZONE, config);
-                } else if (VALUE_PLATFORM_WEIBO.equals(platform)) {
-                    platformConfigs.put(Platform.WEIBO, config);
-                } else if(VALUE_PLATFORM_WEXIN.equals(platform)) {
-                    platformConfigs.put(Platform.WEIXIN, config);
-                    platformConfigs.put(Platform.WEIXIN_MOMENTS, config);
+                try {
+                    Platform platforme = Platform.lookup(platform);
+                    platformConfigs.put(platforme, config);
+                } catch (IllegalArgumentException e) {
+                    e.printStackTrace();
                 }
             }
             return platformConfigs;

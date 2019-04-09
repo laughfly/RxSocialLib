@@ -20,6 +20,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
+import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.Platform;
 
 /**
@@ -73,12 +74,12 @@ public class AccessTokenKeeper {
     private static String platformToKey(Platform platform) {
         switch (platform) {
             case QQ:
-            case QQ_ZONE:
+            case QQZone:
                 return "qq";
-            case WEIXIN:
-            case WEIXIN_MOMENTS:
+            case Wechat:
+            case WechatMoments:
                 return "Weixin";
-            case WEIBO:
+            case Weibo:
                 return "weibo";
         }
         return "";

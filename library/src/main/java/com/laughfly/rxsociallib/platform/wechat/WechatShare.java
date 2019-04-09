@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.platform.weixin;
+package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -38,7 +38,7 @@ import static android.text.TextUtils.isEmpty;
  * author:caowy
  * date:2018-05-26
  */
-public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implements IWXAPIEventHandler
+public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implements IWXAPIEventHandler
     , WXLossResultWorkaround.Callback {
 
     private IWXAPI mWXApi;
@@ -48,7 +48,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
      */
     private WXLossResultWorkaround mWXLossResultWorkaround;
 
-    public WeixinShare(ShareBuilder builder) {
+    public WechatShare(ShareBuilder builder) {
         super(builder);
     }
 
@@ -65,7 +65,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
             finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
-        WeixinDelegateActivity.setTheResultHandler(WeixinShare.this);
+        WechatDelegateActivity.setTheResultHandler(WechatShare.this);
         SocialThreads.runOnThread(new Runnable() {
             @Override
             public void run() {
@@ -94,7 +94,7 @@ public class WeixinShare extends AbsSocialShare<WeixinDelegateActivity> implemen
         SendMessageToWX.Req req = new SendMessageToWX.Req();
         req.transaction = "" + System.currentTimeMillis();
         req.message = mediaMessage;
-        req.scene = mBuilder.getPlatform() == Platform.WEIXIN_MOMENTS ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
+        req.scene = mBuilder.getPlatform() == Platform.WechatMoments ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
         boolean sendReq = mWXApi.sendReq(req);
         if (!sendReq) {
             finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));

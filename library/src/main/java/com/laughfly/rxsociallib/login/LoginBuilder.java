@@ -8,8 +8,8 @@ import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 import com.laughfly.rxsociallib.platform.qq.QQLogin;
+import com.laughfly.rxsociallib.platform.wechat.WechatLogin;
 import com.laughfly.rxsociallib.platform.weibo.WeiboLogin;
-import com.laughfly.rxsociallib.platform.weixin.WeixinLogin;
 
 import rx.Observable;
 
@@ -45,10 +45,10 @@ public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResul
             case QQ:
                 login = new QQLogin(this);
                 break;
-            case WEIXIN:
-                login = new WeixinLogin(this);
+            case Wechat:
+                login = new WechatLogin(this);
                 break;
-            case WEIBO:
+            case Weibo:
                 login = new WeiboLogin(this);
                 break;
         }

@@ -13,23 +13,21 @@ public class SocialConfig {
     public static final int WECHAT_MINI_PROG_IMAGE_LIMIT = 128 * 1024;
     public static final int WECHAT_THUMB_LIMIT = '耀';
 
-    private HashMap<Platform, PlatformConfig> mConfigMap = new HashMap<>();
+    private static HashMap<Platform, PlatformConfig> mConfigMap = new HashMap<>();
 
-    public PlatformConfig getPlatformConfig(Platform platform) {
+    private static boolean mInitialized;
+
+    public static PlatformConfig getPlatformConfig(Platform platform) {
         return mConfigMap.get(platform);
     }
 
-    public void addPlatformConfig(Platform platform, PlatformConfig config) {
-        mConfigMap.put(platform, config);
-    }
-
-    public void addPlatformConfigs(HashMap<Platform, PlatformConfig> configs) {
-        mConfigMap.putAll(configs);
-    }
-
-    public void setPlatformConfigs(HashMap<Platform, PlatformConfig> configs) {
+    static void setPlatformConfigs(HashMap<Platform, PlatformConfig> configs) {
         mConfigMap.clear();
         mConfigMap.putAll(configs);
+        mInitialized = true;
     }
 
+    static boolean isInitialized() {
+        return mInitialized;
+    }
 }

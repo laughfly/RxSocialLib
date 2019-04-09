@@ -123,7 +123,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
             params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getAppName());
         }
 
-        if (getPlatform() == Platform.QQ_ZONE) {
+        if (getPlatform() == Platform.QQZone) {
             params.putInt(SHARE_TO_QQ_EXT_INT, SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN);
         } else {
             params.putInt(SHARE_TO_QQ_EXT_INT, SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE);

@@ -1,4 +1,4 @@
-package com.laughfly.rxsociallib.internal;
+package com.laughfly.rxsociallib;
 
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
 

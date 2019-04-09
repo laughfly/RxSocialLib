@@ -6,5 +6,14 @@ package com.laughfly.rxsociallib;
  * date:2018-04-20
  */
 public enum Platform {
-    QQ, QQ_ZONE, WEIXIN, WEIXIN_MOMENTS, WEIBO
+    QQ, QQZone, Wechat, WechatMoments, Weibo;
+
+    static Platform lookup(String day) {
+        for (Platform p : Platform.values()) {
+            if (p.name().equalsIgnoreCase(day)) {
+                return p;
+            }
+        }
+        return null;
+    }
 }

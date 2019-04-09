@@ -1,13 +1,12 @@
 package com.laughfly.rxsociallib;
 
 import android.content.Context;
-import android.net.Uri;
 
-import com.laughfly.rxsociallib.internal.AccessToken;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.share.ShareBuilder;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
@@ -18,48 +17,21 @@ import java.util.HashMap;
  */
 public class RxSocial {
 
-    /**
-     * 平台配置
-     */
-    private static final SocialConfig sSocialConfig = new SocialConfig();
+    private synchronized static void initSocialConfig(Context context) {
+        if(SocialConfig.isInitialized()) return;
+        try {
+            InputStream stream = context.getAssets().open("rxsocial_config.json");
+            setSocialConfig(stream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
-    public static void setSocialConfig(InputStream configStream) {
+    private static void setSocialConfig(InputStream configStream) {
         HashMap<Platform, PlatformConfig> configMap = ConfigParser.readFromStream(configStream);
         if (configMap != null) {
-            sSocialConfig.setPlatformConfigs(configMap);
+            SocialConfig.setPlatformConfigs(configMap);
         }
-    }
-
-    /**
-     * 从res或本地文件读取配置
-     * @param context
-     * @param configUri
-     */
-    public static void setSocialConfig(Context context, Uri configUri) {
-        HashMap<Platform, PlatformConfig> configMap = ConfigParser.readFromUri(context, configUri);
-        if (configMap != null) {
-            sSocialConfig.setPlatformConfigs(configMap);
-        }
-    }
-
-    /**
-     * 从文本读取配置，适用于从服务器获取配置
-     * @param jsonText
-     */
-    public static void setSocialConfig(String jsonText) {
-        HashMap<Platform, PlatformConfig> configMap = ConfigParser.readFromText(jsonText);
-        if (configMap != null) {
-            sSocialConfig.setPlatformConfigs(configMap);
-        }
-    }
-
-    /**
-     * 设置单个平台的配置
-     * @param platform
-     * @param config
-     */
-    public static void setPlatformConfig(Platform platform, PlatformConfig config) {
-        sSocialConfig.addPlatformConfig(platform, config);
     }
 
     /**
@@ -68,11 +40,11 @@ public class RxSocial {
      * date:2018-04-25
      *
      * @param context
-     * @param platform
      * @return
      */
-    public static LoginBuilder login(Context context, Platform platform) {
-        return new LoginBuilder(context, platform, sSocialConfig.getPlatformConfig(platform));
+    public static LoginBuilderWrapper login(Context context) {
+        initSocialConfig(context);
+        return new LoginBuilderWrapper(context);
     }
 
     /**
@@ -81,11 +53,11 @@ public class RxSocial {
      * date:2018-04-25
      *
      * @param context
-     * @param platform
      * @return
      */
-    public static ShareBuilder share(Context context, Platform platform) {
-        return new ShareBuilder(context, platform, sSocialConfig.getPlatformConfig(platform));
+    public static ShareBuilderWrapper share(Context context) {
+        initSocialConfig(context);
+        return new ShareBuilderWrapper(context);
     }
 
 
@@ -102,4 +74,27 @@ public class RxSocial {
         return AccessTokenKeeper.readAccessToken(context, platform);
     }
 
+    public static class ShareBuilderWrapper {
+        Context mContext;
+
+        ShareBuilderWrapper(Context context) {
+            mContext = context;
+        }
+
+        public ShareBuilder setPlatform(Platform platform) {
+            return new ShareBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
+        }
+    }
+
+    public static class LoginBuilderWrapper {
+        Context mContext;
+
+        LoginBuilderWrapper(Context context) {
+            mContext = context;
+        }
+
+        public LoginBuilder setPlatform(Platform platform) {
+            return new LoginBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
+        }
+    }
 }

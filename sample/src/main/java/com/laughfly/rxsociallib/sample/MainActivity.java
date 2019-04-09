@@ -25,7 +25,6 @@ public class MainActivity extends AppCompatActivity {
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
-        RxSocial.setSocialConfig(getResources().openRawResource(R.raw.social_config));
     }
 
     public void shareTo(View view) {
@@ -35,13 +34,16 @@ public class MainActivity extends AppCompatActivity {
                 platform = Platform.QQ;
                 break;
             case R.id.weixin_share:
-                platform = Platform.WEIXIN;
+                platform = Platform.Wechat;
                 break;
             case R.id.weibo_share:
-                platform = Platform.WEIBO;
+                platform = Platform.Weibo;
                 break;
         }
-        RxSocial.share(this, platform).setTitle("分享标题").setText("分享的内容").setPageUrl("http://www.qq.com")
+        RxSocial.share(this)
+            .setPlatform(platform)
+            .setTitle("分享标题")
+            .setText("分享的内容").setPageUrl("http://www.qq.com")
             .toObservable()
             .subscribe(new Subscriber<SocialShareResult>() {
                 @Override
@@ -68,13 +70,14 @@ public class MainActivity extends AppCompatActivity {
                 platform = Platform.QQ;
                 break;
             case R.id.weixin_login:
-                platform = Platform.WEIXIN;
+                platform = Platform.Wechat;
                 break;
             case R.id.weibo_login:
-                platform = Platform.WEIBO;
+                platform = Platform.Weibo;
                 break;
         }
-        RxSocial.login(this, platform)
+        RxSocial.login(this)
+            .setPlatform(platform)
             .toObservable()
             .subscribe(new Subscriber<SocialLoginResult>() {
                 @Override

@@ -11,8 +11,8 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 import com.laughfly.rxsociallib.platform.qq.QQShare;
+import com.laughfly.rxsociallib.platform.wechat.WechatShare;
 import com.laughfly.rxsociallib.platform.weibo.WeiboShare;
-import com.laughfly.rxsociallib.platform.weixin.WeixinShare;
 
 import rx.Observable;
 
@@ -44,14 +44,14 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         AbsSocialShare share = null;
         switch (getPlatform()) {
             case QQ:
-            case QQ_ZONE:
+            case QQZone:
                 share = new QQShare(this);
                 break;
-            case WEIXIN_MOMENTS:
-            case WEIXIN:
-                share = new WeixinShare(this);
+            case WechatMoments:
+            case Wechat:
+                share = new WechatShare(this);
                 break;
-            case WEIBO:
+            case Weibo:
                 share = new WeiboShare(this);
                 break;
         }
