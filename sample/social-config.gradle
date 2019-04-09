@@ -1,7 +1,7 @@
 apply plugin: 'social-config'
 
 RxSocialConfig{
-    libVersion '0.1.5.3'
+    libVersion '0.2'
     Weibo {
         appId 'yourAppId'
         appSecret 'yourAppSecret'

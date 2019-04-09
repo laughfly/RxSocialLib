@@ -1,19 +1,30 @@
 # RxSocialLib
-整合国内主流社交平台的分享和登录功能，并转换成RxJava数据流
+整合QQ微信微博的分享和登录功能，并转换成RxJava数据流
 # 特性
 * 支持QQ，微信，微博
 * 支持RxJava数据流 
 * 没有后台取数
 # 导入
+在根目录下的build.gradle文件添加
 ```groovy
-dependencies {
-  implementation 'com.laughfly.rxsociallib:rxsocial:+'
+buildscript {
+    repositories {
+        //临时使用，添加jcenter中
+        maven{
+            url 'https://dl.bintray.com/cwyfly2/plugins'
+        }
+    }
+    
+    dependencies {
+        classpath 'com.laughfly.rxsociallib:rxsocial-plugin:0.2'
+    }
 }
 ```
 # 使用
 ## 分享
 ```java
-    RxSocial.share(context, platform)
+    RxSocial.share(context)
+            .setPlatform(platform)
             .setTitle("标题")
             .setText("内容")
             .setThumbUri("图标地址")
@@ -50,7 +61,8 @@ dependencies {
 ``` 
 ## 登录
 ```java
-        RxSocial.login(context, platform)
+        RxSocial.login(context)
+            .setPlatform(platform)
             .start(new SocialCallback<SocialLoginResult>() {
                 @Override
                 public void onError(Platform platform, SocialException e) {
@@ -66,68 +78,55 @@ dependencies {
             .toObservable()
 ```
 # 配置
-## 平台配置
-在res/raw目录下添加json配置文件，比如social_config.json，内容格式如下，把自己的平台配置信息填入相应的json字段。
-```json
-[
-  {
-    "platform": "qq",
-    "appid": "appid",
-    "appsecret": "appsecret",
-    "scope": "get_simple_userinfo"
-  },
-  {
-    "platform": "weixin",
-    "appid": "appid",
-    "appsecret": "appsecret",
-    "scope": "snsapi_userinfo",
-    "state": "wechat_sdk_live"
-  },
-  {
-    "platform": "weibo",
-    "appid": "appid",
-    "appsecret": "appsecret",
-    "scope": "get_token_info",
-    "redirectUrl": "https://api.weibo.com/oauth2/default.html"
-  }
-]
-```
-在Application或其他启动初始化的位置添加
-```java
-   RxSocial.setSocialConfig(context. getResources().openRawResource(R.raw.social_config));
-```
-## 微信配置
-把sample目录里的WXEntryActivity类复制到app目录下，包的路径为`applicationId.wxapi`，并在AndroidManifest.xml添加
-```xml
-        <!-- 微信分享回调 -->
-        <activity
-            android:name="applicationId.wxapi.WXEntryActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:exported="true"
-            android:screenOrientation="behind"
-            android:theme="@style/Ghost"/>
-```
-applicationId要替换成自己的应用包名。
+---
+使用插件进行自动化配置
+---
+参照sample下的social-config.gradle文件进行平台配置
+```groovy
+apply plugin: 'social-config'
 
-## QQ配置
-在AndroidManifest.xml添加
-```xml
-        <activity
-            android:name="com.tencent.tauth.AuthActivity"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
-            android:launchMode="singleTask"
-            android:noHistory="true"
-            android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW"/>
-
-                <category android:name="android.intent.category.DEFAULT"/>
-                <category android:name="android.intent.category.BROWSABLE"/>
-                <data android:scheme="tencent222222" />
-            </intent-filter>
-        </activity>
+RxSocialConfig{
+    libVersion '0.2'//可以去掉
+    Weibo {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        redirectUrl 'https://api.weibo.com/oauth2/default.html'
+        scope 'get_token_info'
+    }
+    QQ {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        scope 'get_simple_userinfo'
+    }
+    QQZone {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        scope 'get_simple_userinfo'
+    }
+    Wechat {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        scope 'snsapi_userinfo'
+        state 'wechat_sdk_live'
+    }
+    WechatMoments {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        scope 'snsapi_userinfo'
+        state 'wechat_sdk_live'
+    }
+}
 ```
-并把`tencent222222`的`222222`换成自己的appid。
+然后在你的app的build.gradle里添加
+```groovy
+apply from:'social-config.gradle'
+```
+**刷新，完成！**
+
+##注意事项
+修改social-config.gradle里的平台信息后可能需要Rebuild Project才有效果！
 
 # TO DO
-使用插件简化平台配置
+~~使用插件简化平台配置~~  
+分离平台实现代码  
+添加更多平台
