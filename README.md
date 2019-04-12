@@ -8,13 +8,6 @@
 在根目录下的build.gradle文件添加
 ```groovy
 buildscript {
-    repositories {
-        //临时使用，添加jcenter中
-        maven{
-            url 'https://dl.bintray.com/cwyfly2/plugins'
-        }
-    }
-    
     dependencies {
         classpath 'com.laughfly.rxsociallib:rxsocial-plugin:0.2'
     }
