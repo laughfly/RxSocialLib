@@ -8,17 +8,11 @@ android {
         targetSdkVersion 26
         versionCode 1
         versionName "0.1.1"
+        consumerProguardFiles 'proguard-rules.pro'
     }
 
     lintOptions {
         abortOnError false
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
     }
 
 }
@@ -26,9 +20,8 @@ android {
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'com.android.support:appcompat-v7:26.1.0'
-    implementation 'org.reflections:reflections:0.9.11'
 
     api 'io.reactivex:rxandroid:1.2.1'
 }
 
-apply from: '../maven-deloy.gradle'
+apply from: rootProject.file('maven-deloy.gradle')

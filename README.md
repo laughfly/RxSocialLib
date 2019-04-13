@@ -8,8 +8,11 @@
 在根目录下的build.gradle文件添加
 ```groovy
 buildscript {
+    repositories {
+        maven {url 'https://dl.bintray.com/cwyfly2/rxsocial'}
+    }
     dependencies {
-        classpath 'com.laughfly.rxsociallib:rxsocial-plugin:0.2'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.1'
     }
 }
 ```
@@ -17,7 +20,8 @@ buildscript {
 ## 分享
 ```java
     RxSocial.share(context)
-            .setPlatform(platform)
+            //SocialPlatform的平台列表根据配置文件自动生成
+            .setPlatform(SocialPlatform.Wechat)
             .setTitle("标题")
             .setText("内容")
             .setThumbUri("图标地址")
@@ -40,12 +44,12 @@ buildscript {
             .start(new SocialCallback<SocialShareResult>() {
                
                 @Override
-                public void onError(Platform platform, SocialException e) {
+                public void onError(String platform, SocialException e) {
                     Toast.makeText(MainActivity.this, "分享失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
             
                 @Override
-                public void onSuccess(Platform platform, SocialShareResult resp) {
+                public void onSuccess(String platform, SocialShareResult resp) {
                     Toast.makeText(MainActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
                 }
             })
@@ -55,15 +59,15 @@ buildscript {
 ## 登录
 ```java
         RxSocial.login(context)
-            .setPlatform(platform)
+            .setPlatform(SocialPlatform.Wechat)
             .start(new SocialCallback<SocialLoginResult>() {
                 @Override
-                public void onError(Platform platform, SocialException e) {
+                public void onError(String platform, SocialException e) {
                     Toast.makeText(MainActivity.this, "登录失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
-                public void onSuccess(Platform platform, SocialLoginResult resp) {
+                public void onSuccess(String platform, SocialLoginResult resp) {
                     Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_SHORT).show();
                 }
             })
@@ -72,12 +76,11 @@ buildscript {
 ```
 # 配置
 
-参照sample下的social-config.gradle文件进行平台配置
+参照sample下的social-config.gradle文件进行平台配置，只有写在配置里的平台的依赖包会被导入。
 ```groovy
 apply plugin: 'social-config'
 
 RxSocialConfig{
-    libVersion '0.2'//可以去掉
     Weibo {
         appId 'yourAppId'
         appSecret 'yourAppSecret'
@@ -114,10 +117,10 @@ apply from:'social-config.gradle'
 ```
 **刷新，完成！**
 
-## 注意事项
+## 其他  
 修改social-config.gradle里的平台信息后可能需要Rebuild Project才有效果！
 
 # TO DO
 ~~使用插件简化平台配置~~  
-分离平台实现代码  
+~~分离平台实现代码~~  
 添加更多平台

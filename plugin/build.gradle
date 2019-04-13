@@ -15,4 +15,4 @@ jar {
     }
 }
 
-apply from: '../maven-deloy.gradle'
+apply from: rootProject.file('maven-deloy.gradle')

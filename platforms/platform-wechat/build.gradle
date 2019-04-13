@@ -35,4 +35,4 @@ dependencies {
     implementation project(':library')
 }
 
-apply from: project.rootDir.getAbsolutePath() + '/maven-deloy.gradle'
+apply from: rootProject.file('maven-deloy.gradle')

@@ -1,8 +1,6 @@
 package com.laughfly.rxsociallib.plugin
 
-import com.android.build.gradle.AppExtension
-import com.android.build.gradle.BaseExtension
-import com.android.build.gradle.LibraryExtension
+import com.android.build.gradle.*
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariant
 import com.g00fy2.versioncompare.Version
@@ -32,6 +30,22 @@ class ConfigGenerator {
     void generate() {
         gradlePluginVersion = getAndroidGradlePluginVersionCompat()
         println("gradlePluginVersion: " + gradlePluginVersion)
+
+        def hasApp = project.plugins.hasPlugin AppPlugin
+        def hasLib = project.plugins.hasPlugin LibraryPlugin
+        if (!hasApp && !hasLib) {
+            throw new IllegalStateException("'android' or 'android-library' plugin required.")
+        }
+
+        def variants
+        if (hasApp) {
+            variants = project.android.applicationVariants
+        } else {
+            variants = project.android.libraryVariants
+        }
+
+        generatePlatformClass(variants)
+
         project.afterEvaluate {
             addDependencies()
 
@@ -39,22 +53,17 @@ class ConfigGenerator {
 
             generateConfigJson(android)
 
-            def variants = getVariants(android)
-            if (variants != null) {
-                variants.all { BaseVariant variant ->
+            variants.all { BaseVariant variant ->
 
-                    generatePlatformClass(variant)
-
-                    variant.outputs.each { output ->
-                        try {
-                            def task = output.processManifest
-                            if (task != null) {
-                                task.doLast {
-                                    generateConfigManifest(output, variant)
-                                }
+                variant.outputs.each { output ->
+                    try {
+                        def task = output.processManifest
+                        if (task != null) {
+                            task.doLast {
+                                generateConfigManifest(output, variant)
                             }
-                        } catch (Throwable t) {
                         }
+                    } catch (Throwable t) {
                     }
                 }
             }
@@ -84,23 +93,25 @@ class ConfigGenerator {
         }
     }
 
-    void generatePlatformClass(BaseVariant variant) {
-        def taskName = "generate${variant.name.capitalize()}SocialPlatform"
-        def outputDir = project.file("${project.buildDir}/generated/source/rxsocial/${variant.name}/")
+    void generatePlatformClass(def variants) {
+        variants.all { BaseVariant variant ->
+            def taskName = "generate${variant.name.capitalize()}SocialPlatform"
+            def outputDir = project.file("${project.buildDir}/generated/source/rxsocial/${variant.name}/")
 
-        def task = project.tasks.create(taskName, {
-            TypeSpec.Builder typeBuilder = TypeSpec.interfaceBuilder("SocialPlatform").addModifiers(Modifier.PUBLIC)
-            platformInfoMap.keySet().each {
-                FieldSpec fieldSpec = FieldSpec.builder(String.class, it, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", it).build()
-                typeBuilder.addField(fieldSpec)
-            }
-            def javaFile = JavaFile.builder("com.laughfly.rxsociallib", typeBuilder.build()).build()
-            javaFile.writeTo(outputDir)
-        })
+            def task = project.tasks.create(taskName, {
+                TypeSpec.Builder typeBuilder = TypeSpec.interfaceBuilder("SocialPlatform").addModifiers(Modifier.PUBLIC)
+                platformInfoMap.keySet().each {
+                    FieldSpec fieldSpec = FieldSpec.builder(String.class, it, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", it).build()
+                    typeBuilder.addField(fieldSpec)
+                }
+                def javaFile = JavaFile.builder("com.laughfly.rxsociallib", typeBuilder.build()).build()
+                javaFile.writeTo(outputDir)
+            })
 
-        task.dependsOn.add("process${variant.name.capitalize()}Manifest")
-        task.group = "other"
-        variant.registerJavaGeneratingTask(task, outputDir)
+            task.dependsOn variant.mergeResources
+            task.group = "other"
+            variant.registerJavaGeneratingTask(task, outputDir)
+        }
     }
 
     void generateConfigJson(BaseExtension android) {
@@ -211,7 +222,7 @@ class ConfigGenerator {
         def variants = null
         if (android instanceof AppExtension) {
             variants = android.applicationVariants
-        } else if (android instanceof LibraryExtension){
+        } else if (android instanceof LibraryExtension) {
             variants = android.libraryVariants
         }
         return variants
