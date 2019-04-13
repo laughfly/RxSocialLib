@@ -1,7 +1,5 @@
 package com.laughfly.rxsociallib;
 
-import com.sina.weibo.sdk.auth.Oauth2AccessToken;
-
 import org.json.JSONObject;
 
 public class AccessToken {
@@ -53,16 +51,6 @@ public class AccessToken {
             e.printStackTrace();
         }
         return null;
-    }
-
-    public static AccessToken convert(Oauth2AccessToken token, String openId) {
-        AccessToken accessToken = new AccessToken();
-        accessToken.accessToken = token.getToken();
-        accessToken.expiresIn = token.getExpiresTime();
-        accessToken.refreshToken = token.getRefreshToken();
-        accessToken.uid = token.getUid();
-        accessToken.openId = openId;
-        return accessToken;
     }
 
 

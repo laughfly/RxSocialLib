@@ -4,10 +4,16 @@ import com.android.build.gradle.AppExtension
 import com.android.build.gradle.BaseExtension
 import com.android.build.gradle.LibraryExtension
 import com.android.build.gradle.api.ApplicationVariant
+import com.android.build.gradle.api.BaseVariant
 import com.g00fy2.versioncompare.Version
+import com.squareup.javapoet.FieldSpec
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeSpec
 import groovy.json.JsonOutput
 import groovy.xml.XmlUtil
 import org.gradle.api.Project
+
+import javax.lang.model.element.Modifier
 
 /**
  * 生成平台配置和AndroidManifest.xml
@@ -21,27 +27,24 @@ class ConfigGenerator {
     String gradlePluginVersion
 
     Map<String, PlatformConfigExtension> platformInfoMap = [:]
+    Set platformLibs = []
 
     void generate() {
         gradlePluginVersion = getAndroidGradlePluginVersionCompat()
         println("gradlePluginVersion: " + gradlePluginVersion)
         project.afterEvaluate {
-            println("SocialLibVersion: " + config.libVersion)
-            project.dependencies {
-                def compile = checkGradleVersion("3.0") ? "implementation" : "compile"
-                if (config.libVersion != null) {
-                    add(compile, "com.laughfly.rxsociallib:rxsocial:${config.libVersion}")
-                } else {
-                    add(compile, "com.laughfly.rxsociallib:rxsocial:+")
-                }
-            }
+            addDependencies()
 
             BaseExtension android = project.extensions.getByName("android")
+
             generateConfigJson(android)
 
             def variants = getVariants(android)
             if (variants != null) {
-                variants.all { variant ->
+                variants.all { BaseVariant variant ->
+
+                    generatePlatformClass(variant)
+
                     variant.outputs.each { output ->
                         try {
                             def task = output.processManifest
@@ -56,6 +59,48 @@ class ConfigGenerator {
                 }
             }
         }
+    }
+
+    void addDependencies() {
+        project.dependencies {
+            def compile = checkGradleVersion("3.0") ? "implementation" : "compile"
+            def pluginVersion = getPluginVersion()
+            println("SocialPluginVersion: " + pluginVersion)
+
+            if (config.libVersion != null) {
+                add(compile, "com.laughfly.rxsociallib:library:${config.libVersion}")
+            } else {
+                add(compile, "com.laughfly.rxsociallib:library:${pluginVersion}")
+            }
+
+            println("platformLibs size: " + platformLibs.size())
+            platformLibs.each {
+                if (config.libVersion != null) {
+                    add(compile, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${config.libVersion}")
+                } else {
+                    add(compile, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${pluginVersion}")
+                }
+            }
+        }
+    }
+
+    void generatePlatformClass(BaseVariant variant) {
+        def taskName = "generate${variant.name.capitalize()}SocialPlatform"
+        def outputDir = project.file("${project.buildDir}/generated/source/rxsocial/${variant.name}/")
+
+        def task = project.tasks.create(taskName, {
+            TypeSpec.Builder typeBuilder = TypeSpec.interfaceBuilder("SocialPlatform").addModifiers(Modifier.PUBLIC)
+            platformInfoMap.keySet().each {
+                FieldSpec fieldSpec = FieldSpec.builder(String.class, it, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", it).build()
+                typeBuilder.addField(fieldSpec)
+            }
+            def javaFile = JavaFile.builder("com.laughfly.rxsociallib", typeBuilder.build()).build()
+            javaFile.writeTo(outputDir)
+        })
+
+        task.dependsOn.add("process${variant.name.capitalize()}Manifest")
+        task.group = "other"
+        variant.registerJavaGeneratingTask(task, outputDir)
     }
 
     void generateConfigJson(BaseExtension android) {
@@ -134,6 +179,10 @@ class ConfigGenerator {
                 manifestFile.setText(XmlUtil.serialize(manifest), "utf-8")
             }
         }
+    }
+
+    def getPluginVersion() {
+        getClass().package?.implementationVersion == null ? '+' : getClass().package?.implementationVersion
     }
 
     /**

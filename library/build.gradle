@@ -10,6 +10,10 @@ android {
         versionName "0.1.1"
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -20,10 +24,11 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:appcompat-v7:26.1.0'
-    compile 'io.reactivex:rxandroid:1.2.1'
-    compile 'com.tencent.mm.opensdk:wechat-sdk-android-without-mta:5.1.4'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation 'org.reflections:reflections:0.9.11'
+
+    api 'io.reactivex:rxandroid:1.2.1'
 }
 
-apply from: 'bintray-release.gradle'
+apply from: '../maven-deloy.gradle'

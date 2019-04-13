@@ -21,7 +21,6 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 
 import com.laughfly.rxsociallib.AccessToken;
-import com.laughfly.rxsociallib.Platform;
 
 /**
  * 存取各社交平台的登录信息
@@ -43,45 +42,31 @@ public class AccessTokenKeeper {
             return;
         }
 
-        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
+        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         Editor editor = pref.edit();
         editor.clear();
         editor.commit();
     }
 
-    public static void writeAccessToken(Context context, Platform platform, AccessToken accessToken) {
+    public static void writeAccessToken(Context context, String platform, AccessToken accessToken) {
         if (null == context || null == accessToken) {
             return;
         }
-        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
+        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         String json = AccessToken.toJson(accessToken);
         if(json != null) {
-            pref.edit().putString(platformToKey(platform) + KEY_ACCESS_TOKEN, json).apply();
+            pref.edit().putString(platform + KEY_ACCESS_TOKEN, json).apply();
         }
     }
 
-    public static AccessToken readAccessToken(Context context, Platform platform) {
+    public static AccessToken readAccessToken(Context context, String platform) {
         if(null == context) return null;
-        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_APPEND);
-        String jsonStr = pref.getString(platformToKey(platform) + KEY_ACCESS_TOKEN, null);
+        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        String jsonStr = pref.getString(platform + KEY_ACCESS_TOKEN, null);
         if(jsonStr != null) {
-            AccessToken accessToken = AccessToken.fromJson(jsonStr);
-            return accessToken;
+            return AccessToken.fromJson(jsonStr);
         }
         return null;
     }
 
-    private static String platformToKey(Platform platform) {
-        switch (platform) {
-            case QQ:
-            case QQZone:
-                return "qq";
-            case Wechat:
-            case WechatMoments:
-                return "Weixin";
-            case Weibo:
-                return "weibo";
-        }
-        return "";
-    }
 }

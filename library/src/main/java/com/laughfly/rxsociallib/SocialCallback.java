@@ -18,7 +18,7 @@ public abstract class SocialCallback<T> {
      * @param platform
      */
     @MainThread
-    public void onStart(Platform platform){}
+    public void onStart(String platform){}
 
     /**
      * 发生错误
@@ -27,7 +27,7 @@ public abstract class SocialCallback<T> {
      * @param e
      */
     @MainThread
-    public abstract void onError(Platform platform, SocialException e);
+    public abstract void onError(String platform, SocialException e);
 
     /**
      * 操作成功
@@ -36,7 +36,7 @@ public abstract class SocialCallback<T> {
      * @param resp
      */
     @MainThread
-    public abstract void onSuccess(Platform platform, T resp);
+    public abstract void onSuccess(String platform, T resp);
 
     /**
      * 操作结束，不管有没有结果或者结果是什么
@@ -44,14 +44,14 @@ public abstract class SocialCallback<T> {
      * @param platform
      */
     @MainThread
-    public void onFinish(Platform platform){}
+    public void onFinish(String platform){}
 
     public static class Wrapper<T> extends SocialCallback<T>{
 
         public SocialCallback<T> callback;
 
         @Override
-        public void onStart(final Platform platform) {
+        public void onStart(final String platform) {
             if(callback != null) {
                 SocialThreads.runOnUiThread(new Runnable() {
                     @Override
@@ -63,7 +63,7 @@ public abstract class SocialCallback<T> {
         }
 
         @Override
-        public void onError(final Platform platform, final SocialException e) {
+        public void onError(final String platform, final SocialException e) {
             if(callback != null) {
                 SocialThreads.runOnUiThread(new Runnable() {
                     @Override
@@ -75,7 +75,7 @@ public abstract class SocialCallback<T> {
         }
 
         @Override
-        public void onSuccess(final Platform platform, final T resp) {
+        public void onSuccess(final String platform, final T resp) {
             if(callback != null) {
                 SocialThreads.runOnUiThread(new Runnable() {
                     @Override
@@ -87,7 +87,7 @@ public abstract class SocialCallback<T> {
         }
 
         @Override
-        public void onFinish(final Platform platform) {
+        public void onFinish(final String platform) {
             if(callback != null) {
                 SocialThreads.runOnUiThread(new Runnable() {
                     @Override

@@ -2,7 +2,6 @@ package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.delegate.ResultHandler;
@@ -41,9 +40,13 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
      */
     private final SocialCallback.Wrapper<Result> mCallback;
 
-    public SocialAction(Builder builder) {
-        mBuilder = builder;
+    public SocialAction() {
         mCallback = new SocialCallback.Wrapper<>();
+    }
+
+    public SocialAction setBuilder(Builder builder) {
+        mBuilder = builder;
+        return this;
     }
 
     public SocialAction setCallback(SocialCallback<Result> callback) {
@@ -63,21 +66,21 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
                 setCallback(new SocialCallback<Result>() {
 
                     @Override
-                    public void onError(Platform platform, SocialException e) {
+                    public void onError(String platform, SocialException e) {
                         if (!subscriber.isUnsubscribed()) {
                             subscriber.onError(e);
                         }
                     }
 
                     @Override
-                    public void onSuccess(Platform platform, Result resp) {
+                    public void onSuccess(String platform, Result resp) {
                         if (!subscriber.isUnsubscribed()) {
                             subscriber.onNext(resp);
                         }
                     }
 
                     @Override
-                    public void onFinish(Platform platform) {
+                    public void onFinish(String platform) {
                         if (!subscriber.isUnsubscribed()) {
                             subscriber.onCompleted();
                         }
@@ -161,7 +164,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
 
     protected abstract void finishWithError(Exception e);
 
-    protected Platform getPlatform() {
+    protected String getPlatform() {
         return mBuilder.getPlatform();
     }
 

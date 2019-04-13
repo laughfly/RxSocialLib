@@ -3,7 +3,6 @@ package com.laughfly.rxsociallib.internal;
 import android.content.Context;
 import android.support.v4.util.ArrayMap;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
 
@@ -14,9 +13,9 @@ public abstract class SocialBuilder<Action extends SocialAction, Result> {
 
     private Context mContext;
 
-    private Platform mPlatform;
+    private String mPlatform;
 
-    public SocialBuilder(Context context, Platform platform, PlatformConfig platformConfig) {
+    public SocialBuilder(Context context, String platform, PlatformConfig platformConfig) {
         mContext = context;
         mPlatform = platform;
         if(platformConfig != null) {
@@ -45,7 +44,7 @@ public abstract class SocialBuilder<Action extends SocialAction, Result> {
         return mContext;
     }
 
-    public Platform getPlatform() {
+    public String getPlatform() {
         return mPlatform;
     }
 

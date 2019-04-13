@@ -8,8 +8,8 @@ import com.laughfly.rxsociallib.internal.SocialAction;
 
 public abstract class AbsSocialLogin<Delegate extends SocialActivity> extends SocialAction<LoginBuilder, Delegate, SocialLoginResult>{
 
-    public AbsSocialLogin(LoginBuilder builder) {
-        super(builder);
+    public AbsSocialLogin() {
+        super();
     }
 
     @Override

@@ -5,10 +5,7 @@ import android.content.Context;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.share.ShareBuilder;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
+import com.laughfly.rxsociallib.share.ShareFeature;
 
 /**
  * 社会化工具类
@@ -19,19 +16,11 @@ public class RxSocial {
 
     private synchronized static void initSocialConfig(Context context) {
         if(SocialConfig.isInitialized()) return;
-        try {
-            InputStream stream = context.getAssets().open("rxsocial_config.json");
-            setSocialConfig(stream);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        SocialConfig.initialize(context);
     }
 
-    private static void setSocialConfig(InputStream configStream) {
-        HashMap<Platform, PlatformConfig> configMap = ConfigParser.readFromStream(configStream);
-        if (configMap != null) {
-            SocialConfig.setPlatformConfigs(configMap);
-        }
+    private static String[] supportShareFeatures(@ShareFeature.Def int features) {
+        return null;
     }
 
     /**
@@ -70,7 +59,7 @@ public class RxSocial {
      * @param platform
      * @return
      */
-    public static AccessToken getAccessToken(Context context, Platform platform) {
+    public static AccessToken getAccessToken(Context context, String platform) {
         return AccessTokenKeeper.readAccessToken(context, platform);
     }
 
@@ -81,7 +70,7 @@ public class RxSocial {
             mContext = context;
         }
 
-        public ShareBuilder setPlatform(Platform platform) {
+        public ShareBuilder setPlatform(String platform) {
             return new ShareBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
         }
     }
@@ -93,7 +82,7 @@ public class RxSocial {
             mContext = context;
         }
 
-        public LoginBuilder setPlatform(Platform platform) {
+        public LoginBuilder setPlatform(String platform) {
             return new LoginBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
         }
     }

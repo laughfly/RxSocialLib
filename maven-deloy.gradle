@@ -1,0 +1,24 @@
+apply plugin: 'com.novoda.bintray-release' // must be applied after your artifact generating plugin (eg. java / com.android.library)
+
+publish {
+    userOrg = USER_ORG
+    groupId = GROUP_ID
+    artifactId = ARTIFACT_ID
+    publishVersion = DELOY_VERSION
+    website = GITHUB_URL
+    desc = DESC
+    repoName = REPO_NAME
+}
+
+apply plugin: 'maven'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri(project.rootDir.getAbsolutePath() + '/repo'))
+            pom.groupId = GROUP_ID
+            pom.artifactId = ARTIFACT_ID
+            pom.version = DELOY_VERSION
+            pom.packaging = PACKAGING
+        }
+    }
+}

@@ -16,8 +16,8 @@ import com.laughfly.rxsociallib.internal.SocialAction;
  */
 public abstract class AbsSocialShare<Delegate extends SocialActivity> extends SocialAction<ShareBuilder, Delegate, SocialShareResult> {
 
-    public AbsSocialShare(ShareBuilder builder) {
-        super(builder);
+    public AbsSocialShare() {
+        super();
     }
 
     @Override

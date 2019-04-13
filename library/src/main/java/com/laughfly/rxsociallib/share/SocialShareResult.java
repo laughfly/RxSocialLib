@@ -1,6 +1,5 @@
 package com.laughfly.rxsociallib.share;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.internal.SocialResult;
 
 /**
@@ -10,13 +9,13 @@ import com.laughfly.rxsociallib.internal.SocialResult;
  */
 public class SocialShareResult implements SocialResult{
 
-    private Platform platform;
+    private String platform;
 
-    public SocialShareResult(Platform platform) {
+    public SocialShareResult(String platform) {
         this.platform = platform;
     }
 
-    public Platform getPlatform() {
+    public String getPlatform() {
         return platform;
     }
 

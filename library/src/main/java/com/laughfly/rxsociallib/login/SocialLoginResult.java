@@ -1,7 +1,6 @@
 package com.laughfly.rxsociallib.login;
 
 import com.laughfly.rxsociallib.AccessToken;
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.internal.SocialResult;
 
 /**
@@ -11,7 +10,7 @@ import com.laughfly.rxsociallib.internal.SocialResult;
  */
 public class SocialLoginResult implements SocialResult{
 
-    public Platform platform;
+    public String platform;
 
     public Object resultObject;
 

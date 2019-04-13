@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.laughfly.rxsociallib.platform.wechat">
+    <application>
+        <activity android:name="com.laughfly.rxsociallib.platform.wechat.WechatDelegateActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:exported="false"
+            android:screenOrientation="behind"
+            android:theme="@style/Ghost"/>
+    </application>
+</manifest>

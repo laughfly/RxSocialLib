@@ -1,11 +1,10 @@
 package com.laughfly.rxsociallib.exception;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.SocialConstants;
 
 public class SocialException extends Exception {
 
-    private Platform mPlatform;
+    private String mPlatform;
 
     @SocialConstants.ErrCode
     private int mErrCode;
@@ -14,20 +13,20 @@ public class SocialException extends Exception {
 
     private Object mDataObject;
 
-    public SocialException(Platform platform, @SocialConstants.ErrCode int errCode) {
+    public SocialException(String platform, @SocialConstants.ErrCode int errCode) {
         super();
         mPlatform = platform;
         mErrCode = errCode;
     }
 
-    public SocialException(Platform platform, @SocialConstants.ErrCode int errCode, Object dataObject) {
+    public SocialException(String platform, @SocialConstants.ErrCode int errCode, Object dataObject) {
         super();
         mPlatform = platform;
         mErrCode = errCode;
         mDataObject = dataObject;
     }
 
-    public SocialException(Platform platform, @SocialConstants.ErrCode int errCode, int platformErrCode, String message, Object dataObject) {
+    public SocialException(String platform, @SocialConstants.ErrCode int errCode, int platformErrCode, String message, Object dataObject) {
         super(message);
         mPlatform = platform;
         mErrCode = errCode;
@@ -35,7 +34,7 @@ public class SocialException extends Exception {
         mDataObject = dataObject;
     }
 
-    public SocialException(Platform platform, Throwable throwable) {
+    public SocialException(String platform, Throwable throwable) {
         super(throwable);
         mPlatform = platform;
         mErrCode = SocialConstants.ERR_EXCEPTION;
@@ -45,7 +44,7 @@ public class SocialException extends Exception {
         return mErrCode;
     }
 
-    public Platform getPlatform() {
+    public String getPlatform() {
         return mPlatform;
     }
 

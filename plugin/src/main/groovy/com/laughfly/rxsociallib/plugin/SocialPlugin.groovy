@@ -2,6 +2,7 @@ package com.laughfly.rxsociallib.plugin
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+
 /**
  * Created by caowy on 2019/4/8.
  * email:cwy.fly2@gmail.com

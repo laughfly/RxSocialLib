@@ -2,14 +2,11 @@ package com.laughfly.rxsociallib.login;
 
 import android.content.Context;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.PlatformConfig;
+import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
-import com.laughfly.rxsociallib.platform.qq.QQLogin;
-import com.laughfly.rxsociallib.platform.wechat.WechatLogin;
-import com.laughfly.rxsociallib.platform.weibo.WeiboLogin;
 
 import rx.Observable;
 
@@ -20,9 +17,7 @@ import rx.Observable;
  */
 public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResult>{
 
-    private SocialCallback<SocialLoginResult> mCallback;
-
-    public LoginBuilder(Context context, Platform platform, PlatformConfig platformConfig) {
+    public LoginBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
     }
 
@@ -40,19 +35,7 @@ public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResul
 
     @Override
     protected AbsSocialLogin build() {
-        AbsSocialLogin login = null;
-        switch (getPlatform()) {
-            case QQ:
-                login = new QQLogin(this);
-                break;
-            case Wechat:
-                login = new WechatLogin(this);
-                break;
-            case Weibo:
-                login = new WeiboLogin(this);
-                break;
-        }
-        return login;
+        return SocialActionFactory.createLoginAction(getPlatform(), this);
     }
 
     public LoginBuilder setFetchUserProfile(boolean fetchUserProfile) {

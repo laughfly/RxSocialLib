@@ -4,15 +4,12 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.text.TextUtils;
 
-import com.laughfly.rxsociallib.Platform;
 import com.laughfly.rxsociallib.PlatformConfig;
+import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
-import com.laughfly.rxsociallib.platform.qq.QQShare;
-import com.laughfly.rxsociallib.platform.wechat.WechatShare;
-import com.laughfly.rxsociallib.platform.weibo.WeiboShare;
 
 import rx.Observable;
 
@@ -23,7 +20,7 @@ import rx.Observable;
  */
 public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResult> {
 
-    public ShareBuilder(Context context, Platform platform, PlatformConfig platformConfig) {
+    public ShareBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
     }
 
@@ -41,26 +38,11 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
 
     @Override
     protected AbsSocialShare build() {
-        AbsSocialShare share = null;
-        switch (getPlatform()) {
-            case QQ:
-            case QQZone:
-                share = new QQShare(this);
-                break;
-            case WechatMoments:
-            case Wechat:
-                share = new WechatShare(this);
-                break;
-            case Weibo:
-                share = new WeiboShare(this);
-                break;
-        }
-        return share;
+        return SocialActionFactory.createShareAction(getPlatform(), this);
     }
 
     protected boolean checkArgs() {
-        if (getContext() == null) return false;
-        return !SocialUtils.isEmpty(getAppId());
+        return getContext() != null && !SocialUtils.isEmpty(getAppId());
     }
 
 

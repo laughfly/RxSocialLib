@@ -1,1 +1,1 @@
-include ':sample', ':library'
+include ':library', ':plugin', ':platforms:platform-qq', ':platforms:platform-wechat', ':platforms:platform-weibo', ':sample'

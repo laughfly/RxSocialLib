@@ -31,7 +31,7 @@ class ConfigParser {
 
     public static final String FIELD_STATE = "state";
 
-    static HashMap<Platform, PlatformConfig> readFromUri(Context context, Uri configUri) {
+    static HashMap<String, PlatformConfig> readFromUri(Context context, Uri configUri) {
         if (configUri != null) {
             try {
                 InputStream inputStream = context.getContentResolver().openInputStream(configUri);
@@ -43,7 +43,7 @@ class ConfigParser {
         return null;
     }
 
-    static HashMap<Platform, PlatformConfig> readFromStream(InputStream inputStream) {
+    static HashMap<String, PlatformConfig> readFromStream(InputStream inputStream) {
         if (inputStream != null) {
             String text = SocialUtils.readTextFromStream(inputStream);
             return readFromText(text);
@@ -51,9 +51,9 @@ class ConfigParser {
         return null;
     }
 
-    static HashMap<Platform, PlatformConfig> readFromText(String jsonText) {
+    static HashMap<String, PlatformConfig> readFromText(String jsonText) {
         try {
-            HashMap<Platform, PlatformConfig> platformConfigs = new HashMap<>();
+            HashMap<String, PlatformConfig> platformConfigs = new HashMap<>();
             JSONArray jsonArray = new JSONArray(jsonText);
             int size = jsonArray.length();
             for (int i = 0; i < size; i++) {
@@ -68,12 +68,7 @@ class ConfigParser {
                 config.state = (jsonObject.optString(FIELD_STATE));
 
                 String platform = jsonObject.optString(FIELD_PLATFORM);
-                try {
-                    Platform platforme = Platform.lookup(platform);
-                    platformConfigs.put(platforme, config);
-                } catch (IllegalArgumentException e) {
-                    e.printStackTrace();
-                }
+                    platformConfigs.put(platform, config);
             }
             return platformConfigs;
         } catch (JSONException e) {
