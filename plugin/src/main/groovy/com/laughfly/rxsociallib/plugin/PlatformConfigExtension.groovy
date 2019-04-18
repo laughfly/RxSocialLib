@@ -7,7 +7,12 @@ package com.laughfly.rxsociallib.plugin;
  */
 class PlatformConfigExtension {
     static Set fieldNames = ["appId", "appSecret", "redirectUrl", "scope", "state"]
+
     Map fields = [:]
+
+    boolean share = true
+
+    boolean login = true
 
     PlatformConfigExtension(Closure c) {
         c.resolveStrategy = Closure.DELEGATE_FIRST

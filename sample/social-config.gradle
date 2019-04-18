@@ -7,6 +7,13 @@ RxSocialConfig{
         redirectUrl 'https://api.weibo.com/oauth2/default.html'
         scope 'get_token_info'
     }
+    WeiboStory {
+        appId 'yourAppId'
+        appSecret 'yourAppSecret'
+        redirectUrl 'https://api.weibo.com/oauth2/default.html'
+        scope 'get_token_info'
+        login false
+    }
     QQ {
         appId 'yourAppId'
         appSecret 'yourAppSecret'
@@ -16,6 +23,7 @@ RxSocialConfig{
         appId 'yourAppId'
         appSecret 'yourAppSecret'
         scope 'get_simple_userinfo'
+        login false
     }
     Wechat {
         appId 'yourAppId'
@@ -28,6 +36,7 @@ RxSocialConfig{
         appSecret 'yourAppSecret'
         scope 'snsapi_userinfo'
         state 'wechat_sdk_live'
+        login false
     }
 }
 

@@ -1,12 +1,12 @@
 package com.laughfly.rxsociallib.platform.qq;
 
 import android.content.Intent;
+import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
-import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
@@ -40,7 +40,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
 
     @Override
     protected void startImpl() {
-        if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
+        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
             finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
@@ -101,7 +101,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
                 com.laughfly.rxsociallib.login.UserInfo userInfo = new com.laughfly.rxsociallib.login.UserInfo();
                 userInfo.nickname = (nickname);
                 userInfo.gender = "男".equals(gender) ? 1 : "女".equals(gender) ? 0 : 2;
-                userInfo.avatarUrl = !SocialUtils.isEmpty(figureurl_qq_2) ? figureurl_qq_2 : figureurl_qq_1;
+                userInfo.avatarUrl = !TextUtils.isEmpty(figureurl_qq_2) ? figureurl_qq_2 : figureurl_qq_1;
                 mResult.userInfo = userInfo;
 
                 mResult.resultObject = o;

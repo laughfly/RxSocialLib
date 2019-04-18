@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.MainThread;
 
+import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.delegate.ResultHandler;
 import com.laughfly.rxsociallib.delegate.SocialActivity;
 
@@ -38,6 +39,7 @@ public class WeiboDelegateActivity extends SocialActivity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Logger.w("WeiboSDK", "onActivityResult: " + "req=" + requestCode);
         super.onActivityResult(requestCode, resultCode, data);
         invokeHandleResult(requestCode, resultCode, data);
     }

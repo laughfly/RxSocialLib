@@ -13,7 +13,7 @@ import com.laughfly.rxsociallib.share.ShareBuilder;
 public class SocialActionFactory {
     public static AbsSocialShare createShareAction(String platform, ShareBuilder builder) {
         try {
-            Class<? extends AbsSocialShare> shareClass = SocialConfig.getShareClass(platform);
+            Class<? extends AbsSocialShare> shareClass = SocialModel.getShareClass(platform);
             AbsSocialShare absSocialShare = shareClass.newInstance();
             absSocialShare.setBuilder(builder);
             return absSocialShare;
@@ -25,7 +25,7 @@ public class SocialActionFactory {
 
     public static AbsSocialLogin createLoginAction(String platform, LoginBuilder builder) {
         try {
-            Class<? extends AbsSocialLogin> shareClass = SocialConfig.getLoginClass(platform);
+            Class<? extends AbsSocialLogin> shareClass = SocialModel.getLoginClass(platform);
             AbsSocialLogin absSocialLogin = shareClass.newInstance();
             absSocialLogin.setBuilder(builder);
             return absSocialLogin;

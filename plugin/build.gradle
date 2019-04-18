@@ -5,6 +5,7 @@ dependencies {
     implementation localGroovy()
     implementation 'com.squareup:javapoet:1.11.1'
     implementation 'com.g00fy2:versioncompare:1.3.2'
+    implementation 'org.javassist:javassist:3.25.0-GA'
     compileOnly 'com.android.tools.build:gradle:3.0.1'
 }
 

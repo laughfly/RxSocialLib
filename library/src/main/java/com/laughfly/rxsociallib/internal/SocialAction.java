@@ -111,6 +111,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
             @Override
             public void run() {
                 try {
+                    onStart();
                     startImpl();
                     mCallback.onStart(mBuilder.getPlatform());
                 } catch (Exception e) {
@@ -121,6 +122,8 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
         });
 
     }
+
+    protected void onStart() throws Exception {}
 
     protected void finishWithSuccess(Result result) {
         try {

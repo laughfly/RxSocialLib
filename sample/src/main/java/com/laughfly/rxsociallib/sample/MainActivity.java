@@ -10,9 +10,10 @@ import android.widget.Toast;
 
 import com.laughfly.rxsociallib.RxSocial;
 import com.laughfly.rxsociallib.SocialCallback;
-import com.laughfly.rxsociallib.SocialPlatform;
 import com.laughfly.rxsociallib.exception.SocialException;
+import com.laughfly.rxsociallib.login.LoginPlatform;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.share.SharePlatform;
 import com.laughfly.rxsociallib.share.SocialShareResult;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,25 +26,26 @@ public class MainActivity extends AppCompatActivity {
             != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
+        RxSocial.initialize(this);
     }
 
     public void shareTo(View view) {
-        String platform = SocialPlatform.QQ;
+        String platform = SharePlatform.QQ;
         switch (view.getId()) {
             case R.id.qq_share:
-                platform = SocialPlatform.QQ;
+                platform = SharePlatform.QQ;
                 break;
             case R.id.weixin_share:
-                platform = SocialPlatform.Wechat;
+                platform = SharePlatform.Wechat;
                 break;
             case R.id.weibo_share:
-                platform = SocialPlatform.Weibo;
+                platform = SharePlatform.Weibo;
                 break;
         }
         RxSocial.share(this)
             .setPlatform(platform)
-            .setTitle("分享图片")
-            .setText("这是一只熊猫")
+            .setTitle("我是标题")
+            .setText("文本内容")
             .setPageUrl("http://www.qq.com/")
             .start(new SocialCallback<SocialShareResult>() {
 
@@ -60,16 +62,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void loginWith(View view) {
-        String platform = SocialPlatform.QQ;
+        String platform = LoginPlatform.QQ;
         switch (view.getId()) {
             case R.id.qq_login:
-                platform = SocialPlatform.QQ;
+                platform = LoginPlatform.QQ;
                 break;
             case R.id.weixin_login:
-                platform = SocialPlatform.Wechat;
+                platform = LoginPlatform.Wechat;
                 break;
             case R.id.weibo_login:
-                platform = SocialPlatform.Weibo;
+                platform = LoginPlatform.Weibo;
                 break;
         }
         RxSocial.login(this)

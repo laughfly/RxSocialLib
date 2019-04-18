@@ -2,9 +2,12 @@ package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
 import android.support.v4.util.ArrayMap;
+import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
+
+import java.util.Collection;
 
 import rx.Observable;
 
@@ -29,6 +32,21 @@ public abstract class SocialBuilder<Action extends SocialAction, Result> {
 
     protected <E> void put(String key, E entity) {
         mData.put(key, entity);
+    }
+
+    protected boolean has(String key) {
+        Object value = mData.get(key);
+        if(value != null) {
+            if(value instanceof CharSequence) {
+                return !TextUtils.isEmpty((CharSequence) value);
+            } else if(value instanceof Collection) {
+                return !((Collection) value).isEmpty();
+            } else {
+                return true;
+            }
+        } else {
+            return false;
+        }
     }
 
     protected <E> E get(String key) {

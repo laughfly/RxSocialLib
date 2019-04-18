@@ -1,27 +1,30 @@
 package com.laughfly.rxsociallib.platform.qq;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
-import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareType;
 import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_APP_NAME;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_ARK_INFO;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_AUDIO_URL;
-import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_EXT_INT;
-import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN;
-import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_IMAGE_LOCAL_URL;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_IMAGE_URL;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_KEY_TYPE;
@@ -39,12 +42,13 @@ import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_IMAGE;
  * date:2018-05-11
  */
 @ShareFeatures({
-    @ShareFeature(platform = "QQ", supportFeatures = ShareFeature.SHARE_TEXT),
-    @ShareFeature(platform = "QQZone", supportFeatures = ShareFeature.SHARE_TEXT)
+    @ShareFeature(platform = QQConstants.QQ, supportFeatures = QQConstants.QQ_SHARE_SUPPORT)
 })
 public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiListener {
 
     private Tencent mTencent;
+
+    private boolean mShareByIntent;
 
     public QQShare() {
         super();
@@ -52,12 +56,11 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     @Override
     protected void startImpl() {
-        if (!SocialUtils.isQQInstalled(mBuilder.getContext())) {
+        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
             finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
             return;
         }
-        String appkey = mBuilder.getAppId();
-        mTencent = Tencent.createInstance(appkey, mBuilder.getContext());
+        mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
         QQDelegateActivity.start(getBuilder().getContext(), QQShare.this);
     }
 
@@ -81,65 +84,173 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         });
     }
 
-    private void shareToQQ(QQDelegateActivity activity) {
-        final Bundle params = new Bundle();
-
-        String imageUri = mBuilder.getImageUri();
-        String audioUri = mBuilder.getAudioUri();
-        String arkInfo = mBuilder.getArkInfo();
-
-        //分享图片
-        boolean shareImage = SocialUtils.isLocalUri(imageUri);
-        //分享音频
-        boolean shareAudio = !TextUtils.isEmpty(audioUri);
-        //分享app
-        boolean shareApp = !TextUtils.isEmpty(arkInfo);
-
-        int shareType;
-        if (shareImage) {
-            shareType = SHARE_TO_QQ_TYPE_IMAGE;
-        } else if (shareAudio) {
-            shareType = SHARE_TO_QQ_TYPE_AUDIO;
-        } else if (shareApp) {
-            shareType = SHARE_TO_QQ_TYPE_APP;
-        } else {
-            shareType = SHARE_TO_QQ_TYPE_DEFAULT;
+    private void shareToQQ(QQDelegateActivity activity) throws Exception {
+        @ShareType.Def int type = getShareType();
+        switch (type) {
+            case ShareType.SHARE_APP:
+                shareApp(activity);
+                break;
+            case ShareType.SHARE_AUDIO:
+                shareAudio(activity);
+                break;
+            case ShareType.SHARE_FILE:
+                shareFile(activity);
+                break;
+            case ShareType.SHARE_IMAGE:
+                shareImage(activity);
+                break;
+            case ShareType.SHARE_LOCAL_VIDEO:
+            case ShareType.SHARE_NETWORK_VIDEO:
+                shareVideo(activity);
+                break;
+            case ShareType.SHARE_TEXT:
+                shareText(activity);
+                break;
+            case ShareType.SHARE_WEB:
+                shareUrl(activity);
+                break;
+            case ShareType.SHARE_MULTI_FILE:
+                shareFileList(activity);
+                break;
+            case ShareType.SHARE_MINI_PROGRAM:
+            case ShareType.SHARE_MULTI_IMAGE:
+            case ShareType.SHARE_NONE:
+            default:
+                throw new SocialShareException(getPlatform(), SocialConstants.ERR_SHARETYPE_NOT_SUPPORT);
         }
+    }
 
-        params.putInt(SHARE_TO_QQ_KEY_TYPE, shareType);
+    private void shareApp(Activity activity) {
+        Bundle params = createParams(ShareType.SHARE_APP);
+        params.putString(SHARE_TO_QQ_ARK_INFO, mBuilder.getAppInfo());
+        shareBySDK(activity, params);
+    }
 
-        if (SHARE_TO_QQ_TYPE_IMAGE == shareType) {
-            params.putString(SHARE_TO_QQ_IMAGE_LOCAL_URL, imageUri);
+    private void shareAudio(Activity activity) {
+        String audioUri = mBuilder.getAudioUri();
+        if(SocialUriUtils.isHttpUrl(audioUri)) {
+            Bundle params = createParams(ShareType.SHARE_AUDIO);
+            params.putString(SHARE_TO_QQ_AUDIO_URL, mBuilder.getAudioUri());
+            shareBySDK(activity, params);
+        } else {
+            mBuilder.setFileUri(audioUri);
+            shareFile(activity);
+        }
+    }
+
+    private void shareUrl(Activity activity) {
+        Bundle params = createParams(ShareType.SHARE_WEB);
+        shareBySDK(activity, params);
+    }
+
+    private void shareImage(Activity activity) throws Exception {
+        Bundle params = createParams(ShareType.SHARE_IMAGE);
+        String imageUri = downloadImageIfNeed(mBuilder.getImageUri());
+        params.putString(SHARE_TO_QQ_IMAGE_LOCAL_URL, imageUri);
+        shareBySDK(activity, params);
+    }
+
+    private void shareFile(Activity activity) {
+        String fileUri = mBuilder.getFileUri();
+        Intent shareFile = SocialIntentUtils.createFileShare(Uri.parse(fileUri));
+        shareByIntent(activity, shareFile);
+    }
+
+    private void shareFileList(Activity activity) {
+        List<String> fileList = mBuilder.getFileList();
+        ArrayList<Uri> fileUriList = new ArrayList<>();
+        for (String file : fileList) {
+            fileUriList.add(Uri.parse(file));
+        }
+        Intent shareFileList = SocialIntentUtils.createFileListShare(fileUriList);
+        shareByIntent(activity, shareFileList);
+    }
+
+    private void shareVideo(Activity activity) {
+        String videoUri = mBuilder.getVideoUri();
+        if(SocialUriUtils.isHttpUrl(videoUri)) {
+            mBuilder.setText(videoUri);
+            shareText(activity);
+        } else {
+            shareByIntent(activity, SocialIntentUtils.createFileShare(Uri.parse(mBuilder.getVideoUri())));
+        }
+    }
+
+    private void shareText(Activity activity) {
+        shareByIntent(activity, SocialIntentUtils.createTextShare(mBuilder.getTitle(), mBuilder.getText()));
+    }
+
+    private void shareByIntent(Activity activity, Intent originalIntent) {
+        ArrayList<Intent> intents = new ArrayList<>();
+        if (QQUtils.isQQInstalled(activity)) {
+            intents.add(new Intent(originalIntent).setClassName(QQConstants.QQ_PACKAGE_NAME, QQConstants.QQ_SHARE_TARGET_CLASS));
+        }
+        if (QQUtils.isTimInstalled(activity)) {
+            intents.add(new Intent(originalIntent).setClassName(QQConstants.TIM_PACKAGE_NAME, QQConstants.TIM_SHARE_TARGET_CLASS));
+        }
+        try {
+            if (intents.size() == 2) {
+                Intent chooserIntent = Intent.createChooser(intents.get(0), "请选择");
+                chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, new Intent[]{intents.get(1)});
+                chooserIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                activity.startActivity(chooserIntent);
+            } else {
+                activity.startActivity(intents.get(0));
+            }
+            mShareByIntent = true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            finishWithError(e);
+        }
+    }
+
+    private void shareBySDK(Activity activity, Bundle params) {
+        mTencent.shareToQQ(activity, params, QQShare.this);
+    }
+
+    private Bundle createParams(@ShareType.Def int shareType) {
+        Bundle params = new Bundle();
+
+        params.putInt(SHARE_TO_QQ_KEY_TYPE, toQQShareType(shareType));
+
+        if (ShareType.SHARE_IMAGE == shareType) {
+            params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
         } else {
             params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-            params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getPageUrl());
+            if (mBuilder.hasPageUrl()) {
+                params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getPageUrl());
+            }
             params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
             params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
         }
 
-        if (shareAudio) {
-            params.putString(SHARE_TO_QQ_AUDIO_URL, audioUri);
-        } else if(shareApp) {
-            params.putString(SHARE_TO_QQ_ARK_INFO, arkInfo);
+        if (mBuilder.getShareAppName() != null) {
+            params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getShareAppName());
         }
 
-        if (mBuilder.getAppName() != null) {
-            params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getAppName());
-        }
+        return params;
+    }
 
-        if (("QQZone").equalsIgnoreCase(getPlatform())) {
-            params.putInt(SHARE_TO_QQ_EXT_INT, SHARE_TO_QQ_FLAG_QZONE_AUTO_OPEN);
-        } else {
-            params.putInt(SHARE_TO_QQ_EXT_INT, SHARE_TO_QQ_FLAG_QZONE_ITEM_HIDE);
+    private int toQQShareType(@ShareType.Def int shareType) {
+        switch (shareType) {
+            case ShareType.SHARE_APP:
+                return SHARE_TO_QQ_TYPE_APP;
+            case ShareType.SHARE_AUDIO:
+                return SHARE_TO_QQ_TYPE_AUDIO;
+            case ShareType.SHARE_IMAGE:
+                return SHARE_TO_QQ_TYPE_IMAGE;
+            case ShareType.SHARE_TEXT:
+            case ShareType.SHARE_WEB:
+                return SHARE_TO_QQ_TYPE_DEFAULT;
+            default:
+                return 0;
         }
-
-        mTencent.shareToQQ(activity, params, QQShare.this);
     }
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
         try {
-            //分享成功停留在QQ，并直接通过任务管理切换回APP
+            //分享成功但停留在QQ，并直接通过任务管理切换回APP
             if (requestCode == 0 && 0 == resultCode && data == null) {
                 finishWithNoResult();
             } else {
@@ -148,6 +259,15 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         } catch (Exception e) {
             e.printStackTrace();
             finishWithError(e);
+        }
+    }
+
+    @Override
+    public void handleNoResult() {
+        if (mShareByIntent) {
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        } else {
+            super.handleNoResult();
         }
     }
 

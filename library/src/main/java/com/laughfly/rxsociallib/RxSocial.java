@@ -2,10 +2,14 @@ package com.laughfly.rxsociallib;
 
 import android.content.Context;
 
+import com.laughfly.rxsociallib.downloader.ImageDownloader;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.share.ShareBuilder;
-import com.laughfly.rxsociallib.share.ShareFeature;
+import com.laughfly.rxsociallib.share.ShareType;
+
+import java.io.File;
+import java.util.Set;
 
 /**
  * 社会化工具类
@@ -14,13 +18,33 @@ import com.laughfly.rxsociallib.share.ShareFeature;
  */
 public class RxSocial {
 
-    private synchronized static void initSocialConfig(Context context) {
-        if(SocialConfig.isInitialized()) return;
-        SocialConfig.initialize(context);
+    public synchronized static void initialize(Context context) {
+        if(SocialModel.isInitialized()) return;
+        SocialModel.initialize(context);
     }
 
-    private static String[] supportShareFeatures(@ShareFeature.Def int features) {
-        return null;
+    public static Set<String> getSharePlatformList() {
+        return SocialModel.getSharePlatforms();
+    }
+
+    public static Set<String> getLoginPlatforms() {
+        return SocialModel.getLoginPlatforms();
+    }
+
+    private static Set<String> getSupportPlatforms(@ShareType.Def int shareType) {
+        return SocialModel.getSupportPlatforms(shareType);
+    }
+
+    public static @ShareType.Def int getShareTypes(String platform) {
+        return SocialModel.getSupportShareTypes(platform);
+    }
+
+    public static void setDownloadDirectory(File directory) {
+        SocialModel.setDownloadDirectory(directory);
+    }
+
+    public static void setImageDownloader(ImageDownloader downloader) {
+        SocialModel.setImageDownloader(downloader);
     }
 
     /**
@@ -32,7 +56,7 @@ public class RxSocial {
      * @return
      */
     public static LoginBuilderWrapper login(Context context) {
-        initSocialConfig(context);
+        initialize(context);
         return new LoginBuilderWrapper(context);
     }
 
@@ -45,7 +69,7 @@ public class RxSocial {
      * @return
      */
     public static ShareBuilderWrapper share(Context context) {
-        initSocialConfig(context);
+        initialize(context);
         return new ShareBuilderWrapper(context);
     }
 
@@ -71,7 +95,7 @@ public class RxSocial {
         }
 
         public ShareBuilder setPlatform(String platform) {
-            return new ShareBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
+            return new ShareBuilder(mContext, platform, SocialModel.getPlatformConfig(platform));
         }
     }
 
@@ -83,7 +107,7 @@ public class RxSocial {
         }
 
         public LoginBuilder setPlatform(String platform) {
-            return new LoginBuilder(mContext, platform, SocialConfig.getPlatformConfig(platform));
+            return new LoginBuilder(mContext, platform, SocialModel.getPlatformConfig(platform));
         }
     }
 }

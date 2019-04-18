@@ -1,11 +1,11 @@
 package com.laughfly.rxsociallib.login;
 
 import android.content.Context;
+import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialCallback;
-import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 
 import rx.Observable;
@@ -49,7 +49,7 @@ public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResul
 
     protected boolean checkArgs() {
         if(getContext() == null) return false;
-        return !SocialUtils.isEmpty(getAppId());
+        return !TextUtils.isEmpty(getAppId());
     }
 
 }

@@ -3,6 +3,7 @@ package com.laughfly.rxsociallib.plugin
 import com.android.build.gradle.*
 import com.android.build.gradle.api.ApplicationVariant
 import com.android.build.gradle.api.BaseVariant
+import com.android.build.gradle.internal.api.BaseVariantImpl
 import com.g00fy2.versioncompare.Version
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
@@ -72,44 +73,62 @@ class ConfigGenerator {
 
     void addDependencies() {
         project.dependencies {
-            def compile = checkGradleVersion("3.0") ? "implementation" : "compile"
+            def scope = checkGradleVersion("3.0") ? "implementation" : "compile"
             def pluginVersion = getPluginVersion()
             println("SocialPluginVersion: " + pluginVersion)
 
-            if (config.libVersion != null) {
-                add(compile, "com.laughfly.rxsociallib:library:${config.libVersion}")
+            if (config.debug) {
+            } else if (config.libVersion != null) {
+                add(scope, "com.laughfly.rxsociallib:library:${config.libVersion}")
             } else {
-                add(compile, "com.laughfly.rxsociallib:library:${pluginVersion}")
+                add(scope, "com.laughfly.rxsociallib:library:${pluginVersion}")
             }
 
             println("platformLibs size: " + platformLibs.size())
             platformLibs.each {
-                if (config.libVersion != null) {
-                    add(compile, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${config.libVersion}")
+                if (config.debug) {
+                } else if (config.libVersion != null) {
+                    add(scope, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${config.libVersion}")
                 } else {
-                    add(compile, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${pluginVersion}")
+                    add(scope, "com.laughfly.rxsociallib:platform-${it.toLowerCase()}:${pluginVersion}")
                 }
             }
         }
     }
 
     void generatePlatformClass(def variants) {
-        variants.all { BaseVariant variant ->
+        variants.all { BaseVariantImpl variant ->
             def taskName = "generate${variant.name.capitalize()}SocialPlatform"
             def outputDir = project.file("${project.buildDir}/generated/source/rxsocial/${variant.name}/")
-
-            def task = project.tasks.create(taskName, {
-                TypeSpec.Builder typeBuilder = TypeSpec.interfaceBuilder("SocialPlatform").addModifiers(Modifier.PUBLIC)
-                platformInfoMap.keySet().each {
-                    FieldSpec fieldSpec = FieldSpec.builder(String.class, it, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", it).build()
-                    typeBuilder.addField(fieldSpec)
+            def task = project.task(taskName)
+            task.doFirst {
+                TypeSpec.Builder shareBuilder = TypeSpec.interfaceBuilder("SharePlatform").addModifiers(Modifier.PUBLIC)
+                TypeSpec.Builder loginBuilder = TypeSpec.interfaceBuilder("LoginPlatform").addModifiers(Modifier.PUBLIC)
+                platformInfoMap.each {String platform, PlatformConfigExtension extension ->
+                    if (extension.share) {
+                        FieldSpec fieldSpec = FieldSpec.builder(String.class, platform, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", platform).build()
+                        shareBuilder.addField(fieldSpec)
+                    }
+                    if (extension.login) {
+                        FieldSpec fieldSpec = FieldSpec.builder(String.class, platform, Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer("\$S", platform).build()
+                        loginBuilder.addField(fieldSpec)
+                    }
                 }
-                def javaFile = JavaFile.builder("com.laughfly.rxsociallib", typeBuilder.build()).build()
-                javaFile.writeTo(outputDir)
-            })
+                def shareJavaFile = JavaFile.builder("com.laughfly.rxsociallib.share", shareBuilder.build()).build()
+                shareJavaFile.writeTo(outputDir)
+                def loginJavaFile = JavaFile.builder("com.laughfly.rxsociallib.login", loginBuilder.build()).build()
+                loginJavaFile.writeTo(outputDir)
+            }
 
-            task.dependsOn variant.mergeResources
             task.group = "other"
+
+            String generateBuildConfigTaskName = variant.getVariantData().getScope().getGenerateBuildConfigTask().name
+            def generateBuildConfigTask = project.tasks.getByName(generateBuildConfigTaskName)
+            if (generateBuildConfigTask) {
+                task.dependsOn generateBuildConfigTask
+                generateBuildConfigTask.finalizedBy task
+            }
+
             variant.registerJavaGeneratingTask(task, outputDir)
         }
     }

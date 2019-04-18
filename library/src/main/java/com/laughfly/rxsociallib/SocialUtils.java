@@ -1,20 +1,14 @@
 package com.laughfly.rxsociallib;
 
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
-import android.os.Environment;
-import android.text.TextUtils;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -28,52 +22,6 @@ import javax.microedition.khronos.opengles.GL10;
  * date:2018-04-20
  */
 public class SocialUtils {
-
-    public static boolean isEmpty(CharSequence charSequence) {
-        return charSequence != null && charSequence.length() > 0;
-    }
-
-    public static boolean isHttpUri(String uri) {
-        return uri != null && uri.matches("^(http|https)://");
-    }
-
-    public static boolean isLocalUri(String uri) {
-        return uri != null && uri.startsWith("/");
-    }
-
-    public static String getAppKey(Context c, String metaName) {
-        try {
-            ApplicationInfo info = c.getPackageManager().getApplicationInfo(c.getPackageName(), PackageManager
-                .GET_META_DATA);
-            return info.metaData.get(metaName).toString();
-        } catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public static boolean downloadFile(String imageUrl, String downloadPath) {
-        InputStream inputStream = null;
-        BufferedOutputStream outputStream = null;
-        try {
-            new File(downloadPath).delete();
-            outputStream = new BufferedOutputStream(new FileOutputStream(downloadPath), 8192);
-            inputStream = new URL(imageUrl).openStream();
-            int readLen;
-            byte[] buff = new byte[8192];
-            while ((readLen = inputStream.read(buff, 0, 8192)) > 0) {
-                outputStream.write(buff, 0, readLen);
-            }
-            outputStream.flush();
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeStream(inputStream);
-            closeStream(outputStream);
-        }
-        return false;
-    }
 
     public static void closeStream(Closeable stream) {
         if (stream != null) {
@@ -90,29 +38,7 @@ public class SocialUtils {
         return bitmapToBytes(bitmap, maxBytes, true);
     }
 
-    public static byte[] loadImageBytes(String imageUri, int maxBytes) {
-        Bitmap bitmap = loadBitmap(imageUri);
-        return bitmapToBytes(bitmap, maxBytes, true);
-    }
-
-    public static byte[] loadLocalImageBytes(String imagePath, int maxBytes) {
-        Bitmap bitmap = safeLoadLocalBitmap(imagePath);
-        return bitmapToBytes(bitmap, maxBytes, true);
-    }
-
-    public static Bitmap loadBitmap(String imageUri) {
-        if(TextUtils.isEmpty(imageUri)) return null;
-        if (imageUri.startsWith("http")) {
-            File downloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-            String downloadPath = new File(downloadDirectory, "social_share_image.jpg").getPath();
-            boolean success = downloadFile(imageUri, downloadPath);
-            if(!success) return null;
-            imageUri = downloadPath;
-        }
-        return safeLoadLocalBitmap(imageUri);
-    }
-
-    public static Bitmap scaleBitmap(Bitmap bitmap, int maxBytes) {
+    public static Bitmap scaleImage(Bitmap bitmap, int maxBytes) {
         byte[] bytes = bitmapToBytes(bitmap, maxBytes, true);
         if (bytes != null) {
             return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
@@ -132,6 +58,11 @@ public class SocialUtils {
         }
         options.inJustDecodeBounds = false;
         return BitmapFactory.decodeFile(imagePath, options);
+    }
+
+    public static byte[] loadImageBytes(String imageFilePath, int dataSizeLimit) {
+        Bitmap bitmap = loadBitmapFromFile(imageFilePath, dataSizeLimit);
+        return bitmapToBytes(bitmap, dataSizeLimit);
     }
 
     public static byte[] bitmapToBytes(Bitmap bitmap, int maxBytes) {
@@ -172,6 +103,7 @@ public class SocialUtils {
         }
         return bytes;
     }
+
 
     public static Bitmap loadBitmapFromFile(String filePath, int maxDataSize) {
         BitmapFactory.Options options = new BitmapFactory.Options();
@@ -221,35 +153,6 @@ public class SocialUtils {
         return bitmap;
     }
 
-    public static Bitmap downloadScaledImage(String imageUrl, int thumbSize) {
-        InputStream inputStream = null;
-        try {
-            BitmapFactory.Options options = new BitmapFactory.Options();
-            options.inJustDecodeBounds = true;
-            inputStream = new URL(imageUrl).openStream();
-            if (inputStream.markSupported()) {
-                inputStream.mark(1024);
-            }
-            BitmapFactory.decodeStream(inputStream, null, options);
-            int sampleSize = Math.min(options.outWidth / thumbSize, options.outHeight / thumbSize);
-            options.inSampleSize = sampleSize;
-            options.inJustDecodeBounds = false;
-            if (inputStream.markSupported()) {
-                inputStream.reset();
-            } else {
-                inputStream.close();
-                inputStream = new URL(imageUrl).openStream();
-            }
-            Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-            return bitmap;
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            closeStream(inputStream);
-        }
-        return null;
-    }
-
     public static String quickHttpGet(String url) {
         BufferedInputStream bis = null;
         try {
@@ -296,26 +199,14 @@ public class SocialUtils {
         return null;
     }
 
-    /**
-     * QQ客户端是否已安装
-     * author:caowy
-     * date:2018-05-11
-     *
-     * @param context
-     * @return
-     */
-    public static boolean isQQInstalled(Context context) {
+    public static boolean checkAppInstalled(Context context, String packageName) {
         PackageManager packageManager = context.getPackageManager();
         try {
-            packageManager.getPackageInfo("com.tencent.tim", 0);
+            packageManager.getPackageInfo(packageName, 0);
             return true;
-        } catch (PackageManager.NameNotFoundException e) {
+        } catch (PackageManager.NameNotFoundException ignore) {
         }
-        try {
-            packageManager.getPackageInfo("com.tencent.mobileqq", 0);
-            return true;
-        } catch (PackageManager.NameNotFoundException e) {
-            return false;
-        }
+        return false;
     }
+
 }

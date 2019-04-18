@@ -3,23 +3,25 @@ package com.laughfly.rxsociallib.platform.wechat;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.Logger;
-import com.laughfly.rxsociallib.SocialConfig;
 import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
+import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareType;
 import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
-import com.tencent.mm.opensdk.modelmsg.WXFileObject;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
 import com.tencent.mm.opensdk.modelmsg.WXMiniProgramObject;
@@ -31,16 +33,14 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
-import static android.text.TextUtils.isEmpty;
-
 /**
  * 微信分享
  * author:caowy
  * date:2018-05-26
  */
 @ShareFeatures({
-    @ShareFeature(platform = "Wechat", supportFeatures = ShareFeature.SHARE_TEXT),
-    @ShareFeature(platform = "WechatMoments", supportFeatures = ShareFeature.SHARE_TEXT)
+    @ShareFeature(platform = WechatConstants.WECHAT, supportFeatures = WechatConstants.WECHAT_SHARE_SUPPORT),
+    @ShareFeature(platform = WechatConstants.WECHAT_MOMENTS, supportFeatures = WechatConstants.WECHAT_MOMENTS_SHARE_SUPPORT)
 })
 public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implements IWXAPIEventHandler, WXLossResultWorkaround.Callback {
 
@@ -72,43 +72,79 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
         SocialThreads.runOnThread(new Runnable() {
             @Override
             public void run() {
-                shareImpl();
+                try {
+                    shareToWechat();
+                } catch (SocialShareException e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
             }
         });
     }
 
-    private void shareImpl() {
-        WXMediaMessage mediaMessage;
-        if (mBuilder.getMiniProgramPath() != null) {//小程序
-            mediaMessage = createMiniProgramObject();
-        } else if (mBuilder.getAudioUri() != null) {//音频
-            mediaMessage = createAudioObject();
-        } else if (!isEmpty(mBuilder.getPageUrl())) {//网页
-            mediaMessage = createWebpageObject();
-        } else if (mBuilder.hasImage()) {//图片
-            mediaMessage = createImageObject();
-        } else if(!isEmpty(mBuilder.getVideoUrl())){
-            mediaMessage = createVideoObject();
-        } else if(!isEmpty(mBuilder.getFilePath())){
-            mediaMessage = createFileObject();
-        }else {//文字
-            mediaMessage = createTextObject();
-        }
-        SendMessageToWX.Req req = new SendMessageToWX.Req();
-        req.transaction = "" + System.currentTimeMillis();
-        req.message = mediaMessage;
-        req.scene = "WechatMoments".equalsIgnoreCase(getPlatform()) ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
-        boolean sendReq = mWXApi.sendReq(req);
-        if (!sendReq) {
-            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
-        }
+    private void shareToWechat() throws SocialShareException {
+        int shareType = getShareType();
+        switch (shareType) {
+            case ShareType.SHARE_TEXT:
+                shareText();
+                break;
+            case ShareType.SHARE_WEB:
+                shareWebPage();
+                break;
+            case ShareType.SHARE_IMAGE:
+                shareImage();
+                break;
+            case ShareType.SHARE_AUDIO:
+                shareAudio();
+                break;
+            case ShareType.SHARE_FILE:
+                shareFile();
+                break;
+            case ShareType.SHARE_LOCAL_VIDEO:
+            case ShareType.SHARE_NETWORK_VIDEO:
+                shareVideo();
+                break;
+            case ShareType.SHARE_MINI_PROGRAM:
+                shareMiniProgram();
+                break;
+            case ShareType.SHARE_APP:
+            case ShareType.SHARE_MULTI_FILE:
+            case ShareType.SHARE_MULTI_IMAGE:
+            case ShareType.SHARE_NONE:
+                break;
 
+        }
+    }
+
+    private void shareText() {
+        WXTextObject textObject = new WXTextObject();
+        textObject.text = mBuilder.getTitle();
+        WXMediaMessage mediaMessage = new WXMediaMessage();
+        mediaMessage.mediaObject = textObject;
+        mediaMessage.title = mBuilder.getTitle();
+        mediaMessage.description = mBuilder.getText();
+        mediaMessage.messageExt = mBuilder.getExText();
+
+        shareBySDK(mediaMessage);
+    }
+
+    private void shareWebPage() throws SocialShareException {
+        WXWebpageObject webpageObject = new WXWebpageObject();
+        webpageObject.webpageUrl = mBuilder.getPageUrl();
+        WXMediaMessage mediaMessage = new WXMediaMessage();
+        mediaMessage.mediaObject = webpageObject;
+        mediaMessage.title = mBuilder.getTitle();
+        mediaMessage.description = mBuilder.getText();
+        mediaMessage.messageExt = mBuilder.getExText();
+        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
+
+        shareBySDK(mediaMessage);
     }
 
     /**
      * 分享音频
      */
-    private WXMediaMessage createAudioObject() {
+    private void shareAudio() throws SocialShareException {
         WXMusicObject musicObject = new WXMusicObject();
         musicObject.musicDataUrl = mBuilder.getAudioUri();
         musicObject.musicUrl = mBuilder.getPageUrl();
@@ -117,29 +153,9 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
         mediaMessage.title = mBuilder.getTitle();
         mediaMessage.description = mBuilder.getText();
         mediaMessage.mediaObject = musicObject;
-        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
-        return mediaMessage;
-    }
+        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
 
-    /**
-     * 分享文本
-     * author:caowy
-     * date:2018-11-22
-     *
-     * @return
-     */
-    private WXMediaMessage createTextObject() {
-        WXTextObject textObject = new WXTextObject();
-        String title = mBuilder.getTitle();
-        String text = mBuilder.getText();
-        String exText = mBuilder.getExText();
-        textObject.text = title != null ? title : title;
-        WXMediaMessage mediaMessage = new WXMediaMessage();
-        mediaMessage.mediaObject = textObject;
-        mediaMessage.title = title != null ? title : text;
-        mediaMessage.description = text;
-        mediaMessage.messageExt = exText;
-        return mediaMessage;
+        shareBySDK(mediaMessage);
     }
 
     /**
@@ -147,64 +163,61 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
      *
      * @return
      */
-    private WXMediaMessage createImageObject() {
+    private void shareImage() throws SocialShareException {
         WXImageObject imageObject = new WXImageObject();
 
         WXMediaMessage mediaMessage = new WXMediaMessage();
         mediaMessage.mediaObject = imageObject;
         Bitmap imageBitmap = mBuilder.getImageBitmap();
-        String imageUri = mBuilder.getImageUri();
+        String imageUri = downloadImageIfNeed(mBuilder.getImageUri());
         if (imageBitmap != null) {
-            imageObject.imageData = SocialUtils.bitmapToBytes(imageBitmap, SocialConfig.WECHAT_IMAGE_LIMIT);
+            imageObject.imageData = SocialUtils.bitmapToBytes(imageBitmap, WechatConstants.WECHAT_IMAGE_LIMIT);
         } else {
-            imageObject.imageData = SocialUtils.loadImageBytes(imageUri, SocialConfig.WECHAT_IMAGE_LIMIT);
+            imageObject.imageData = SocialUtils.loadImageBytes(imageUri, WechatConstants.WECHAT_IMAGE_LIMIT);
         }
-        mediaMessage.thumbData = SocialUtils.scaleImage(imageObject.imageData, SocialConfig.WECHAT_THUMB_LIMIT);
-        return mediaMessage;
+        mediaMessage.thumbData = SocialUtils.scaleImage(imageObject.imageData, WechatConstants.WECHAT_THUMB_LIMIT);
+
+        shareBySDK(mediaMessage);
     }
 
-    private WXMediaMessage createVideoObject() {
-        WXVideoObject videoObject = new WXVideoObject();
-        videoObject.videoUrl = mBuilder.getVideoUrl();
+    private void shareVideo() throws SocialShareException {
+        String videoUri = mBuilder.getVideoUri();
+        if(SocialUriUtils.isHttpUrl(videoUri)) {
+            WXVideoObject videoObject = new WXVideoObject();
+            videoObject.videoUrl = mBuilder.getVideoUri();
 
-        WXMediaMessage mediaMessage = new WXMediaMessage();
-        mediaMessage.mediaObject = videoObject;
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
-        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
+            WXMediaMessage mediaMessage = new WXMediaMessage();
+            mediaMessage.mediaObject = videoObject;
+            mediaMessage.title = mBuilder.getTitle();
+            mediaMessage.description = mBuilder.getText();
+            mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
 
-        return mediaMessage;
+            shareBySDK(mediaMessage);
+        } else {
+            Intent fileShare = SocialIntentUtils.createVideoShare(Uri.parse(videoUri), WechatConstants.WECHAT_PACKAGE, WechatConstants.WECHAT_SHARE_TARGET_CLASS);
+            getContext().startActivity(fileShare);
+
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        }
     }
 
-    private WXMediaMessage createFileObject() {
-        WXFileObject fileObject = new WXFileObject();
-        fileObject.setFilePath(mBuilder.getFilePath());
-        fileObject.setContentLengthLimit(mBuilder.getFileSizeLimit());
+    private void shareFile() {
+//        WXFileObject fileObject = new WXFileObject();
+//        fileObject.setFilePath(mBuilder.getFileUri());
+//        fileObject.setContentLengthLimit(mBuilder.getFileSizeLimit());
+//
+//        WXMediaMessage mediaMessage = new WXMediaMessage();
+//        mediaMessage.mediaObject = fileObject;
+//        mediaMessage.title = mBuilder.getTitle();
+//        mediaMessage.description = mBuilder.getText();
+//        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
+//
+//        shareBySDK(mediaMessage);
 
-        WXMediaMessage mediaMessage = new WXMediaMessage();
-        mediaMessage.mediaObject = fileObject;
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
-        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
+        Intent fileShare = SocialIntentUtils.createFileShare(Uri.parse(mBuilder.getFileUri()), WechatConstants.WECHAT_PACKAGE, WechatConstants.WECHAT_SHARE_TARGET_CLASS);
+        getContext().startActivity(fileShare);
 
-        return mediaMessage;
-    }
-
-    /**
-     * 分享链接
-     *
-     * @return
-     */
-    private WXMediaMessage createWebpageObject() {
-        WXWebpageObject webpageObject = new WXWebpageObject();
-        webpageObject.webpageUrl = mBuilder.getPageUrl();
-        WXMediaMessage mediaMessage = new WXMediaMessage();
-        mediaMessage.mediaObject = webpageObject;
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
-        mediaMessage.messageExt = mBuilder.getExText();
-        mediaMessage.thumbData = createThumbData(SocialConfig.WECHAT_THUMB_LIMIT);
-        return mediaMessage;
+        finishWithSuccess(new SocialShareResult(getPlatform()));
     }
 
     /**
@@ -212,21 +225,35 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
      *
      * @return
      */
-    private WXMediaMessage createMiniProgramObject() {
+    private void shareMiniProgram() throws SocialShareException {
         WXMiniProgramObject programObject = new WXMiniProgramObject();
         programObject.webpageUrl = mBuilder.getPageUrl();
         programObject.userName = mBuilder.getMiniProgramUserName();
         programObject.path = mBuilder.getMiniProgramPath();
         programObject.miniprogramType = mBuilder.getMiniProgramType();
 
-        WXMediaMessage msg = new WXMediaMessage(programObject);
-        msg.title = mBuilder.getTitle();
-        msg.description = mBuilder.getText();
-        msg.thumbData = createThumbData(SocialConfig.WECHAT_MINI_PROG_IMAGE_LIMIT);
-        return msg;
+        WXMediaMessage mediaMessage = new WXMediaMessage(programObject);
+        mediaMessage.title = mBuilder.getTitle();
+        mediaMessage.description = mBuilder.getText();
+        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_MINI_PROG_IMAGE_LIMIT);
+
+        shareBySDK(mediaMessage);
     }
 
-    private byte[] createThumbData(int limit) {
+
+    private void shareBySDK(WXMediaMessage mediaMessage) {
+        SendMessageToWX.Req req = new SendMessageToWX.Req();
+        req.transaction = "" + System.currentTimeMillis();
+        req.message = mediaMessage;
+        req.scene = WechatConstants.WECHAT_MOMENTS.equalsIgnoreCase(getPlatform()) ? SendMessageToWX.Req.WXSceneTimeline : SendMessageToWX.Req.WXSceneSession;
+        boolean sendReq = mWXApi.sendReq(req);
+        if (!sendReq) {
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
+        }
+    }
+
+
+    private byte[] createThumbData(int limit) throws SocialShareException {
         byte[] thumbData = null;
         Bitmap thumbBitmap = mBuilder.getThumbBitmap();
         if (thumbBitmap != null) {
@@ -240,7 +267,7 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
             }
         }
         if (thumbData == null) {
-            String thumbUri = mBuilder.getThumbUri();
+            String thumbUri = downloadImageIfNeed(mBuilder.getThumbUri());
             if (!TextUtils.isEmpty(thumbUri)) {
                 thumbData = SocialUtils.loadImageBytes(thumbUri, limit);
             }
@@ -250,7 +277,9 @@ public class WechatShare extends AbsSocialShare<WechatDelegateActivity> implemen
 
     @Override
     protected void finishImpl() {
-        mWXLossResultWorkaround.stop();
+        if (mWXLossResultWorkaround != null) {
+            mWXLossResultWorkaround.stop();
+        }
         if (mWXApi != null) {
             mWXApi.detach();
         }

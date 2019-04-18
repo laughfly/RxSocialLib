@@ -8,8 +8,10 @@ import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
-import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
+
+import java.util.Arrays;
+import java.util.List;
 
 import rx.Observable;
 
@@ -42,7 +44,7 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
     }
 
     protected boolean checkArgs() {
-        return getContext() != null && !SocialUtils.isEmpty(getAppId());
+        return getContext() != null && !TextUtils.isEmpty(getAppId());
     }
 
 
@@ -55,12 +57,12 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return (T) get("extra-" + key);
     }
 
-    public String getAppName() {
-        return get("appName");
+    public String getShareAppName() {
+        return get("shareAppName");
     }
 
-    public ShareBuilder setAppName(String appName) {
-        put("appName", appName);
+    public ShareBuilder setShareAppName(String appName) {
+        put("shareAppName", appName);
         return this;
     }
 
@@ -98,6 +100,10 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
     public ShareBuilder setPageUrl(String targetUrl) {
         put("pageUrl", targetUrl);
         return this;
+    }
+
+    public boolean hasPageUrl() {
+        return has("pageUrl");
     }
 
     public ShareBuilder setThumbUri(String uri) {
@@ -183,11 +189,29 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
     }
 
     public boolean hasText() {
-        return !TextUtils.isEmpty(getTitle()) || !TextUtils.isEmpty(getText()) || !TextUtils.isEmpty(getExText());
+        return has("title") || has("text") || has("exText");
     }
 
     public boolean hasImage() {
-        return getImageBitmap() != null || !TextUtils.isEmpty(getImageUri()) || getImageResId() != 0;
+        return has("imageBitmap") || has("imageUri") || has("imageRes");
+    }
+
+    public ShareBuilder setImageList(String... imageList) {
+        return setImageList(Arrays.asList(imageList));
+    }
+
+    public ShareBuilder setImageList(List<String> imageList) {
+        put("imageList", imageList);
+        return this;
+    }
+
+    public List<String> getImageList() {
+        return get("imageList");
+    }
+
+    public boolean hasImageList() {
+        List<String> imageList = getImageList();
+        return null != imageList && imageList.size() > 0;
     }
 
     public ShareBuilder setMiniProgramUserName(String userName) {
@@ -218,6 +242,10 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return get("miniProgramPath");
     }
 
+    public boolean hasMiniProgram() {
+        return has("miniProgramPath");
+    }
+
     public ShareBuilder setAudioUri(String uri) {
         put("audioUri", uri);
         return this;
@@ -227,22 +255,34 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return get("audioUri");
     }
 
-    public ShareBuilder setVideoUrl(String uri) {
-        put("videoUrl", uri);
+    public boolean hasAudio() {
+        return has("audioUri");
+    }
+
+    public ShareBuilder setVideoUri(String uri) {
+        put("videoUri", uri);
         return this;
     }
 
-    public String getVideoUrl() {
-        return get("videoUrl");
+    public String getVideoUri() {
+        return get("videoUri");
     }
 
-    public ShareBuilder setFilePath(String path) {
+    public boolean hasVideo() {
+        return has("videoUri");
+    }
+
+    public ShareBuilder setFileUri(String path) {
         put("filePath", path);
         return this;
     }
 
-    public String getFilePath() {
+    public String getFileUri() {
         return get("filePath");
+    }
+
+    public boolean hasFilePath() {
+        return has("filePath");
     }
 
     public ShareBuilder setFileSizeLimit(int sizeLimit) {
@@ -250,16 +290,33 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return this;
     }
 
+    public ShareBuilder setFileList(List<String> fileList) {
+        put("fileList", fileList);
+        return this;
+    }
+
+    public List<String> getFileList() {
+        return get("fileList");
+    }
+
+    public boolean hasFileList() {
+        return has("fileList");
+    }
+
     public int getFileSizeLimit() {
         return get("fileSizeLimit", 104857600);
     }
 
-    public ShareBuilder setArkInfo(String arkInfo) {
-        put("arkInfo", arkInfo);
+    public ShareBuilder setAppInfo(String arkInfo) {
+        put("appInfo", arkInfo);
         return this;
     }
 
-    public String getArkInfo() {
-        return get("arkInfo");
+    public String getAppInfo() {
+        return get("appInfo");
+    }
+
+    public boolean hasAppInfo() {
+        return has("appInfo");
     }
 }
