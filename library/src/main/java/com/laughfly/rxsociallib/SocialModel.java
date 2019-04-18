@@ -46,7 +46,8 @@ public class SocialModel {
     private static boolean mInitialized;
 
     static {
-        sDownloadDirectory = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+        sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "rxsocial");
+        sDownloadDirectory.mkdirs();
         sImageDownloader = new DefaultImageDownloader();
     }
 

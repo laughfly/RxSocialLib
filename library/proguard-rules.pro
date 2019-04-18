@@ -26,6 +26,7 @@
 ##微信
 #-keep class com.tencent.mm.opensdk.** { *; }
 #SocialLib
+-dontwarn com.laughfly.rxsociallib.**
 -keep class com.laughfly.rxsociallib.** { *;}
 
 # RxJava RxAndroid

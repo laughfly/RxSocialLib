@@ -20,4 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 #qq
+-dontwarn com.tencent.**
 -keep class com.tencent.**{*;}
+-dontwarn com.laughfly.rxsociallib.**
+-keep class com.laughfly.rxsociallib.** { *;}

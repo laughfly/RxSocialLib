@@ -5,7 +5,7 @@ buildscript {
     repositories {
         google()
         jcenter()
-//        maven { url 'repo' }
+        maven { url 'repo' }
     }
 
     dependencies {
@@ -13,11 +13,11 @@ buildscript {
 
         classpath 'com.novoda:bintray-release:0.9'
 
-//        classpath 'com.laughfly.rxsociallib:plugin:0.3.2-SNAPSHOT'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.2.1-SNAPSHOT'
 
 //        classpath project(':plugin')
 
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.2'
+//        classpath 'com.laughfly.rxsociallib:plugin:0.3.2'
 
 //         NOTE: Do not place your application dependencies here; they belong
 //         in the individual module build.gradle files
@@ -29,7 +29,7 @@ allprojects {
     repositories {
         google()
         jcenter()
-//        maven { url '../repo' }
+        maven { url '../repo' }
     }
 
     tasks.withType(Javadoc) {

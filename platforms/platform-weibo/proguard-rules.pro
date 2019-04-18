@@ -20,4 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 #微博
--keep class com.sina.weibo.sdk.** { *; }
+-dontwarn com.sina.**
+-keep class com.sina.** { *; }
+-dontwarn com.laughfly.rxsociallib.**
+-keep class com.laughfly.rxsociallib.** { *;}

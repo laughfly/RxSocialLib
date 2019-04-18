@@ -52,7 +52,7 @@ class PlatformConfigTransform extends Transform {
 
     @Override
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs,
-                          TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
+                   TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
         inputs.each { TransformInput input ->
             println(getName() + ":TransformInput: " + input.toString())
             input.directoryInputs.each { DirectoryInput dirInput ->
@@ -108,7 +108,7 @@ class PlatformConfigTransform extends Transform {
 
             jarOutputStream.putNextEntry(zipEntry)
 
-            if (entryName.contains("SocialConfig.class")) {
+            if (entryName.contains("SocialModel.class")) {
                 modifyConfigClass(classNameList, jarOutputStream)
             } else {
                 jarOutputStream.write(IOUtils.toByteArray(inputStream))
@@ -126,7 +126,7 @@ class PlatformConfigTransform extends Transform {
     }
 
     void modifyConfigClass(Set<String> classNameList, JarOutputStream jarOutputStream) {
-        def configClass = classPool.get("com.laughfly.rxsociallib.SocialConfig")
+        def configClass = classPool.get("com.laughfly.rxsociallib.SocialModel")
 
         def method = configClass.getDeclaredMethod("getSocialClassList")
         StringBuilder bodyBuilder = new StringBuilder()
@@ -198,9 +198,9 @@ class PlatformConfigTransform extends Transform {
     void copyJar(JarInput jarInput, TransformOutputProvider outputProvider) {
         def jarName = jarInput.name
         def md5Name = DigestUtils.md5Hex(jarInput.file.getAbsolutePath())
-//        if (jarName.endsWith(".jar")) {
-//            jarName = jarName.substring(0, jarName.length() - 4)
-//        }
+        if (jarName.endsWith(".jar")) {
+            jarName = jarName.substring(0, jarName.length() - 4)
+        }
         //生成输出路径
         def dest = outputProvider.getContentLocation(jarName + md5Name,
                 jarInput.contentTypes, jarInput.scopes, Format.JAR)

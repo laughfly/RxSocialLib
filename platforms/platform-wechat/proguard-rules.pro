@@ -20,4 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 #微信
--keep class com.tencent.mm.opensdk.** { *; }
+-dontwarn com.tencent.mm.**
+-keep class com.tencent.mm.** { *; }
+-dontwarn com.laughfly.rxsociallib.**
+-keep class com.laughfly.rxsociallib.** { *;}
