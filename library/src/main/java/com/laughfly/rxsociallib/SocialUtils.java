@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.opengl.GLES20;
+import android.os.Bundle;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
@@ -61,7 +62,7 @@ public class SocialUtils {
     }
 
     public static byte[] loadImageBytes(String imageFilePath, int dataSizeLimit) {
-        Bitmap bitmap = loadBitmapFromFile(imageFilePath, dataSizeLimit);
+        Bitmap bitmap = safeLoadLocalBitmap(imageFilePath);
         return bitmapToBytes(bitmap, dataSizeLimit);
     }
 
@@ -209,4 +210,15 @@ public class SocialUtils {
         return false;
     }
 
+    public static String bundle2String(Bundle bundle) {
+        if (bundle == null) {
+            return null;
+        }
+        String string = "Bundle{";
+        for (String key : bundle.keySet()) {
+            string += " " + key + " => " + bundle.get(key) + ";";
+        }
+        string += " }Bundle";
+        return string;
+    }
 }

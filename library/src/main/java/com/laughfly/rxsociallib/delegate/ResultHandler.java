@@ -9,7 +9,7 @@ import android.content.Intent;
  *
  * @param <T>
  */
-public interface ResultHandler<T extends SocialActivity> {
+public interface ResultHandler<T extends SocialDelegateActivity> {
     /**
      * 第三方结果回调
      *

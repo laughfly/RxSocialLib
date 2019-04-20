@@ -2,60 +2,50 @@ package com.laughfly.rxsociallib.delegate;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.os.Bundle;
 
+import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
-
-import java.lang.ref.WeakReference;
 
 /**
  * 回调基类
  * author:caowy
  * date:2018-05-23
  */
-public abstract class SocialActivity extends Activity {
+public abstract class SocialDelegateActivity extends Activity {
 
-    /**
-     * 结果回调监听
-     */
-    protected static WeakReference<ResultHandler<?>> sTempResultHandler;
+    private String TAG = getClass().getSimpleName();
 
     /**
      *
      */
-    private boolean onPause;
+    protected boolean onPause;
 
     /**
      *
      */
-    private ResultHandler mResultHandler;
+    protected ResultHandler mResultHandler;
 
-    private boolean mHaveResult;
+    protected boolean mHaveResult;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        try {
-            super.onCreate(savedInstanceState);
-            ResultHandler<?> tempResultHandler = sTempResultHandler != null ? sTempResultHandler.get() : null;
-            //可能是App重启
-            if (tempResultHandler == null && mResultHandler == null) {
-                invokeNoResult();
-            } else {
-                if(tempResultHandler != null) {
-                    setResultHandler(tempResultHandler);
-                }
-                invokeDelegateCreate(this);
-                onCreateImpl(savedInstanceState);
-            }
-        } finally {
-            sTempResultHandler = null;
-        }
+    protected void onNewIntent(Intent intent) {
+        SocialLogger.d(TAG, "onNewIntent: %s", intent != null ? intent.toString() : "");
+        super.onNewIntent(intent);
     }
 
-    protected abstract void onCreateImpl(Bundle savedInstanceState);
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        SocialLogger.d(TAG, "onActivityResult, requestCode=" + requestCode + "resultCode=" + resultCode + ", data=" + data);
+        super.onActivityResult(requestCode, resultCode, data);
+    }
 
     public void setResultHandler(ResultHandler resultHandler) {
         mResultHandler = resultHandler;
+        if (mResultHandler == null) {
+            invokeNoResult();
+        } else {
+            invokeDelegateCreate(this);
+        }
     }
 
     public void invokeHandleResult(int requestCode, int resultCode, Intent data) {
@@ -66,20 +56,20 @@ public abstract class SocialActivity extends Activity {
         final ResultHandler resultHandler = mResultHandler;
         if (resultHandler != null) {
             resultHandler.handleResult(requestCode, resultCode, data);
-        } else {
-            finish();
         }
+
+        finish();
     }
 
     public void invokeNoResult() {
         if (mResultHandler != null) {
             mResultHandler.handleNoResult();
-        } else {
-            finish();
         }
+
+        finish();
     }
 
-    public void invokeDelegateCreate(SocialActivity delegate) {
+    public void invokeDelegateCreate(SocialDelegateActivity delegate) {
         if (mResultHandler != null) {
             mResultHandler.onDelegateCreate(delegate);
         } else {
@@ -89,6 +79,7 @@ public abstract class SocialActivity extends Activity {
 
     @Override
     protected void onResume() {
+        SocialLogger.d(TAG, "onResume");
         super.onResume();
         if (onPause) {
             onPause = false;
@@ -98,12 +89,15 @@ public abstract class SocialActivity extends Activity {
 
     @Override
     protected void onPause() {
+        SocialLogger.d(TAG, "onPause");
         super.onPause();
+        SocialThreads.removeUiRunnable(this);
         onPause = true;
     }
 
     @Override
     protected void onDestroy() {
+        SocialLogger.d(TAG, "onDestroy");
         super.onDestroy();
         SocialThreads.removeUiRunnable(this);
         if (mResultHandler != null) {
@@ -113,6 +107,7 @@ public abstract class SocialActivity extends Activity {
     }
 
     protected void onResumeFromPause() {
+        SocialLogger.d(TAG, "onResumeFromPause");
         if(!mHaveResult) {
             SocialThreads.postOnUiThread(new Runnable() {
                 @Override
@@ -121,7 +116,7 @@ public abstract class SocialActivity extends Activity {
                         invokeNoResult();
                     }
                 }
-            }, SocialActivity.this, 300);
+            }, SocialDelegateActivity.this, 300);
         }
     }
 }

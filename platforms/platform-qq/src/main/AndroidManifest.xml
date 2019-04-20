@@ -6,12 +6,13 @@
             android:name="com.laughfly.rxsociallib.platform.qq.QQDelegateActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:screenOrientation="behind"
-            android:theme="@style/Ghost"/>
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <!--QQ SDK-->
         <activity
             android:name="com.tencent.connect.common.AssistActivity"
             android:configChanges="orientation|keyboardHidden"
             android:screenOrientation="behind"
+            android:exported="true"
             android:theme="@android:style/Theme.Translucent.NoTitleBar" />
     </application>
 </manifest>

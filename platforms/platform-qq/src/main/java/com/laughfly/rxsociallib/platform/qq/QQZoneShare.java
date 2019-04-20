@@ -7,12 +7,14 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
 import com.laughfly.rxsociallib.share.SocialShareResult;
+import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
@@ -45,8 +47,6 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
 
     private Tencent mTencent;
 
-    private boolean mShareByIntent;
-
     public QQZoneShare() {
         super();
     }
@@ -58,7 +58,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
             return;
         }
         mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-        QQDelegateActivity.start(getBuilder().getContext(), QQZoneShare.this);
+        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQZoneShare.this);
     }
 
     @Override
@@ -116,11 +116,10 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         params.putStringArrayList(SHARE_TO_QQ_IMAGE_URL, imageList);
         params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
         params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getPageUrl());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
 
         shareBySDK(activity, params);
     }
-
 
     /**
      * 分享说说
@@ -131,6 +130,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
 
         params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
         params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
         ArrayList<String> imageList = new ArrayList<>();
         if(mBuilder.hasImage()) {
             imageList.add(mBuilder.getImageUri());
@@ -143,7 +143,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         while (iterator.hasNext()) {
             String imageUri = iterator.next();
             String _imageUri = downloadImageIfNeed(imageUri);
-            if(_imageUri != null && _imageUri.equalsIgnoreCase(imageUri)) {
+            if(_imageUri != null && !_imageUri.equalsIgnoreCase(imageUri)) {
                 iterator.set(_imageUri);
             }
         }
@@ -162,12 +162,22 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         publishBySDK(activity, params);
     }
 
-    private void shareBySDK(Activity activity, Bundle params) {
-        mTencent.shareToQzone(activity, params, QQZoneShare.this);
+    private void shareBySDK(final Activity activity, final Bundle params) {
+        SocialThreads.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTencent.shareToQzone(activity, params, QQZoneShare.this);
+            }
+        });
     }
 
-    private void publishBySDK(Activity activity, Bundle params) {
-        mTencent.publishToQzone(activity, params, QQZoneShare.this);
+    private void publishBySDK(final Activity activity, final Bundle params) {
+        SocialThreads.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                mTencent.publishToQzone(activity, params, QQZoneShare.this);
+            }
+        });
     }
 
     private Bundle createParams(@ShareType.Def int shareType) {
@@ -199,25 +209,17 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
+        super.handleResult(requestCode, resultCode, data);
         try {
             //分享成功但停留在QQ，并直接通过任务管理切换回APP
-            if (requestCode == 0 && 0 == resultCode && data == null) {
+            if (requestCode != Constants.REQUEST_QZONE_SHARE) {
                 finishWithNoResult();
             } else {
-                Tencent.onActivityResultData(requestCode, resultCode, data, QQZoneShare.this);
+                Tencent.handleResultData(data, QQZoneShare.this);
             }
         } catch (Exception e) {
             e.printStackTrace();
             finishWithError(e);
-        }
-    }
-
-    @Override
-    public void handleNoResult() {
-        if (mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
-        } else {
-            super.handleNoResult();
         }
     }
 

@@ -9,12 +9,14 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
 import com.laughfly.rxsociallib.share.SocialShareResult;
+import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
@@ -61,7 +63,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
             return;
         }
         mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-        QQDelegateActivity.start(getBuilder().getContext(), QQShare.this);
+        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQShare.this);
     }
 
     @Override
@@ -217,8 +219,8 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
             params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
         } else {
             params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-            if (mBuilder.hasPageUrl()) {
-                params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getPageUrl());
+            if (mBuilder.hasWebUrl()) {
+                params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
             }
             params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
             params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
@@ -249,12 +251,13 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
+        super.handleResult(requestCode, resultCode, data);
         try {
             //分享成功但停留在QQ，并直接通过任务管理切换回APP
-            if (requestCode == 0 && 0 == resultCode && data == null) {
+            if (requestCode != Constants.REQUEST_QQ_SHARE) {
                 finishWithNoResult();
             } else {
-                Tencent.onActivityResultData(requestCode, resultCode, data, QQShare.this);
+                Tencent.handleResultData(data, QQShare.this);
             }
         } catch (Exception e) {
             e.printStackTrace();

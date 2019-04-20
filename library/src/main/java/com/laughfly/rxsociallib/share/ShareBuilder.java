@@ -8,10 +8,12 @@ import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import rx.Observable;
 
@@ -47,6 +49,10 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return getContext() != null && !TextUtils.isEmpty(getAppId());
     }
 
+    public ShareBuilder setAll(Map<String, Object> data) {
+        putAll(data);
+        return this;
+    }
 
     public <T> ShareBuilder putExtra(String key, T entity) {
         put("extra-" + key, entity);
@@ -93,17 +99,17 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
         return this;
     }
 
-    public String getPageUrl() {
-        return get("pageUrl");
+    public String getWebUrl() {
+        return get("webUrl");
     }
 
-    public ShareBuilder setPageUrl(String targetUrl) {
-        put("pageUrl", targetUrl);
+    public ShareBuilder setWebUrl(String targetUrl) {
+        put("webUrl", targetUrl);
         return this;
     }
 
-    public boolean hasPageUrl() {
-        return has("pageUrl");
+    public boolean hasWebUrl() {
+        return has("webUrl");
     }
 
     public ShareBuilder setThumbUri(String uri) {
@@ -273,16 +279,16 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
     }
 
     public ShareBuilder setFileUri(String path) {
-        put("filePath", path);
+        put("fileUri", path);
         return this;
     }
 
     public String getFileUri() {
-        return get("filePath");
+        return get("fileUri");
     }
 
     public boolean hasFilePath() {
-        return has("filePath");
+        return has("fileUri");
     }
 
     public ShareBuilder setFileSizeLimit(int sizeLimit) {
@@ -318,5 +324,14 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
 
     public boolean hasAppInfo() {
         return has("appInfo");
+    }
+
+    public ShareBuilder setNoResultAsSuccess(boolean noResultAsSuccess) {
+        put("noResultAsSuccess", noResultAsSuccess);
+        return this;
+    }
+
+    public boolean getNoResultAsSuccess() {
+        return get("noResultAsSuccess", SocialModel.getNoResultAsSuccess());
     }
 }

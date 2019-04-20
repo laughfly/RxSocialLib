@@ -15,11 +15,10 @@ class WechatConstants {
     static final String WECHAT_MOMENTS = "WechatMoments";
 
     static final int WECHAT_SHARE_SUPPORT  = ShareType.SHARE_TEXT | ShareType.SHARE_WEB |
-        ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_AUDIO | ShareType.SHARE_FILE |
-        ShareType.SHARE_APP;
+        ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_AUDIO | ShareType.SHARE_FILE|
+        ShareType.SHARE_MINI_PROGRAM;
     static final int WECHAT_MOMENTS_SHARE_SUPPORT  = ShareType.SHARE_TEXT | ShareType.SHARE_WEB |
-        ShareType.SHARE_IMAGE | ShareType.SHARE_NETWORK_VIDEO | ShareType.SHARE_AUDIO | ShareType.SHARE_FILE |
-        ShareType.SHARE_APP;
+        ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_NETWORK_VIDEO | ShareType.SHARE_AUDIO;
 
     static final String WECHAT_PACKAGE = "com.tencent.mm";
 

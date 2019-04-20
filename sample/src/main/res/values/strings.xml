@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">RxSocialLib</string>
+    <string name="app_name">RxSocialLibSample</string>
+    <string name="display_name"><font color='#ff0000'>Rx</font><font color='#24af41'>Social</font><font color='#1296db'>Lib</font></string>
 </resources>

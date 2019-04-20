@@ -4,9 +4,10 @@ import android.content.Intent;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.AccessToken;
-import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
@@ -45,11 +46,37 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
             return;
         }
 
-        QQDelegateActivity.start(mBuilder.getContext(), QQLogin.this);
+        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQLogin.this);
     }
 
     @Override
     protected void finishImpl() {
+    }
+
+
+    @Override
+    public void onDelegateCreate(final QQDelegateActivity activity) {
+        super.onDelegateCreate(activity);
+        SocialThreads.runOnThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
+                    AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
+                    if (accessToken != null) {
+                        mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
+                        mTencent.setOpenId(accessToken.openId);
+                        if (mTencent.isSessionValid()) {
+                            mTencent.logout(mBuilder.getContext());
+                        }
+                    }
+                    mTencent.login(activity, mBuilder.getScope(), QQLogin.this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
     }
 
     @Override
@@ -108,7 +135,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
                 finishWithSuccess(mResult);
             }
         } else {
-            Logger.e("SocialLogin", "QQ, errCode=" + ret);
+            SocialLogger.e("SocialLogin", "QQ, errCode=" + ret);
             finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
         }
     }
@@ -136,7 +163,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
                 finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
             }
         } else {
-            Logger.e("SocialLogin", "QQ, errCode=" + ret);
+            SocialLogger.e("SocialLogin", "QQ, errCode=" + ret);
             finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
         }
     }
@@ -153,6 +180,7 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
+        super.handleResult(requestCode, resultCode, data);
         try {
             Tencent.handleResultData(data, QQLogin.this);
         } catch (Exception e) {
@@ -161,29 +189,5 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
         }
     }
 
-    @Override
-    public void onDelegateCreate(final QQDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-                    AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
-                    if (accessToken != null) {
-                        mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
-                        mTencent.setOpenId(accessToken.openId);
-                        if (mTencent.isSessionValid()) {
-                            mTencent.logout(mBuilder.getContext());
-                        }
-                    }
-                    mTencent.login(activity, mBuilder.getScope(), QQLogin.this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
-    }
 
 }

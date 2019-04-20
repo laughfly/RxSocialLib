@@ -1,0 +1,36 @@
+[
+  {
+    "appId": "568898243",
+    "appSecret": "38a4f8204cc784f81f9f0daaf31e02e3",
+    "redirectUrl": "https://api.weibo.com/oauth2/default.html",
+    "scope": "get_token_info",
+    "state": "hahahah",
+    "platform": "Weibo"
+  },
+  {
+    "appId": "100371282",
+    "appSecret": "aed9b0303e3ed1e27bae87c33761161d",
+    "scope": "get_simple_userinfo",
+    "platform": "QQ"
+  },
+  {
+    "appId": "10086000",
+    "appSecret": "aed9b0303e3ed1e27bae87c33761161d",
+    "scope": "get_simple_userinfo",
+    "platform": "QQZone"
+  },
+  {
+    "appId": "wx4868b35061f87885",
+    "appSecret": "64020361b8ec4c99936c0e3999a9f249",
+    "scope": "snsapi_userinfo",
+    "state": "wechat_sdk_live",
+    "platform": "Wechat"
+  },
+  {
+    "appId": "wx4868b35061f87885",
+    "appSecret": "64020361b8ec4c99936c0e3999a9f249",
+    "scope": "snsapi_userinfo",
+    "state": "wechat_sdk_live",
+    "platform": "WechatMoments"
+  }
+]

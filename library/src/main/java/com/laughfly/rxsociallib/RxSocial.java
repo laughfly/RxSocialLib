@@ -23,7 +23,11 @@ public class RxSocial {
         SocialModel.initialize(context);
     }
 
-    public static Set<String> getSharePlatformList() {
+    public static void setLogEnable(boolean enable) {
+        SocialLogger.setLogEnabled(enable);
+    }
+
+    public static Set<String> getSharePlatforms() {
         return SocialModel.getSharePlatforms();
     }
 
@@ -31,7 +35,11 @@ public class RxSocial {
         return SocialModel.getLoginPlatforms();
     }
 
-    private static Set<String> getSupportPlatforms(@ShareType.Def int shareType) {
+    public static boolean getSupportLogin(String platform) {
+        return SocialModel.getSupportLogin(platform);
+    }
+
+    public static Set<String> getSupportPlatforms(@ShareType.Def int shareType) {
         return SocialModel.getSupportPlatforms(shareType);
     }
 
@@ -45,6 +53,10 @@ public class RxSocial {
 
     public static void setImageDownloader(ImageDownloader downloader) {
         SocialModel.setImageDownloader(downloader);
+    }
+
+    public static void setNoResultAsSuccess(boolean noResultAsSuccess) {
+        SocialModel.setNoResultAsSuccess(noResultAsSuccess);
     }
 
     /**

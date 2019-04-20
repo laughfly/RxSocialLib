@@ -5,7 +5,7 @@ import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.SocialUriUtils;
-import com.laughfly.rxsociallib.delegate.SocialActivity;
+import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.internal.SocialAction;
 
@@ -18,7 +18,7 @@ import java.io.File;
  *
  * @param <Delegate>
  */
-public abstract class AbsSocialShare<Delegate extends SocialActivity> extends SocialAction<ShareBuilder, Delegate, SocialShareResult> {
+public abstract class AbsSocialShare<Delegate extends SocialDelegateActivity> extends SocialAction<ShareBuilder, Delegate, SocialShareResult> {
 
     public AbsSocialShare() {
         super();
@@ -28,6 +28,15 @@ public abstract class AbsSocialShare<Delegate extends SocialActivity> extends So
     public AbsSocialShare setCallback(SocialCallback<SocialShareResult> callback) {
         super.setCallback(callback);
         return this;
+    }
+
+    @Override
+    public void handleNoResult() {
+        if(mBuilder.getNoResultAsSuccess()) {
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        } else {
+            super.handleNoResult();
+        }
     }
 
     @Override
@@ -86,6 +95,9 @@ public abstract class AbsSocialShare<Delegate extends SocialActivity> extends So
 
     protected @ShareType.Def int getShareType() {
         ShareBuilder builder = getBuilder();
+        if(builder.hasMiniProgram()) {
+            return ShareType.SHARE_MINI_PROGRAM;
+        }
         if(builder.hasVideo()) {
             if(SocialUriUtils.isHttpUrl(builder.getVideoUri())) {
                 return ShareType.SHARE_NETWORK_VIDEO;
@@ -118,7 +130,7 @@ public abstract class AbsSocialShare<Delegate extends SocialActivity> extends So
             return ShareType.SHARE_FILE;
         }
 
-        if(builder.hasPageUrl()) {
+        if(builder.hasWebUrl()) {
             return ShareType.SHARE_WEB;
         }
 

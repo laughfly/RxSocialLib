@@ -1,18 +1,19 @@
 package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
-import android.support.v4.util.ArrayMap;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import rx.Observable;
 
 public abstract class SocialBuilder<Action extends SocialAction, Result> {
-    private final ArrayMap<String, Object> mData = new ArrayMap<>();
+    private final HashMap<String, Object> mData = new HashMap<>();
 
     private Context mContext;
 
@@ -28,6 +29,10 @@ public abstract class SocialBuilder<Action extends SocialAction, Result> {
             setRedirectUrl(platformConfig.redirectUrl);
             setState(platformConfig.state);
         }
+    }
+
+    protected void putAll(Map<String, Object> data) {
+        mData.putAll(data);
     }
 
     protected <E> void put(String key, E entity) {

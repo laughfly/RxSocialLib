@@ -3,10 +3,12 @@ package com.laughfly.rxsociallib.platform.wechat;
 import android.content.Intent;
 
 import com.laughfly.rxsociallib.AccessToken;
-import com.laughfly.rxsociallib.Logger;
 import com.laughfly.rxsociallib.SocialConstants;
+import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
+import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
@@ -31,12 +33,9 @@ import org.json.JSONObject;
 @LoginFeatures({
     @LoginFeature(platform = "Wechat")
 })
-public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implements IWXAPIEventHandler,
-    WXLossResultWorkaround.Callback {
+public class WechatLogin extends AbsSocialLogin<SocialDelegateActivity> implements IWXAPIEventHandler {
 
     private IWXAPI mWXAPI;
-
-    private WXLossResultWorkaround mWXLossResultWorkaround;
 
     public WechatLogin() {
         super();
@@ -44,11 +43,6 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
 
     @Override
     protected void startImpl() {
-        mWXLossResultWorkaround = new WXLossResultWorkaround(getContext(), this);
-        mWXLossResultWorkaround.start();
-
-        WechatDelegateActivity.setTheResultHandler(WechatLogin.this);
-
         mWXAPI = WXAPIFactory.createWXAPI(mBuilder.getContext(), mBuilder.getAppId(), true);
         mWXAPI.registerApp(mBuilder.getAppId());
 
@@ -57,6 +51,22 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
             return;
         }
 
+        WechatEntryActivity.setTheResultHandler(WechatLogin.this);
+        DelegateHelper.startActivity(mBuilder.getContext(), WechatDelegateActivity.class, WechatLogin.this);
+    }
+
+    @Override
+    public void onDelegateCreate(SocialDelegateActivity delegateActivity) {
+        super.onDelegateCreate(delegateActivity);
+        try {
+            startLogin();
+        } catch (Exception e) {
+            e.printStackTrace();
+            finishWithError(e);
+        }
+    }
+
+    private void startLogin() {
         SendAuth.Req req = new SendAuth.Req();
         req.scope = mBuilder.getScope();
         req.state = mBuilder.getState();
@@ -68,10 +78,6 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
 
     @Override
     protected void finishImpl() {
-        if (mWXLossResultWorkaround != null) {
-            mWXLossResultWorkaround.setHaveResult(true);
-            mWXLossResultWorkaround.stop();
-        }
         if (mWXAPI != null) {
             mWXAPI.detach();
         }
@@ -79,11 +85,8 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
+        super.handleResult(requestCode, resultCode, data);
         try {
-            Logger.d("Weixin", "req=" + requestCode + ", res=" + resultCode + ", data=" + data);
-
-            mWXLossResultWorkaround.stop();
-
             mWXAPI.handleIntent(data, this);
         } catch (Exception e) {
             e.printStackTrace();
@@ -116,11 +119,11 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
                         break;
                     case -2:
                     case -4:
-                        Logger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
+                        SocialLogger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
                         finishWithCancel();
                         break;
                     default:
-                        Logger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
+                        SocialLogger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
                         finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
                         break;
                 }
@@ -202,25 +205,5 @@ public class WechatLogin extends AbsSocialLogin<WechatDelegateActivity> implemen
             accessToken + "&openid=" + openId + "&lang=zh_CN";
     }
 
-
-    @Override
-    public void onCallback() {
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Thread.sleep(200);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                try {
-                    if (!mWXLossResultWorkaround.haveResult())
-                        finishWithNoResult();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
 }
 

@@ -12,6 +12,7 @@ import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
 import com.laughfly.rxsociallib.share.ShareFeature;
@@ -63,7 +64,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         WbSdk.install(mBuilder.getContext(),
             new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
 
-        WeiboDelegateActivity.start(getContext(), WeiboShare.this);
+        DelegateHelper.startActivity(mBuilder.getContext(), WeiboDelegateActivity.class, WeiboShare.this);
     }
 
     @Override
@@ -161,7 +162,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     private void shareAudio() throws SocialShareException {
         WeiboMultiMessage message = createMessage();
-        mBuilder.setPageUrl(mBuilder.getAudioUri());
+        mBuilder.setWebUrl(mBuilder.getAudioUri());
         message.mediaObject = createWebObject();
         shareBySDK(message);
     }
@@ -243,7 +244,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         webpageObject.identify = Utility.generateGUID();
         webpageObject.title = mBuilder.getTitle();
         webpageObject.description = mBuilder.getText();
-        webpageObject.actionUrl = mBuilder.getPageUrl();
+        webpageObject.actionUrl = mBuilder.getWebUrl();
         webpageObject.thumbData = createThumbData(WeiboConstants.WEIBO_THUMB_LIMIT);
         webpageObject.defaultText = mBuilder.getText();
         return webpageObject;
@@ -296,16 +297,17 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode != 0) {
-            SocialThreads.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    finishWithCancel();
-                }
-            }, WeiboShare.this, 100);
-            return;
-        }
-        SocialThreads.removeUiRunnable(WeiboShare.this);
+        super.handleResult(requestCode, resultCode, data);
+//        if (requestCode != 0 && requestCode != -1) {
+//            SocialThreads.postOnUiThread(new Runnable() {
+//                @Override
+//                public void run() {
+//                    finishWithCancel();
+//                }
+//            }, WeiboShare.this, 100);
+//            return;
+//        }
+//        SocialThreads.removeUiRunnable(WeiboShare.this);
         try {
             mWbShareHandler.doResultIntent(data, this);
         } catch (Exception e) {

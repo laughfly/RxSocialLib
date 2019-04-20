@@ -43,12 +43,27 @@ public class SocialModel {
 
     private static HashMap<String, Class<? extends AbsSocialLogin>> sLoginClassMap = new HashMap<>();
 
-    private static boolean mInitialized;
+    private static boolean sNoResultAsSuccess;
+
+    private static boolean sInitialized;
 
     static {
         sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "rxsocial");
         sDownloadDirectory.mkdirs();
         sImageDownloader = new DefaultImageDownloader();
+        sNoResultAsSuccess = true;
+    }
+
+    public static void setNoResultAsSuccess(boolean noResultAsSuccess) {
+        sNoResultAsSuccess = noResultAsSuccess;
+    }
+
+    public static boolean getNoResultAsSuccess() {
+        return sNoResultAsSuccess;
+    }
+
+    public static boolean getSupportLogin(String platform) {
+        return sLoginClassMap.containsKey(platform);
     }
 
     public static Set<String> getSupportPlatforms(@ShareType.Def int shareType) {
@@ -109,7 +124,7 @@ public class SocialModel {
     }
 
     static boolean isInitialized() {
-        return mInitialized;
+        return sInitialized;
     }
 
     static void initialize(Context context) {
@@ -155,7 +170,7 @@ public class SocialModel {
             sLoginClassMap.clear();
             sLoginClassMap.putAll(loginClassMap);
 
-            mInitialized = true;
+            sInitialized = true;
         } catch (IOException e) {
             e.printStackTrace();
         }

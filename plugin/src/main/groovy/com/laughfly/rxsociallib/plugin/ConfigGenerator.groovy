@@ -179,7 +179,7 @@ class ConfigGenerator {
                                         xmlns:tools="http://schemas.android.com/tools"
                                         android:name="${targetCls}"
                                         android:exported="true"
-                                        android:targetActivity="com.laughfly.rxsociallib.platform.wechat.WechatDelegateActivity"/>
+                                        android:targetActivity="com.laughfly.rxsociallib.platform.wechat.WechatEntryActivity"/>
                                     """
                         application.appendNode(parser.parseText(toAdd))
                         wechatAdded = true

@@ -1,11 +1,14 @@
 package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
+import android.content.Intent;
 
 import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
+import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.delegate.ResultHandler;
-import com.laughfly.rxsociallib.delegate.SocialActivity;
+import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 
 import java.lang.ref.WeakReference;
@@ -23,8 +26,10 @@ import rx.android.schedulers.AndroidSchedulers;
  * @param <Delegate>
  * @param <Result>
  */
-public abstract class SocialAction<Builder extends SocialBuilder, Delegate extends SocialActivity,
+public abstract class SocialAction<Builder extends SocialBuilder, Delegate extends SocialDelegateActivity,
     Result extends SocialResult> implements ResultHandler<Delegate> {
+
+    private String TAG = getClass().getSimpleName();
 
     /**
      *
@@ -91,17 +96,25 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
     }
 
     @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        SocialLogger.d(TAG, "handleResult: req[%d]result[%d]data[%s]", requestCode, resultCode, SocialUtils.bundle2String(data != null ? data.getExtras() : null));
+    }
+
+    @Override
     public void handleNoResult() {
+        SocialLogger.d(TAG, "handleNoResult");
         finishWithNoResult();
     }
 
     @Override
     public void onDelegateCreate(Delegate delegate) {
+        SocialLogger.d(TAG, "onDelegateCreate: %s", delegate);
         mDelegateRef = new WeakReference<>(delegate);
     }
 
     @Override
     public void onDelegateDestroy(Delegate delegate) {
+        SocialLogger.d(TAG, "onDelegateDestroy: %s", delegate);
         mDelegateRef = null;
     }
 
@@ -142,11 +155,14 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
             e.printStackTrace();
         }
         final Delegate delegate = getDelegate();
-        if (delegate != null) {
+        if (delegate != null && !delegate.isDestroyed()) {
             SocialThreads.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    delegate.finish();
+                    try {
+                        delegate.finish();
+                    } catch (Exception ignore) {
+                    }
                 }
             });
         }
