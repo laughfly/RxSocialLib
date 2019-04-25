@@ -7,9 +7,9 @@ import com.laughfly.rxsociallib.share.ShareType;
  * email:cwy.fly2@gmail.com
  */
 class WechatConstants {
-    static final int WECHAT_IMAGE_LIMIT = 10485760;
-    static final int WECHAT_MINI_PROG_IMAGE_LIMIT = 128 * 1024;
-    static final int WECHAT_THUMB_LIMIT = '耀';
+    static final int IMAGE_SIZE_LIMIT = 10485760;//10MB
+    static final int MINI_PROG_IMAGE_LIMIT = 131072;//128KB
+    static final int THUMB_SIZE_LIMIT = '耀';//32768
 
     static final String WECHAT = "Wechat";
     static final String WECHAT_MOMENTS = "WechatMoments";
@@ -18,7 +18,7 @@ class WechatConstants {
         ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_AUDIO | ShareType.SHARE_FILE|
         ShareType.SHARE_MINI_PROGRAM;
     static final int WECHAT_MOMENTS_SHARE_SUPPORT  = ShareType.SHARE_TEXT | ShareType.SHARE_WEB |
-        ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_NETWORK_VIDEO | ShareType.SHARE_AUDIO;
+        ShareType.SHARE_IMAGE | ShareType.SHARE_NETWORK_VIDEO | ShareType.SHARE_AUDIO;
 
     static final String WECHAT_PACKAGE = "com.tencent.mm";
 

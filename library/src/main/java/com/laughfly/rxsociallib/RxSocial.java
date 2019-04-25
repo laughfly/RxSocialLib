@@ -2,7 +2,7 @@ package com.laughfly.rxsociallib;
 
 import android.content.Context;
 
-import com.laughfly.rxsociallib.downloader.ImageDownloader;
+import com.laughfly.rxsociallib.downloader.FileDownloader;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginBuilder;
 import com.laughfly.rxsociallib.share.ShareBuilder;
@@ -12,7 +12,7 @@ import java.io.File;
 import java.util.Set;
 
 /**
- * 社会化工具类
+ * 分享和登录
  * author:caowy
  * date:2018-04-25
  */
@@ -51,8 +51,8 @@ public class RxSocial {
         SocialModel.setDownloadDirectory(directory);
     }
 
-    public static void setImageDownloader(ImageDownloader downloader) {
-        SocialModel.setImageDownloader(downloader);
+    public static void setFileDownloader(FileDownloader downloader) {
+        SocialModel.setFileDownloader(downloader);
     }
 
     public static void setNoResultAsSuccess(boolean noResultAsSuccess) {

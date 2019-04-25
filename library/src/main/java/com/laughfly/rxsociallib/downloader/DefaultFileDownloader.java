@@ -2,6 +2,7 @@ package com.laughfly.rxsociallib.downloader;
 
 import android.text.TextUtils;
 
+import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
@@ -10,24 +11,23 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.net.URL;
+import java.net.URLConnection;
 
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
 
 /**
  * Created by caowy on 2019/4/17.
  * email:cwy.fly2@gmail.com
  */
 
-public class DefaultImageDownloader extends ImageDownloader {
-    private OkHttpClient mOkHttpClient;
+public class DefaultFileDownloader extends FileDownloader {
 
-    public DefaultImageDownloader() {
-        mOkHttpClient = new OkHttpClient();
+    public DefaultFileDownloader() {
     }
 
     @Override
     public File download(String url) throws Exception {
+        long time = System.currentTimeMillis();
         File downloadDirectory = SocialModel.getDownloadDirectory();
 
         String fileName = SocialUriUtils.getFileName(url);
@@ -42,8 +42,8 @@ public class DefaultImageDownloader extends ImageDownloader {
         InputStream is = null;
         BufferedOutputStream bos = null;
         try {
-            Request request = new Request.Builder().url(url).build();
-            is = mOkHttpClient.newCall(request).execute().body().byteStream();
+            URLConnection urlConnection = new URL(url).openConnection();
+            is = urlConnection.getInputStream();
             bos = new BufferedOutputStream(new FileOutputStream(downloadFile), 8192);
             int readLen;
             int bufferSize = 8192;
@@ -57,6 +57,7 @@ public class DefaultImageDownloader extends ImageDownloader {
             SocialUtils.closeStream(bos);
         }
 
+        SocialLogger.d("DefaultFileDownloader", "TimeCost=" + (System.currentTimeMillis() - time));
         return downloadFile;
     }
 }

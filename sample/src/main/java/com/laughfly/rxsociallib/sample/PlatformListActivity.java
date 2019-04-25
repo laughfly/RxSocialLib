@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -15,8 +16,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.laughfly.rxsociallib.RxSocial;
+import com.laughfly.rxsociallib.SocialUriUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -61,8 +64,6 @@ public class PlatformListActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RxSocial.initialize(this);
-        RxSocial.setLogEnable(BuildConfig.DEBUG);
 
         setContentView(R.layout.activity_platform_list);
 
@@ -86,6 +87,13 @@ public class PlatformListActivity extends Activity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
         mRecyclerView.setAdapter(new ARecyclerViewAdapter());
+        test();
+    }
+
+    private void test() {
+        String filePath = SocialUriUtils.toFilePath(this, "content://media/external/images/media/187874");
+        Uri uri = Uri.parse("/storage/0/.hahdsh/lalsdlasd.axax?lalal=haha&lla=lalal");
+        Toast.makeText(this, filePath, Toast.LENGTH_SHORT).show();
     }
 
     private void showActionList(String platform) {

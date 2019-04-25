@@ -2,6 +2,7 @@ package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.CallSuper;
 
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialLogger;
@@ -107,12 +108,14 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
     }
 
     @Override
+    @CallSuper
     public void onDelegateCreate(Delegate delegate) {
         SocialLogger.d(TAG, "onDelegateCreate: %s", delegate);
         mDelegateRef = new WeakReference<>(delegate);
     }
 
     @Override
+    @CallSuper
     public void onDelegateDestroy(Delegate delegate) {
         SocialLogger.d(TAG, "onDelegateDestroy: %s", delegate);
         mDelegateRef = null;

@@ -36,6 +36,8 @@ public class SocialConstants {
 
     public static final int ERR_DOWNLOAD_FAILED = 11;
 
+    public static final int ERR_URI_NOT_SUPPORT = 12;
+
     public static final int ERR_OTHER = 99;
 
     public static final int ERR_EXCEPTION = 100;
@@ -43,7 +45,7 @@ public class SocialConstants {
     @Retention(SOURCE)
     @IntDef(value = {ERR_OK, ERR_API_NOT_SUPPORT, ERR_APP_NOT_INSTALL, ERR_APP_VERSION_LOW, ERR_EXCEPTION, ERR_OTHER,
     ERR_USER_CANCEL, ERR_NO_RESULT, ERR_REQUEST_FAIL, ERR_AUTH_DENIED, ERR_BAN, ERR_CONTEXT, ERR_SHARETYPE_NOT_SUPPORT,
-    ERR_DOWNLOAD_FAILED})
+    ERR_DOWNLOAD_FAILED, ERR_URI_NOT_SUPPORT})
     public @interface ErrCode{}
 
     public static final int MINIPROGRAM_TYPE_RELEASE = 0;

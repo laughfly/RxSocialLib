@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
+import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
@@ -108,7 +109,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         Bundle params = createParams(ShareType.SHARE_WEB);
 
         ArrayList<String> imageList = new ArrayList<>();
-        String thumbUri = downloadImageIfNeed(mBuilder.getThumbUri());
+        String thumbUri = getThumbPath(QQConstants.THUMB_SIZE_LIMIT);
         if(!TextUtils.isEmpty(thumbUri)) {
             imageList.add(thumbUri);
         }
@@ -133,7 +134,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
         ArrayList<String> imageList = new ArrayList<>();
         if(mBuilder.hasImage()) {
-            imageList.add(mBuilder.getImageUri());
+            imageList.add(getImagePath(QQConstants.IMAGE_SIZE_LIMIT));
         }
         if(mBuilder.hasImageList()) {
             imageList.addAll(mBuilder.getImageList());
@@ -142,7 +143,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         ListIterator<String> iterator = imageList.listIterator();
         while (iterator.hasNext()) {
             String imageUri = iterator.next();
-            String _imageUri = downloadImageIfNeed(imageUri);
+            String _imageUri = transformUri(imageUri, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH);
             if(_imageUri != null && !_imageUri.equalsIgnoreCase(imageUri)) {
                 iterator.set(_imageUri);
             }
@@ -153,11 +154,11 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         publishBySDK(activity, params);
     }
 
-    private void publishVideo(Activity activity) {
+    private void publishVideo(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_LOCAL_VIDEO);
 
         params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(PUBLISH_TO_QZONE_VIDEO_PATH, mBuilder.getVideoUri());
+        params.putString(PUBLISH_TO_QZONE_VIDEO_PATH, transformUri(mBuilder.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_PATH));
 
         publishBySDK(activity, params);
     }

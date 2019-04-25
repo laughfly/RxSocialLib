@@ -1,13 +1,13 @@
 # RxSocialLib
 * 支持QQ，QQZone，微信，微信朋友圈，微博，微博故事
 * 兼容RxJava数据流 
-* 没有后台取数
+* 基于平台的官方SDK开发
 # 导入
 在根目录下的build.gradle文件添加
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.3'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.3.1'
     }
 }
 ```
@@ -25,13 +25,13 @@ buildscript {
             .setText("内容")
             .setThumbUri("图标地址")
             //分享网页
-            .setPageUrl("https://sample-videos.com")
+            .setWebUrl("https://www.github.com")
             //分享图片
             .setImageUri("https://sample-videos.com/img/Sample-jpg-image-500kb.jpg")
             //分享音频
             .setAudioUri("https://sample-videos.com/audio/mp3/wave.mp3")
             //分享视频
-            .setVideoUri("https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_2mb.mp4")
+            .setVideoUri("/storage/emulated/0/Download/test.mp4")
             //分享文件
             .setFileUri("本地文件路径")
             //分享微信小程序
@@ -90,7 +90,6 @@ RxSocialConfig{
         appId 'yourAppId'
         appSecret 'yourAppSecret'
         redirectUrl 'https://api.weibo.com/oauth2/default.html'
-        scope 'get_token_info'
         login false
     }
     QQ {
@@ -100,8 +99,6 @@ RxSocialConfig{
     }
     QQZone {
         appId 'yourAppId'
-        appSecret 'yourAppSecret'
-        scope 'get_simple_userinfo'
         login false
     }
     Wechat {
@@ -112,9 +109,6 @@ RxSocialConfig{
     }
     WechatMoments {
         appId 'yourAppId'
-        appSecret 'yourAppSecret'
-        scope 'snsapi_userinfo'
-        state 'wechat_sdk_live'
         login false
     }
 }

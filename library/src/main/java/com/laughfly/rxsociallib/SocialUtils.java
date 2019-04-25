@@ -10,10 +10,15 @@ import android.os.Bundle;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
+import java.security.MessageDigest;
 
 import javax.microedition.khronos.opengles.GL10;
 
@@ -77,7 +82,7 @@ public class SocialUtils {
         try{
             do {
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                bitmap.compress(Bitmap.CompressFormat.JPEG, quality, baos);
+                bitmap.compress(bitmap.hasAlpha() ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG, quality, baos);
                 bytes = baos.toByteArray();
                 try {
                     baos.flush();
@@ -88,13 +93,13 @@ public class SocialUtils {
 
                 length = bytes.length;
 
-                quality -= 20;
+                quality -= 10;
 
-                if(length > maxBytes && quality <= 40) {//质量小于30%，还是过大的时候，降低图片尺寸
+                if(length > maxBytes && quality <= 70) {//质量小于70%，还是过大的时候，降低图片尺寸
                     Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, bitmap.getWidth() / 2, bitmap.getHeight() / 2, true);
                     bitmap.recycle();
                     bitmap = scaledBitmap;
-                    quality = 80;
+                    quality = 100;
                 }
             } while (length > maxBytes);
         } finally {
@@ -152,6 +157,25 @@ public class SocialUtils {
             return scaledBitmap;
         }
         return bitmap;
+    }
+
+    public static boolean saveBitmapToFile(Bitmap bitmap, File file, int sizeLimit){
+        byte[] bytes = bitmapToBytes(bitmap, sizeLimit, false);
+        if(bytes != null && bytes.length > 0) {
+            try {
+                saveBytesToFile(bytes, file);
+                return true;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
+
+    public static void saveBytesToFile(byte[] bytes, File file) throws IOException {
+        ByteBuffer byteBuffer = ByteBuffer.wrap(bytes);
+        FileChannel channel = new FileOutputStream(file).getChannel();
+        channel.write(byteBuffer);
     }
 
     public static String quickHttpGet(String url) {
@@ -220,5 +244,20 @@ public class SocialUtils {
         }
         string += " }Bundle";
         return string;
+    }
+
+    public static final String md5(final String toEncrypt) {
+        try {
+            final MessageDigest digest = MessageDigest.getInstance("md5");
+            digest.update(toEncrypt.getBytes());
+            final byte[] bytes = digest.digest();
+            final StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < bytes.length; i++) {
+                sb.append(String.format("%02X", bytes[i]));
+            }
+            return sb.toString().toLowerCase();
+        } catch (Exception exc) {
+            return ""; // Impossibru!
+        }
     }
 }

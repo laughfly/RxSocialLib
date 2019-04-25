@@ -7,6 +7,10 @@ import com.laughfly.rxsociallib.share.ShareType;
  * email:cwy.fly2@gmail.com
  */
 class QQConstants {
+    static final int THUMB_SIZE_LIMIT = 131072;//128KB
+    static final int IMAGE_SIZE_LIMIT = 10485760;//10MB
+
+
     static final String QQ = "QQ";
     static final String QQZONE = "QQZone";
 

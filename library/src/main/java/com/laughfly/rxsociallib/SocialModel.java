@@ -3,8 +3,8 @@ package com.laughfly.rxsociallib;
 import android.content.Context;
 import android.os.Environment;
 
-import com.laughfly.rxsociallib.downloader.DefaultImageDownloader;
-import com.laughfly.rxsociallib.downloader.ImageDownloader;
+import com.laughfly.rxsociallib.downloader.DefaultFileDownloader;
+import com.laughfly.rxsociallib.downloader.FileDownloader;
 import com.laughfly.rxsociallib.login.AbsSocialLogin;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
@@ -33,7 +33,7 @@ public class SocialModel {
 
     private static File sDownloadDirectory;
 
-    private static ImageDownloader sImageDownloader;
+    private static FileDownloader sFileDownloader;
 
     private static HashMap<String, PlatformConfig> sConfigMap = new HashMap<>();
 
@@ -48,9 +48,8 @@ public class SocialModel {
     private static boolean sInitialized;
 
     static {
-        sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "rxsocial");
-        sDownloadDirectory.mkdirs();
-        sImageDownloader = new DefaultImageDownloader();
+        sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "RxSocial");
+        sFileDownloader = new DefaultFileDownloader();
         sNoResultAsSuccess = true;
     }
 
@@ -103,12 +102,12 @@ public class SocialModel {
         return sDownloadDirectory;
     }
 
-    public static void setImageDownloader(ImageDownloader imageDownloader) {
-        sImageDownloader = imageDownloader;
+    public static void setFileDownloader(FileDownloader fileDownloader) {
+        sFileDownloader = fileDownloader;
     }
 
-    public static ImageDownloader getImageDownloader() {
-        return sImageDownloader;
+    public static FileDownloader getFileDownloader() {
+        return sFileDownloader;
     }
 
     public static Class<? extends AbsSocialShare> getShareClass(String platform) {

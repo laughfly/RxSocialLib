@@ -1,10 +1,7 @@
 package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialIntentUtils;
@@ -121,7 +118,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
 
     private void shareText() {
         WXTextObject textObject = new WXTextObject();
-        textObject.text = mBuilder.getTitle();
+        textObject.text = mBuilder.getText();
         WXMediaMessage mediaMessage = new WXMediaMessage();
         mediaMessage.mediaObject = textObject;
         mediaMessage.title = mBuilder.getTitle();
@@ -139,7 +136,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
         mediaMessage.title = mBuilder.getTitle();
         mediaMessage.description = mBuilder.getText();
         mediaMessage.messageExt = mBuilder.getExText();
-        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
+        mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
         shareBySDK(mediaMessage);
     }
@@ -156,7 +153,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
         mediaMessage.title = mBuilder.getTitle();
         mediaMessage.description = mBuilder.getText();
         mediaMessage.mediaObject = musicObject;
-        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
+        mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
         shareBySDK(mediaMessage);
     }
@@ -171,14 +168,8 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
 
         WXMediaMessage mediaMessage = new WXMediaMessage();
         mediaMessage.mediaObject = imageObject;
-        Bitmap imageBitmap = mBuilder.getImageBitmap();
-        String imageUri = downloadImageIfNeed(mBuilder.getImageUri());
-        if (imageBitmap != null) {
-            imageObject.imageData = SocialUtils.bitmapToBytes(imageBitmap, WechatConstants.WECHAT_IMAGE_LIMIT);
-        } else {
-            imageObject.imageData = SocialUtils.loadImageBytes(imageUri, WechatConstants.WECHAT_IMAGE_LIMIT);
-        }
-        mediaMessage.thumbData = SocialUtils.scaleImage(imageObject.imageData, WechatConstants.WECHAT_THUMB_LIMIT);
+        imageObject.imagePath = getImagePath(WechatConstants.IMAGE_SIZE_LIMIT);
+        mediaMessage.thumbData = SocialUtils.loadImageBytes(imageObject.imagePath, WechatConstants.THUMB_SIZE_LIMIT);
 
         shareBySDK(mediaMessage);
     }
@@ -193,7 +184,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
             mediaMessage.mediaObject = videoObject;
             mediaMessage.title = mBuilder.getTitle();
             mediaMessage.description = mBuilder.getText();
-            mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_THUMB_LIMIT);
+            mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
             shareBySDK(mediaMessage);
         } else {
@@ -224,7 +215,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
         WXMediaMessage mediaMessage = new WXMediaMessage(programObject);
         mediaMessage.title = mBuilder.getTitle();
         mediaMessage.description = mBuilder.getText();
-        mediaMessage.thumbData = createThumbData(WechatConstants.WECHAT_MINI_PROG_IMAGE_LIMIT);
+        mediaMessage.thumbData = getThumbBytes(WechatConstants.MINI_PROG_IMAGE_LIMIT);
 
         shareBySDK(mediaMessage);
     }
@@ -254,28 +245,6 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
                 }
             }
         });
-    }
-
-    private byte[] createThumbData(int limit) throws SocialShareException {
-        byte[] thumbData = null;
-        Bitmap thumbBitmap = mBuilder.getThumbBitmap();
-        if (thumbBitmap != null) {
-            thumbData = SocialUtils.bitmapToBytes(thumbBitmap, limit);
-        }
-        if (thumbData == null) {
-            int thumbResId = mBuilder.getThumbResId();
-            if (thumbResId != 0) {
-                Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), thumbResId);
-                thumbData = SocialUtils.bitmapToBytes(bitmap, limit);
-            }
-        }
-        if (thumbData == null) {
-            String thumbUri = downloadImageIfNeed(mBuilder.getThumbUri());
-            if (!TextUtils.isEmpty(thumbUri)) {
-                thumbData = SocialUtils.loadImageBytes(thumbUri, limit);
-            }
-        }
-        return thumbData;
     }
 
     @Override

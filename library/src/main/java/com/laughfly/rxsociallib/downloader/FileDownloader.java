@@ -7,6 +7,6 @@ import java.io.File;
  * email:cwy.fly2@gmail.com
  */
 
-public abstract class ImageDownloader {
+public abstract class FileDownloader {
     public abstract File download(String url) throws Exception;
 }

@@ -2,16 +2,12 @@ package com.laughfly.rxsociallib.platform.weibo;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
-import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.AbsSocialShare;
@@ -31,7 +27,6 @@ import com.sina.weibo.sdk.share.WbShareCallback;
 import com.sina.weibo.sdk.share.WbShareHandler;
 import com.sina.weibo.sdk.utils.Utility;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,18 +162,18 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         shareBySDK(message);
     }
 
-    private void shareVideo() {
+    private void shareVideo() throws SocialShareException {
         WeiboMultiMessage message = createMessage();
         message.textObject = createTextObject();
         message.videoSourceObject = createVideoObject();
         shareBySDK(message);
     }
 
-    private void shareMultiImage(Activity activity) {
+    private void shareMultiImage(Activity activity) throws SocialShareException {
         ArrayList<Uri> imageUriList = new ArrayList<>();
         List<String> imageList = mBuilder.getImageList();
         for (String image : imageList) {
-            imageUriList.add(Uri.parse(image));
+            imageUriList.add(Uri.parse(transformUri(image, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH)));
         }
         Intent intent = SocialIntentUtils.createImageListShare(imageUriList, WeiboConstants.WEIBO_PACKAGE, WeiboConstants.WEIBO_SHARE_TARGET_CLASS);
         activity.startActivity(intent);
@@ -186,13 +181,13 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
     }
 
     private void shareImageStory() throws Exception {
-        StoryMessage storyMessage = new StoryMessage();
-        String imageUri = downloadImageIfNeed(mBuilder.getImageUri());
+        StoryMessage message = new StoryMessage();
+        String imageUri = getImagePath(WeiboConstants.IMAGE_SIZE_LIMIT);
         if(SocialUriUtils.isFilePath(imageUri)) {
             imageUri = SocialUriUtils.toFileUri(imageUri);
         }
-        storyMessage.setImageUri(Uri.parse(imageUri));
-        shareBySDK(storyMessage);
+        message.setImageUri(Uri.parse(imageUri));
+        shareBySDK(message);
     }
 
     private void shareVideoStory() {
@@ -226,17 +221,8 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
 
     private ImageObject createImageObj() throws Exception {
         ImageObject imageObject = new ImageObject();
-        Bitmap imageBitmap = mBuilder.getImageBitmap();
-        String imageUri = mBuilder.getImageUri();
-        if (imageBitmap != null) {
-            imageObject.setImageObject(imageBitmap);
-            return imageObject;
-        } else if (imageUri != null) {
-            imageObject.imagePath = downloadImageIfNeed(imageUri);
-            return imageObject;
-        } else {
-            return null;
-        }
+        imageObject.imagePath = getImagePath(WeiboConstants.IMAGE_SIZE_LIMIT);
+        return imageObject;
     }
 
     private WebpageObject createWebObject() throws SocialShareException {
@@ -245,45 +231,17 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         webpageObject.title = mBuilder.getTitle();
         webpageObject.description = mBuilder.getText();
         webpageObject.actionUrl = mBuilder.getWebUrl();
-        webpageObject.thumbData = createThumbData(WeiboConstants.WEIBO_THUMB_LIMIT);
+        webpageObject.thumbData = getThumbBytes(WeiboConstants.WEIBO_THUMB_LIMIT);
         webpageObject.defaultText = mBuilder.getText();
         return webpageObject;
     }
 
-    private VideoSourceObject createVideoObject(){
+    private VideoSourceObject createVideoObject() throws SocialShareException {
         //获取视频
         VideoSourceObject videoSourceObject = new VideoSourceObject();
-        String videoUri = mBuilder.getVideoUri();
-        Uri uri;
-        if(SocialUriUtils.isFilePath(videoUri)) {//文件路径前面添加file://
-            uri = Uri.fromFile(new File(videoUri));
-        } else {
-            uri = Uri.parse(videoUri);
-        }
-        videoSourceObject.videoPath = uri;
+        String videoUri = transformUri(mBuilder.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_CONTENT_URI);
+        videoSourceObject.videoPath = Uri.parse(videoUri);
         return videoSourceObject;
-    }
-
-    private byte[] createThumbData(int limit) throws SocialShareException {
-        byte[] thumbData = null;
-        Bitmap thumbBitmap = mBuilder.getThumbBitmap();
-        if (thumbBitmap != null) {
-            thumbData = SocialUtils.bitmapToBytes(thumbBitmap, limit);
-        }
-        if (thumbData == null) {
-            int thumbResId = mBuilder.getThumbResId();
-            if (thumbResId != 0) {
-                Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), thumbResId);
-                thumbData = SocialUtils.bitmapToBytes(bitmap, limit);
-            }
-        }
-        if (thumbData == null) {
-            String thumbUri = downloadImageIfNeed(mBuilder.getThumbUri());
-            if (!TextUtils.isEmpty(thumbUri)) {
-                thumbData = SocialUtils.loadImageBytes(thumbUri, limit);
-            }
-        }
-        return thumbData;
     }
 
     @Override
@@ -298,16 +256,6 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
         super.handleResult(requestCode, resultCode, data);
-//        if (requestCode != 0 && requestCode != -1) {
-//            SocialThreads.postOnUiThread(new Runnable() {
-//                @Override
-//                public void run() {
-//                    finishWithCancel();
-//                }
-//            }, WeiboShare.this, 100);
-//            return;
-//        }
-//        SocialThreads.removeUiRunnable(WeiboShare.this);
         try {
             mWbShareHandler.doResultIntent(data, this);
         } catch (Exception e) {

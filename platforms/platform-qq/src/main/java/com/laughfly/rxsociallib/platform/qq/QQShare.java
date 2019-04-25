@@ -109,7 +109,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
                 shareText(activity);
                 break;
             case ShareType.SHARE_WEB:
-                shareUrl(activity);
+                shareWeb(activity);
                 break;
             case ShareType.SHARE_MULTI_FILE:
                 shareFileList(activity);
@@ -122,16 +122,24 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         }
     }
 
-    private void shareApp(Activity activity) {
+    private void shareApp(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_APP);
+        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+        params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
         params.putString(SHARE_TO_QQ_ARK_INFO, mBuilder.getAppInfo());
         shareBySDK(activity, params);
     }
 
-    private void shareAudio(Activity activity) {
+    private void shareAudio(Activity activity) throws SocialShareException {
         String audioUri = mBuilder.getAudioUri();
         if(SocialUriUtils.isHttpUrl(audioUri)) {
             Bundle params = createParams(ShareType.SHARE_AUDIO);
+            params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
+            params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+            params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+            params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
             params.putString(SHARE_TO_QQ_AUDIO_URL, mBuilder.getAudioUri());
             shareBySDK(activity, params);
         } else {
@@ -140,15 +148,19 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         }
     }
 
-    private void shareUrl(Activity activity) {
+    private void shareWeb(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_WEB);
+        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
+        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+        params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
         shareBySDK(activity, params);
     }
 
     private void shareImage(Activity activity) throws Exception {
         Bundle params = createParams(ShareType.SHARE_IMAGE);
-        String imageUri = downloadImageIfNeed(mBuilder.getImageUri());
-        params.putString(SHARE_TO_QQ_IMAGE_LOCAL_URL, imageUri);
+        params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
+        params.putString(SHARE_TO_QQ_IMAGE_LOCAL_URL, getImagePath(QQConstants.IMAGE_SIZE_LIMIT));
         shareBySDK(activity, params);
     }
 
@@ -158,10 +170,11 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         shareByIntent(activity, shareFile);
     }
 
-    private void shareFileList(Activity activity) {
+    private void shareFileList(Activity activity) throws SocialShareException {
         List<String> fileList = mBuilder.getFileList();
         ArrayList<Uri> fileUriList = new ArrayList<>();
         for (String file : fileList) {
+            file = transformUri(file, URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_PATH);
             fileUriList.add(Uri.parse(file));
         }
         Intent shareFileList = SocialIntentUtils.createFileListShare(fileUriList);
@@ -214,17 +227,6 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
         Bundle params = new Bundle();
 
         params.putInt(SHARE_TO_QQ_KEY_TYPE, toQQShareType(shareType));
-
-        if (ShareType.SHARE_IMAGE == shareType) {
-            params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
-        } else {
-            params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-            if (mBuilder.hasWebUrl()) {
-                params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
-            }
-            params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-            params.putString(SHARE_TO_QQ_IMAGE_URL, mBuilder.getThumbUri());
-        }
 
         if (mBuilder.getShareAppName() != null) {
             params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getShareAppName());

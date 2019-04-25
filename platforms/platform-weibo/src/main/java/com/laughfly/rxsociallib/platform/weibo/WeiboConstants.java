@@ -10,6 +10,7 @@ import com.laughfly.rxsociallib.share.ShareType;
 class WeiboConstants {
 
     static final int WEIBO_THUMB_LIMIT = '耀';
+    static final int IMAGE_SIZE_LIMIT = 10485760;//10MB
 
     static final String WEIBO = "Weibo";
 

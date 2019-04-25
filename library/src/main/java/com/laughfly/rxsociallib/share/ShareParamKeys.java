@@ -8,7 +8,7 @@ package com.laughfly.rxsociallib.share;
 public interface ShareParamKeys {
     String title = "title";
     String text = "text";
-    String pageUrl = "webUrl";
+    String webUrl = "webUrl";
     String thumbUri = "thumbUri";
     String thumbBitmap = "thumbBitmap";
     String thumbResId = "thumbResId";

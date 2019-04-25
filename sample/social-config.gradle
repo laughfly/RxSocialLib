@@ -1,33 +1,45 @@
 apply plugin: 'social-config'
 
+def configFile = rootProject.file("config.properties")
+// Initialize a new Properties() object called keystorePro perties.
+def configProperties = new Properties()
+// Load your keystore.properties file into the keystoreProperties object.
+if (configFile.exists()) {
+    configProperties.load(new FileInputStream(configFile))
+}
+
 RxSocialConfig{
+    debug false
+
     Weibo {
-        appId 'yourAppId'
-        appSecret 'yourAppSecret'
-        redirectUrl 'https://api.weibo.com/oauth2/default.html'
-        scope 'get_token_info'
+        appId configProperties['WeiboAppId']
+        appSecret configProperties['WeiboAppSecret']
+        redirectUrl configProperties['WeiboRedirectUrl']
+        scope configProperties['WeiboScope']
     }
-    WeiboStory {
-        appId 'yourAppId'
+    QQStory {
+        appId configProperties['WeiboAppId']
+        appSecret configProperties['WeiboAppSecret']
+        redirectUrl configProperties['WeiboRedirectUrl']
         login false
     }
     QQ {
-        appId 'yourAppId'
-        appSecret 'yourAppSecret'
-        scope 'get_simple_userinfo'
+        appId configProperties['QQAppId']
+        appSecret configProperties['QQAppSecret']
+        scope configProperties['QQScope']
     }
     QQZone {
-        appId 'yourAppId'
+        appId configProperties['QQAppId']
         login false
     }
     Wechat {
-        appId 'yourAppId'
-        appSecret 'yourAppSecret'
-        scope 'snsapi_userinfo'
-        state 'wechat_sdk_live'
+        appId configProperties['WechatAppId']
+        appSecret configProperties['WechatAppSecret']
+        scope configProperties['WechatScope']
+        state configProperties['WechatState']
     }
     WechatMoments {
-        appId 'yourAppId'
+        appId configProperties['WechatAppId']
         login false
     }
 }

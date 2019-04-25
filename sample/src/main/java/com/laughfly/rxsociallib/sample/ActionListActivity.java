@@ -19,11 +19,10 @@ import com.laughfly.rxsociallib.RxSocial;
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
-import com.laughfly.rxsociallib.share.ShareParamKeys;
+import com.laughfly.rxsociallib.share.ShareBuilder;
 import com.laughfly.rxsociallib.share.SocialShareResult;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.laughfly.rxsociallib.share.ShareType.SHARE_APP;
@@ -143,65 +142,89 @@ public class ActionListActivity extends Activity {
     }
 
     private void doShare(int type) {
-        HashMap<String, Object> data = new HashMap<>();
+        ShareBuilder builder = null;
         switch (type) {
             case SHARE_TEXT:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type));
                 break;
             case SHARE_WEB:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
-                data.put(ShareParamKeys.pageUrl, TestData.getWebUrl(type));
-                data.put(ShareParamKeys.thumbUri, TestData.getThumbUri(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setWebUrl(TestData.getWebUrl(type))
+                    .setThumbUri(TestData.getThumbUri(type));
                 break;
             case SHARE_IMAGE:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
-                data.put(ShareParamKeys.imageUri, TestData.getImageUri(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setImageUri(TestData.getImageUri(type));
                 break;
             case SHARE_MULTI_IMAGE:
-                data.put(ShareParamKeys.imageList, TestData.getImageList(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setImageList(TestData.getImageList());
                 break;
             case SHARE_AUDIO:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
-                data.put(ShareParamKeys.thumbUri, TestData.getThumbUri(type));
-                data.put(ShareParamKeys.pageUrl, TestData.getWebUrl(type));
-                data.put(ShareParamKeys.audioUri, TestData.getAudioUri(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setWebUrl(TestData.getWebUrl(type))
+                    .setThumbUri(TestData.getThumbUri(type))
+                    .setAudioUri(TestData.getAudioUri());
                 break;
             case SHARE_LOCAL_VIDEO:
-                data.put(ShareParamKeys.videoUri, TestData.getVideoUri(type));
-                break;
             case SHARE_NETWORK_VIDEO:
-                data.put(ShareParamKeys.videoUri, TestData.getVideoUri(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setVideoUri(TestData.getVideoUri(type));
                 break;
             case SHARE_FILE:
-                data.put(ShareParamKeys.fileUri, TestData.getFileUri(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setFileUri(TestData.getFileUri());
                 break;
             case SHARE_MULTI_FILE:
-                data.put(ShareParamKeys.fileList, TestData.getFileList(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setFileList(TestData.getFileList());
                 break;
             case SHARE_APP:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
-                data.put(ShareParamKeys.thumbUri, TestData.getThumbUri(type));
-                data.put(ShareParamKeys.appInfo, TestData.getAppInfo(type));
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setThumbUri(TestData.getThumbUri(type))
+                    .setAppInfo(TestData.getAppInfo());
                 break;
             case SHARE_MINI_PROGRAM:
-                data.put(ShareParamKeys.title, TestData.getTitle(type));
-                data.put(ShareParamKeys.text, TestData.getText(type));
-                data.put(ShareParamKeys.thumbUri, TestData.getThumbUri(type));
-                data.put(ShareParamKeys.pageUrl, TestData.getWebUrl(type));
-                data.put(ShareParamKeys.miniProgramUserName, TestData.getMiniProgramUser());
-                data.put(ShareParamKeys.miniProgramPath, TestData.getMiniProgramPath());
-                data.put(ShareParamKeys.miniProgramType, TestData.getMiniProgramType());
+                builder = RxSocial.share(this)
+                    .setPlatform(mPlatform)
+                    .setTitle(TestData.getTitle(type))
+                    .setText(TestData.getText(type))
+                    .setThumbUri(TestData.getThumbUri(type))
+                    .setWebUrl(TestData.getWebUrl(type))
+                    .setMiniProgramPath(TestData.getMiniProgramPath())
+                    .setMiniProgramUserName(TestData.getMiniProgramUser())
+                    .setMiniProgramType(TestData.getMiniProgramType());
                 break;
         }
-        RxSocial.share(ActionListActivity.this)
-            .setPlatform(mPlatform)
-            .setAll(data)
-            .start(new SocialCallback<SocialShareResult>() {
+        if(builder != null) {
+            builder.start(new SocialCallback<SocialShareResult>() {
                 @Override
                 public void onError(String platform, SocialException e) {
                     Toast.makeText(ActionListActivity.this, "分享失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
@@ -212,6 +235,7 @@ public class ActionListActivity extends Activity {
                     Toast.makeText(ActionListActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
                 }
             });
+        }
     }
 
     class ARecyclerViewAdapter extends RecyclerView.Adapter<ARecyclerViewAdapter.ViewHolder> {
