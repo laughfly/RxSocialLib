@@ -16,7 +16,6 @@ import java.lang.ref.WeakReference;
 
 import rx.Observable;
 import rx.Subscriber;
-import rx.android.schedulers.AndroidSchedulers;
 
 /**
  * 社会化操作的基础类
@@ -93,7 +92,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
                     }
                 }).start();
             }
-        }).subscribeOn(AndroidSchedulers.mainThread()).observeOn(AndroidSchedulers.mainThread());
+        });
     }
 
     @Override

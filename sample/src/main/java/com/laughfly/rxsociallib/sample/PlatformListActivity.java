@@ -87,13 +87,6 @@ public class PlatformListActivity extends Activity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
         mRecyclerView.setAdapter(new ARecyclerViewAdapter());
-        test();
-    }
-
-    private void test() {
-        String filePath = SocialUriUtils.toFilePath(this, "content://media/external/images/media/187874");
-        Uri uri = Uri.parse("/storage/0/.hahdsh/lalsdlasd.axax?lalal=haha&lla=lalal");
-        Toast.makeText(this, filePath, Toast.LENGTH_SHORT).show();
     }
 
     private void showActionList(String platform) {

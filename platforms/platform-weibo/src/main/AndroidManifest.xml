@@ -5,7 +5,7 @@
             android:name="com.laughfly.rxsociallib.platform.weibo.WeiboDelegateActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
             android:screenOrientation="behind"
-            android:theme="@style/Ghost">
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
             <intent-filter>
                 <action android:name="com.sina.weibo.sdk.action.ACTION_SDK_REQ_ACTIVITY"/>
                 <category android:name="android.intent.category.DEFAULT"/>

@@ -1,27 +1,29 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion '27.0.3'
+    compileSdkVersion versions.targetSdk
+    buildToolsVersion versions.buildTools
     defaultConfig {
-        minSdkVersion 19
-        targetSdkVersion 26
-        versionCode 1
-        versionName "0.1.1"
+        minSdkVersion versions.minSdk
         consumerProguardFiles 'proguard-rules.pro'
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     lintOptions {
         abortOnError false
     }
-
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.android.support:appcompat-v7:26.1.0'
+    compileOnly deps.android.annotations
+    compileOnly deps.android.supportv4
 
-    api 'io.reactivex:rxandroid:1.2.1'
+    api deps.rxjava
 }
 
 apply from: rootProject.file('maven-deloy.gradle')
