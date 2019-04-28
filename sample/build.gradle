@@ -49,6 +49,8 @@ dependencies {
     debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
     releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
 
+    implementation deps.rxjava
+    implementation deps.rxjava2
 }
 
 apply from:'social-config.gradle'

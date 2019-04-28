@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.laughfly.rxsociallib.RxSocial;
-import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
 import com.laughfly.rxsociallib.share.ShareBuilder;
@@ -24,6 +23,9 @@ import com.laughfly.rxsociallib.share.SocialShareResult;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
 
 import static com.laughfly.rxsociallib.share.ShareType.SHARE_APP;
 import static com.laughfly.rxsociallib.share.ShareType.SHARE_AUDIO;
@@ -128,17 +130,32 @@ public class ActionListActivity extends Activity {
     private void doLogin() {
         RxSocial.login(ActionListActivity.this)
             .setPlatform(mPlatform)
-            .start(new SocialCallback<SocialLoginResult>() {
+            .toObservable()
+            .subscribe(new rx.Observer<SocialLoginResult>() {
                 @Override
-                public void onError(String platform, SocialException e) {
-                    Toast.makeText(ActionListActivity.this, "登录失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
+                public void onCompleted() {
+
                 }
 
                 @Override
-                public void onSuccess(String platform, SocialLoginResult resp) {
-                    Toast.makeText(ActionListActivity.this, "登录成功：" + resp.uid, Toast.LENGTH_SHORT).show();
+                public void onError(Throwable e) {
+                    handleLoginFail(e);
+                }
+
+                @Override
+                public void onNext(SocialLoginResult socialLoginResult) {
+                    handleLoginSuccess(socialLoginResult);
                 }
             });
+    }
+
+    private void handleLoginFail(Throwable e) {
+        int errorCode = e instanceof SocialException ? ((SocialException) e).getErrCode() : 0;
+        Toast.makeText(ActionListActivity.this, "登录失败: " + errorCode, Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleLoginSuccess(SocialLoginResult result) {
+        Toast.makeText(ActionListActivity.this, "登录成功: " + result.uid, Toast.LENGTH_SHORT).show();
     }
 
     private void doShare(int type) {
@@ -224,18 +241,39 @@ public class ActionListActivity extends Activity {
                 break;
         }
         if(builder != null) {
-            builder.start(new SocialCallback<SocialShareResult>() {
-                @Override
-                public void onError(String platform, SocialException e) {
-                    Toast.makeText(ActionListActivity.this, "分享失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
-                }
+            builder.toObservable2()
+                .subscribe(new Observer<SocialShareResult>() {
 
-                @Override
-                public void onSuccess(String platform, SocialShareResult resp) {
-                    Toast.makeText(ActionListActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
-                }
-            });
+                    @Override
+                    public void onSubscribe(final Disposable d) {
+                    }
+
+                    @Override
+                    public void onNext(SocialShareResult result) {
+                        handleShareSuccess(result);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        handleShareFail(e);
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+
         }
+    }
+
+    private void handleShareFail(Throwable e) {
+        int errorCode = e instanceof SocialException ? ((SocialException) e).getErrCode() : 0;
+        Toast.makeText(ActionListActivity.this, "分享失败: " + errorCode, Toast.LENGTH_SHORT).show();
+    }
+
+    private void handleShareSuccess(SocialShareResult result) {
+        Toast.makeText(ActionListActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
     }
 
     class ARecyclerViewAdapter extends RecyclerView.Adapter<ARecyclerViewAdapter.ViewHolder> {

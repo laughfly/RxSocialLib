@@ -5,10 +5,7 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialActionFactory;
-import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
-
-import rx.Observable;
 
 /**
  * 登录参数Builder
@@ -19,18 +16,6 @@ public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResul
 
     public LoginBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
-    }
-
-    @Override
-    public Observable<SocialLoginResult> toObservable() {
-        return build().toObservable();
-    }
-
-    @Override
-    public void start(SocialCallback<SocialLoginResult> callback) {
-        AbsSocialLogin share = build();
-        share.setCallback(callback);
-        share.start();
     }
 
     @Override

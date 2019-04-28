@@ -23,8 +23,8 @@ public class RxSocial {
         SocialModel.initialize(context);
     }
 
-    public static void setLogEnable(boolean enable) {
-        SocialLogger.setLogEnabled(enable);
+    public static void setLogEnabled(boolean enabled) {
+        SocialLogger.setLogEnabled(enabled);
     }
 
     public static Set<String> getSharePlatforms() {
@@ -55,7 +55,10 @@ public class RxSocial {
         SocialModel.setFileDownloader(downloader);
     }
 
-    public static void setNoResultAsSuccess(boolean noResultAsSuccess) {
+    /** 平台没有返回结果时是否当做分享成功，默认是true
+     * @param noResultAsSuccess
+     */
+    public static void setNoResultAsShareSuccess(boolean noResultAsSuccess) {
         SocialModel.setNoResultAsSuccess(noResultAsSuccess);
     }
 
@@ -68,8 +71,8 @@ public class RxSocial {
      * @return
      */
     public static LoginBuilderWrapper login(Context context) {
-        initialize(context);
-        return new LoginBuilderWrapper(context);
+        initialize(context.getApplicationContext());
+        return new LoginBuilderWrapper(context.getApplicationContext());
     }
 
     /**
@@ -81,8 +84,8 @@ public class RxSocial {
      * @return
      */
     public static ShareBuilderWrapper share(Context context) {
-        initialize(context);
-        return new ShareBuilderWrapper(context);
+        initialize(context.getApplicationContext());
+        return new ShareBuilderWrapper(context.getApplicationContext());
     }
 
 

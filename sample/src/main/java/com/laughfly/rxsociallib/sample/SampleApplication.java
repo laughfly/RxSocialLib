@@ -21,6 +21,6 @@ public class SampleApplication extends Application {
         }
         LeakCanary.install(this);
         RxSocial.initialize(this);
-        RxSocial.setLogEnable(BuildConfig.DEBUG);
+        RxSocial.setLogEnabled(BuildConfig.DEBUG);
     }
 }

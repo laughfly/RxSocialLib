@@ -14,9 +14,6 @@ import com.laughfly.rxsociallib.exception.SocialException;
 
 import java.lang.ref.WeakReference;
 
-import rx.Observable;
-import rx.Subscriber;
-
 /**
  * 社会化操作的基础类
  * author:caowy
@@ -57,42 +54,6 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
     public SocialAction setCallback(SocialCallback<Result> callback) {
         mCallback.callback = callback;
         return this;
-    }
-
-    /**
-     * 转成Rx数据
-     *
-     * @return
-     */
-    public Observable<Result> toObservable() {
-        return Observable.create(new Observable.OnSubscribe<Result>() {
-            @Override
-            public void call(final Subscriber<? super Result> subscriber) {
-                setCallback(new SocialCallback<Result>() {
-
-                    @Override
-                    public void onError(String platform, SocialException e) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onError(e);
-                        }
-                    }
-
-                    @Override
-                    public void onSuccess(String platform, Result resp) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onNext(resp);
-                        }
-                    }
-
-                    @Override
-                    public void onFinish(String platform) {
-                        if (!subscriber.isUnsubscribed()) {
-                            subscriber.onCompleted();
-                        }
-                    }
-                }).start();
-            }
-        });
     }
 
     @Override
@@ -149,7 +110,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
         }
     }
 
-    private void finish() {
+    protected void finish() {
         try {
             finishImpl();
             mCallback.onFinish(mBuilder.getPlatform());
@@ -157,7 +118,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
             e.printStackTrace();
         }
         final Delegate delegate = getDelegate();
-        if (delegate != null && !delegate.isDestroyed()) {
+        if (delegate != null && !delegate.isFinishing()) {
             SocialThreads.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -168,6 +129,14 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
                 }
             });
         }
+    }
+
+    /**
+     * TODO
+     * 保留，开发中
+     */
+    protected void cancel() {
+
     }
 
     protected void finishWithError(SocialException e) {

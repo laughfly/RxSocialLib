@@ -5,12 +5,22 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialCallback;
+import com.laughfly.rxsociallib.exception.SocialException;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
+import io.reactivex.FlowableEmitter;
+import io.reactivex.FlowableOnSubscribe;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import rx.Emitter;
 import rx.Observable;
+import rx.functions.Action1;
+import rx.functions.Cancellable;
 
 public abstract class SocialBuilder<Action extends SocialAction, Result> {
     private final HashMap<String, Object> mData = new HashMap<>();
@@ -116,10 +126,110 @@ public abstract class SocialBuilder<Action extends SocialAction, Result> {
         return get("state");
     }
 
+    public Observable<Result> toObservable() {
+        Action action = build();
+        return Observable.create(new Action1<Emitter<Result>>() {
+            @Override
+            public void call(Emitter<Result> emitter) {
+                emitter.setCancellation(new Cancellable() {
+                    @Override
+                    public void cancel() throws Exception {
+                        action.cancel();
+                    }
+                });
+                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                    @Override
+                    public void onError(String platform, SocialException e) {
+                        emitter.onError(e);
+                    }
+
+                    @Override
+                    public void onSuccess(String platform, Result resp) {
+                        emitter.onNext(resp);
+                    }
+
+                    @Override
+                    public void onFinish(String platform) {
+                        emitter.onCompleted();
+                    }
+                };
+                action.setCallback(callback);
+                action.start();
+            }
+        }, Emitter.BackpressureMode.LATEST);
+    }
+
+    public io.reactivex.Observable<Result> toObservable2() {
+        Action action = build();
+        return io.reactivex.Observable.create(new ObservableOnSubscribe<Result>() {
+            @Override
+            public void subscribe(ObservableEmitter<Result> emitter) throws Exception {
+                emitter.setCancellable(new io.reactivex.functions.Cancellable() {
+                    @Override
+                    public void cancel() throws Exception {
+                        action.cancel();
+                    }
+                });
+                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                    @Override
+                    public void onError(String platform, SocialException e) {
+                        emitter.onError(e);
+                    }
+
+                    @Override
+                    public void onSuccess(String platform, Result resp) {
+                        emitter.onNext(resp);
+                    }
+
+                    @Override
+                    public void onFinish(String platform) {
+                        emitter.onComplete();
+                    }
+                };
+                action.setCallback(callback);
+                action.start();
+            }
+        });
+    }
+
+    public Flowable<Result> toFlowable() {
+        Action action = build();
+        return Flowable.create(new FlowableOnSubscribe<Result>() {
+            @Override
+            public void subscribe(FlowableEmitter<Result> emitter) throws Exception {
+                emitter.setCancellable(new io.reactivex.functions.Cancellable() {
+                    @Override
+                    public void cancel() throws Exception {
+                        action.cancel();
+                    }
+                });
+                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                    @Override
+                    public void onError(String platform, SocialException e) {
+                        emitter.onError(e);
+                    }
+
+                    @Override
+                    public void onSuccess(String platform, Result resp) {
+                        emitter.onNext(resp);
+                    }
+
+                    @Override
+                    public void onFinish(String platform) {
+                        emitter.onComplete();
+                    }
+                };
+                action.setCallback(callback);
+                action.start();
+            }
+        }, BackpressureStrategy.ERROR);
+    }
+
+    public void start(SocialCallback<Result> callback) {
+        Action action = build();
+        action.setCallback(callback);
+        action.start();
+    }
+
     protected abstract Action build();
-
-    public abstract Observable<Result> toObservable();
-
-    public abstract void start(SocialCallback<Result> callback);
-
 }

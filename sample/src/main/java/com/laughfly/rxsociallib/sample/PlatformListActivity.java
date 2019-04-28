@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -16,10 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.laughfly.rxsociallib.RxSocial;
-import com.laughfly.rxsociallib.SocialUriUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,6 +84,7 @@ public class PlatformListActivity extends Activity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
         mRecyclerView.setAdapter(new ARecyclerViewAdapter());
+
     }
 
     private void showActionList(String platform) {

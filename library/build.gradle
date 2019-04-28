@@ -12,10 +12,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-
-    lintOptions {
-        abortOnError false
-    }
 }
 
 dependencies {
@@ -23,7 +19,8 @@ dependencies {
     compileOnly deps.android.annotations
     compileOnly deps.android.supportv4
 
-    api deps.rxjava
+    compileOnly deps.rxjava
+    compileOnly deps.rxjava2
 }
 
 apply from: rootProject.file('maven-deloy.gradle')

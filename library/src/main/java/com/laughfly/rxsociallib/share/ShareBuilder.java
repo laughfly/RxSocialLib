@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.SocialActionFactory;
-import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
@@ -14,8 +13,6 @@ import com.laughfly.rxsociallib.internal.SocialBuilder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import rx.Observable;
 
 /**
  * 分享参数Builder
@@ -26,18 +23,6 @@ public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResul
 
     public ShareBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
-    }
-
-    @Override
-    public Observable<SocialShareResult> toObservable() {
-        return build().toObservable();
-    }
-
-    @Override
-    public void start(SocialCallback<SocialShareResult> callback) {
-        AbsSocialShare share = build();
-        share.setCallback(callback);
-        share.start();
     }
 
     @Override

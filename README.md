@@ -1,6 +1,6 @@
 # RxSocialLib
 * 支持QQ，QQZone，微信，微信朋友圈，微博，微博故事
-* 兼容RxJava数据流 
+* 兼容RxJava/RxJava2数据流
 * 基于平台的官方SDK开发
 # 导入
 在根目录下的build.gradle文件添加
@@ -52,8 +52,12 @@ buildscript {
                     Toast.makeText(MainActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
                 }
             })
-            //或者转为Rx数据
+            //to RxJava Observable
             .toObservable()
+            //to RxJava2 Observable
+            .toObservable2()
+            //to RxJava2 Flowable
+            .toFlowable()
 ``` 
 ## 登录
 ```java
@@ -70,8 +74,12 @@ buildscript {
                     Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_SHORT).show();
                 }
             })
-            //or
+            //to RxJava Observable
             .toObservable()
+            //to RxJava2 Observable
+            .toObservable2()
+            //to RxJava2 Flowable
+            .toFlowable()
 ```
 # 配置
 
@@ -118,6 +126,11 @@ RxSocialConfig{
 apply from:'social-config.gradle'
 ```
 **刷新，完成！**
+
+## RxJava/RxJava2
+library对RxJava/RxJava2的依赖用的scope是compileOnly，所以最终生成apk里不会有多余的RxJava/RxJava2库。
+支持的RxJava版本是1.2.7。
+另外你需要自己添加对RxJava/RxJava2的依赖。
 
 ## 其他  
 修改social-config.gradle里的平台信息后可能需要Rebuild Project才有效果！
