@@ -1,7 +1,9 @@
 package com.laughfly.rxsociallib.delegate;
 
-import android.app.Activity;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 
 import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
@@ -11,21 +13,73 @@ import com.laughfly.rxsociallib.SocialThreads;
  * author:caowy
  * date:2018-05-23
  */
-public abstract class SocialDelegateActivity extends Activity {
+public abstract class SocialDelegateActivity extends FragmentActivity {
 
     private String TAG = getClass().getSimpleName();
 
-    /**
-     *
-     */
-    protected boolean onPause;
+    protected ResultCallback mResultCallback;
 
-    /**
-     *
-     */
-    protected ResultHandler mResultHandler;
+    protected DelegateCallback mDelegateCallback;
 
-    protected boolean mHaveResult;
+    protected boolean mPaused;
+
+    protected boolean mHasResult;
+
+    @Override
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        SocialLogger.d(TAG, "onCreate");
+        super.onCreate(savedInstanceState);
+        invokeOnDelegateCreate();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        SocialLogger.d(TAG, "onResume");
+        super.onResume();
+        if (mPaused) {
+            mPaused = false;
+            onResumeFromPause();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        SocialLogger.d(TAG, "onPause");
+        super.onPause();
+        SocialThreads.removeUiRunnable(this);
+        mPaused = true;
+    }
+
+    protected void onResumeFromPause() {
+        SocialLogger.d(TAG, "onResumeFromPause");
+        if(!mHasResult) {
+            SocialThreads.postOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isFinishing() && !mHasResult) {
+                        invokeNoResult();
+                    }
+                }
+            }, SocialDelegateActivity.this, 300);
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        SocialLogger.d(TAG, "onDestroy");
+        super.onDestroy();
+        SocialThreads.removeUiRunnable(this);
+        invokeOnDelegateDestroy();
+        mDelegateCallback = null;
+        mResultCallback = null;
+    }
+
 
     @Override
     protected void onNewIntent(Intent intent) {
@@ -39,84 +93,46 @@ public abstract class SocialDelegateActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    public void setResultHandler(ResultHandler resultHandler) {
-        mResultHandler = resultHandler;
-        if (mResultHandler == null) {
-            invokeNoResult();
-        } else {
-            invokeDelegateCreate(this);
-        }
+    public void setDelegateCallback(DelegateCallback delegateCallback) {
+        mDelegateCallback = delegateCallback;
     }
 
-    public void invokeHandleResult(int requestCode, int resultCode, Intent data) {
-        mHaveResult = data != null;
-        if(mHaveResult) {
-            SocialThreads.removeUiRunnable(this);
-        }
-        final ResultHandler resultHandler = mResultHandler;
-        if (resultHandler != null) {
-            resultHandler.handleResult(requestCode, resultCode, data);
+    public void setResultCallback(ResultCallback resultCallback) {
+        mResultCallback = resultCallback;
+    }
+
+    protected void invokeHandleResult(int requestCode, int resultCode, Intent data) {
+        mHasResult = true;
+        SocialThreads.removeUiRunnable(this);
+        final ResultCallback resultCallback = mResultCallback;
+        if (resultCallback != null) {
+            resultCallback.handleResult(requestCode, resultCode, data);
         }
 
         finish();
     }
 
     public void invokeNoResult() {
-        if (mResultHandler != null) {
-            mResultHandler.handleNoResult();
+        final ResultCallback resultCallback = mResultCallback;
+        if (resultCallback != null) {
+            resultCallback.handleNoResult();
         }
-
         finish();
     }
 
-    public void invokeDelegateCreate(SocialDelegateActivity delegate) {
-        if (mResultHandler != null) {
-            mResultHandler.onDelegateCreate(delegate);
-        } else {
-            finish();
+    public void invokeOnDelegateCreate() {
+        final DelegateCallback delegateCallback = mDelegateCallback;
+        if (delegateCallback != null) {
+            delegateCallback.onDelegateCreate(this);
         }
     }
 
-    @Override
-    protected void onResume() {
-        SocialLogger.d(TAG, "onResume");
-        super.onResume();
-        if (onPause) {
-            onPause = false;
-            onResumeFromPause();
+    public void invokeOnDelegateDestroy() {
+        final DelegateCallback delegateCallback = mDelegateCallback;
+        if (delegateCallback != null) {
+            delegateCallback.onDelegateDestroy(this);
         }
     }
 
-    @Override
-    protected void onPause() {
-        SocialLogger.d(TAG, "onPause");
-        super.onPause();
-        SocialThreads.removeUiRunnable(this);
-        onPause = true;
-    }
 
-    @Override
-    protected void onDestroy() {
-        SocialLogger.d(TAG, "onDestroy");
-        super.onDestroy();
-        SocialThreads.removeUiRunnable(this);
-        if (mResultHandler != null) {
-            mResultHandler.onDelegateDestroy(this);
-        }
-        mResultHandler = null;
-    }
-
-    protected void onResumeFromPause() {
-        SocialLogger.d(TAG, "onResumeFromPause");
-        if(!mHaveResult) {
-            SocialThreads.postOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (!isFinishing() && !mHaveResult) {
-                        invokeNoResult();
-                    }
-                }
-            }, SocialDelegateActivity.this, 300);
-        }
-    }
 }

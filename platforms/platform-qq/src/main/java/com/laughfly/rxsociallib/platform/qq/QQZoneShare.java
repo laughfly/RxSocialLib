@@ -8,9 +8,9 @@ import android.text.TextUtils;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
+import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
@@ -37,72 +37,65 @@ import static com.tencent.connect.share.QzoneShare.SHARE_TO_QZONE_TYPE_NO_TYPE;
 
 
 /**
- * QQ分享，包括QQ好友和QZone
+ * QQZone分享
  * author:caowy
  * date:2018-05-11
  */
 @ShareFeatures({
     @ShareFeature(platform = QQConstants.QQZONE, supportFeatures = QQConstants.QQZONE_SHARE_SUPPORT)
 })
-public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements IUiListener {
+public class QQZoneShare extends ShareAction implements IUiListener {
 
     private Tencent mTencent;
 
-    public QQZoneShare() {
-        super();
-    }
-
     @Override
-    protected void startImpl() {
+    protected void check() throws Exception {
         if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
-            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
+            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
+    }
+
+    @Override
+    protected void init() throws Exception {
         mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQZoneShare.this);
     }
 
     @Override
-    protected void finishImpl() {
-    }
-
-    @Override
-    public void onDelegateCreate(final QQDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    shareToQQZone(activity);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
-    }
-
-    private void shareToQQZone(QQDelegateActivity activity) throws SocialShareException {
+    protected void execute() throws Exception {
+        SocialDelegateActivity delegate = getDelegate();
         @ShareType.Def int type = getShareType();
         switch (type) {
             case ShareType.SHARE_WEB:
-                shareWeb(activity);
+                shareWeb(delegate);
                 break;
             case ShareType.SHARE_TEXT:
             case ShareType.SHARE_IMAGE:
             case ShareType.SHARE_MULTI_IMAGE:
-                publishMood(activity, type);
+                publishMood(delegate, type);
                 break;
             case ShareType.SHARE_LOCAL_VIDEO:
-                publishVideo(activity);
+                publishVideo(delegate);
                 break;
             default:
                 throw new SocialShareException(getPlatform(), SocialConstants.ERR_SHARETYPE_NOT_SUPPORT);
         }
     }
 
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        //分享成功但停留在QQ，并直接通过任务管理切换回APP
+        if (requestCode != Constants.REQUEST_QZONE_SHARE) {
+            finishWithNoResult();
+        } else {
+            Tencent.handleResultData(data, QQZoneShare.this);
+        }
+    }
+
+
     /**
      * 分享图文链接
+     *
      * @param activity
      */
     private void shareWeb(Activity activity) throws SocialShareException {
@@ -110,7 +103,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
 
         ArrayList<String> imageList = new ArrayList<>();
         String thumbUri = getThumbPath(QQConstants.THUMB_SIZE_LIMIT);
-        if(!TextUtils.isEmpty(thumbUri)) {
+        if (!TextUtils.isEmpty(thumbUri)) {
             imageList.add(thumbUri);
         }
 
@@ -124,6 +117,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
 
     /**
      * 分享说说
+     *
      * @param activity
      */
     private void publishMood(Activity activity, int type) throws SocialShareException {
@@ -133,10 +127,10 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
         params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
         ArrayList<String> imageList = new ArrayList<>();
-        if(mBuilder.hasImage()) {
+        if (mBuilder.hasImage()) {
             imageList.add(getImagePath(QQConstants.IMAGE_SIZE_LIMIT));
         }
-        if(mBuilder.hasImageList()) {
+        if (mBuilder.hasImageList()) {
             imageList.addAll(mBuilder.getImageList());
         }
 
@@ -144,7 +138,7 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
         while (iterator.hasNext()) {
             String imageUri = iterator.next();
             String _imageUri = transformUri(imageUri, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH);
-            if(_imageUri != null && !_imageUri.equalsIgnoreCase(imageUri)) {
+            if (_imageUri != null && !_imageUri.equalsIgnoreCase(imageUri)) {
                 iterator.set(_imageUri);
             }
         }
@@ -205,22 +199,6 @@ public class QQZoneShare extends AbsSocialShare<QQDelegateActivity> implements I
                 return SHARE_TO_QZONE_TYPE_IMAGE_TEXT;
             default:
                 return SHARE_TO_QZONE_TYPE_NO_TYPE;
-        }
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            //分享成功但停留在QQ，并直接通过任务管理切换回APP
-            if (requestCode != Constants.REQUEST_QZONE_SHARE) {
-                finishWithNoResult();
-            } else {
-                Tencent.handleResultData(data, QQZoneShare.this);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
         }
     }
 

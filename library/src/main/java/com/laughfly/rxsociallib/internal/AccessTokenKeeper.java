@@ -45,7 +45,7 @@ public class AccessTokenKeeper {
         SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
         Editor editor = pref.edit();
         editor.clear();
-        editor.commit();
+        editor.apply();
     }
 
     public static void writeAccessToken(Context context, String platform, AccessToken accessToken) {

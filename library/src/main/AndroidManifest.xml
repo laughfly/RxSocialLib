@@ -6,6 +6,10 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application>
+        <activity android:name=".delegate.DefaultDelegateActivity"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|navigation"
+            android:screenOrientation="behind"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <provider
             android:authorities="${applicationId}.rxsocial.fileprovider"
             android:name="android.support.v4.content.FileProvider"

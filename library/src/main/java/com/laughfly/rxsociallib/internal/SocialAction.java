@@ -8,7 +8,10 @@ import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.ResultHandler;
+import com.laughfly.rxsociallib.delegate.DefaultDelegateActivity;
+import com.laughfly.rxsociallib.delegate.DelegateCallback;
+import com.laughfly.rxsociallib.delegate.DelegateHelper;
+import com.laughfly.rxsociallib.delegate.ResultCallback;
 import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 
@@ -20,13 +23,11 @@ import java.lang.ref.WeakReference;
  * date:2018-04-20
  *
  * @param <Builder>
- * @param <Delegate>
  * @param <Result>
  */
-public abstract class SocialAction<Builder extends SocialBuilder, Delegate extends SocialDelegateActivity,
-    Result extends SocialResult> implements ResultHandler<Delegate> {
+public abstract class SocialAction<Builder extends SocialBuilder, Result extends SocialResult> {
 
-    private String TAG = getClass().getSimpleName();
+    protected String TAG = getClass().getSimpleName();
 
     /**
      *
@@ -35,7 +36,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
     /**
      *
      */
-    private WeakReference<Delegate> mDelegateRef;
+    private WeakReference<? extends SocialDelegateActivity> mDelegateRef;
 
     /**
      *
@@ -56,50 +57,83 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
         return this;
     }
 
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        SocialLogger.d(TAG, "handleResult: req[%d]result[%d]data[%s]", requestCode, resultCode, SocialUtils.bundle2String(data != null ? data.getExtras() : null));
+    protected boolean useDelegate() {
+        return true;
     }
 
-    @Override
-    public void handleNoResult() {
-        SocialLogger.d(TAG, "handleNoResult");
-        finishWithNoResult();
+    protected Class<? extends SocialDelegateActivity> getDelegateActivityClass(){
+        return DefaultDelegateActivity.class;
     }
 
-    @Override
-    @CallSuper
-    public void onDelegateCreate(Delegate delegate) {
-        SocialLogger.d(TAG, "onDelegateCreate: %s", delegate);
-        mDelegateRef = new WeakReference<>(delegate);
-    }
+    protected void check() throws Exception{}
 
-    @Override
-    @CallSuper
-    public void onDelegateDestroy(Delegate delegate) {
-        SocialLogger.d(TAG, "onDelegateDestroy: %s", delegate);
-        mDelegateRef = null;
-    }
+    protected void init() throws Exception{}
 
+    protected abstract void execute() throws Exception;
 
-    public void start() {
+    protected void release() throws Exception{}
+
+    protected abstract void handleResult(int requestCode, int resultCode, Intent data) throws Exception;
+
+    protected void startDelegateActivity() {
         SocialThreads.runOnUiThread(new Runnable() {
             @Override
             public void run() {
+                DelegateHelper.startActivity(getContext(), getDelegateActivityClass(), new DelegateCallbackWrapper(SocialAction.this), new ResultCallbackWrapper(SocialAction.this));
+            }
+        });
+    }
+
+    protected void handleNoResult() {
+        finishWithNoResult();
+    }
+
+    @CallSuper
+    protected void onDelegateCreate(SocialDelegateActivity delegate) {
+        mDelegateRef = new WeakReference<>(delegate);
+        SocialThreads.runOnThread(new Runnable() {
+            @Override
+            public void run() {
                 try {
-                    onStart();
-                    startImpl();
-                    mCallback.onStart(mBuilder.getPlatform());
+                    execute();
                 } catch (Exception e) {
                     e.printStackTrace();
                     finishWithError(e);
                 }
             }
         });
-
     }
 
-    protected void onStart() throws Exception {}
+    @CallSuper
+    protected void onDelegateDestroy(SocialDelegateActivity delegate) {
+        SocialLogger.d(TAG, "onDelegateDestroy: %s", delegate);
+        mDelegateRef = null;
+    }
+
+
+    void start() {
+        SocialThreads.runOnThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mCallback.onStart(mBuilder.getPlatform());
+
+                    check();
+
+                    init();
+
+                    if(useDelegate()) {
+                        startDelegateActivity();
+                    } else {
+                        execute();
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
+    }
 
     protected void finishWithSuccess(Result result) {
         try {
@@ -112,12 +146,12 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
 
     protected void finish() {
         try {
-            finishImpl();
             mCallback.onFinish(mBuilder.getPlatform());
+            release();
         } catch (Exception e) {
             e.printStackTrace();
         }
-        final Delegate delegate = getDelegate();
+        final SocialDelegateActivity delegate = getDelegate();
         if (delegate != null && !delegate.isFinishing()) {
             SocialThreads.runOnUiThread(new Runnable() {
                 @Override
@@ -135,8 +169,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
      * TODO
      * 保留，开发中
      */
-    protected void cancel() {
-
+    public void cancel() {
     }
 
     protected void finishWithError(SocialException e) {
@@ -147,12 +180,6 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
             e1.printStackTrace();
         }
     }
-
-    protected abstract void finishWithCancel();
-
-    protected abstract void finishWithNoResult();
-
-    protected abstract void finishWithError(Exception e);
 
     protected String getPlatform() {
         return mBuilder.getPlatform();
@@ -166,16 +193,82 @@ public abstract class SocialAction<Builder extends SocialBuilder, Delegate exten
         return mBuilder;
     }
 
-    protected Delegate getDelegate() {
-        return mDelegateRef != null ? mDelegateRef.get() : null;
+    protected<T extends SocialDelegateActivity> T getDelegate() {
+        return mDelegateRef != null ? (T) mDelegateRef.get() : null;
     }
 
+    protected static class DelegateCallbackWrapper implements DelegateCallback<SocialDelegateActivity> {
 
-    protected abstract void startImpl();
+        SocialAction action;
 
-    /**
-     * 操作结束
-     */
-    protected abstract void finishImpl();
+        public DelegateCallbackWrapper(SocialAction action) {
+            this.action = action;
+        }
+
+        @Override
+        public void onDelegateCreate(SocialDelegateActivity delegate) {
+            SocialLogger.d(action.TAG, "onDelegateCreate: %s", delegate);
+            try {
+                action.onDelegateCreate(delegate);
+            } catch (Exception e) {
+                e.printStackTrace();
+                action.finishWithError(e);
+            }
+        }
+
+        @Override
+        public void onDelegateDestroy(SocialDelegateActivity delegate) {
+            SocialLogger.d(action.TAG, "onDelegateDestroy: %s", delegate);
+            try {
+                action.onDelegateDestroy(delegate);
+            } catch (Exception e) {
+                e.printStackTrace();
+                action.finishWithError(e);
+            }
+        }
+    }
+
+    protected static class ResultCallbackWrapper implements ResultCallback {
+
+        SocialAction action;
+
+        public ResultCallbackWrapper(SocialAction action) {
+            this.action = action;
+        }
+
+        @Override
+        public void handleResult(int requestCode, int resultCode, Intent data) {
+            SocialLogger.d(action.TAG, "handleResult: req[%d]result[%d]data[%s]", requestCode, resultCode, SocialUtils.bundle2String(data != null ? data.getExtras() : null));
+            try {
+                action.handleResult(requestCode, resultCode, data);
+            } catch (Exception e) {
+                e.printStackTrace();
+                action.finishWithError(e);
+            }
+        }
+
+        @Override
+        public void handleNoResult() {
+            SocialLogger.d(action.TAG, "handleNoResult");
+            try {
+                action.handleNoResult();
+            } catch (Exception e) {
+                e.printStackTrace();
+                action.finishWithError(e);
+            }
+        }
+
+
+    }
+
+    protected abstract void finishWithCancel();
+
+    protected abstract void finishWithNoResult();
+
+    protected abstract void finishWithError(Exception e);
+
+//    protected abstract void startImpl();
+//
+//    protected abstract void finishImpl();
 
 }

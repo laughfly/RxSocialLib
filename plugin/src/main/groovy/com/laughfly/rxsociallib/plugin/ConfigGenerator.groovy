@@ -72,6 +72,7 @@ class ConfigGenerator {
     }
 
     void addDependencies() {
+        println(project.getDependencies().toString())
         project.dependencies {
             def scope = checkGradleVersion("3.0") ? "implementation" : "compile"
             def pluginVersion = getPluginVersion()

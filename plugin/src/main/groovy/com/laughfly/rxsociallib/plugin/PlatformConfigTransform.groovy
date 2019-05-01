@@ -22,12 +22,10 @@ import java.util.zip.ZipEntry
 class PlatformConfigTransform extends Transform {
 
     Project project
-    ConfigGenerator generator
     ClassPool classPool = ClassPool.default
 
-    PlatformConfigTransform(Project project, ConfigGenerator generator) {
+    PlatformConfigTransform(Project project) {
         this.project = project
-        this.generator = generator
     }
 
     @Override
@@ -53,11 +51,9 @@ class PlatformConfigTransform extends Transform {
     @Override
     void transform(Context context, Collection<TransformInput> inputs, Collection<TransformInput> referencedInputs,
                    TransformOutputProvider outputProvider, boolean isIncremental) throws IOException, TransformException, InterruptedException {
+        outputProvider.deleteAll()
         inputs.each { TransformInput input ->
-            println(getName() + ":TransformInput: " + input.toString())
             input.directoryInputs.each { DirectoryInput dirInput ->
-                println(getName() + ":DirectoryInput: " + dirInput.file.getAbsolutePath())
-
                 // 获取output目录
                 def dest = outputProvider.getContentLocation(dirInput.name,
                         dirInput.contentTypes, dirInput.scopes,
@@ -202,7 +198,7 @@ class PlatformConfigTransform extends Transform {
             jarName = jarName.substring(0, jarName.length() - 4)
         }
         //生成输出路径
-        def dest = outputProvider.getContentLocation(jarName + md5Name,
+        def dest = outputProvider.getContentLocation(jarName + "_" + md5Name,
                 jarInput.contentTypes, jarInput.scopes, Format.JAR)
 
         FileUtils.copyFile(jarInput.file, dest)

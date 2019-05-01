@@ -5,7 +5,6 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
-import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
@@ -19,15 +18,14 @@ import java.util.Map;
  * author:caowy
  * date:2018-05-26
  */
-public class ShareBuilder extends SocialBuilder<AbsSocialShare, SocialShareResult> {
+public class ShareBuilder extends SocialBuilder<ShareAction, SocialShareResult> {
 
     public ShareBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
     }
 
-    @Override
-    protected AbsSocialShare build() {
-        return SocialActionFactory.createShareAction(getPlatform(), this);
+    public ShareExecutor build() {
+        return new ShareExecutor(ShareBuilder.this);
     }
 
     protected boolean checkArgs() {

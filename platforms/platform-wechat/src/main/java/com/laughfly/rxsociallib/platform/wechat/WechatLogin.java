@@ -7,11 +7,9 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
-import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
@@ -33,70 +31,50 @@ import org.json.JSONObject;
 @LoginFeatures({
     @LoginFeature(platform = "Wechat")
 })
-public class WechatLogin extends AbsSocialLogin<SocialDelegateActivity> implements IWXAPIEventHandler {
+public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
 
     private IWXAPI mWXAPI;
 
-    public WechatLogin() {
-        super();
+    @Override
+    protected void check() throws Exception {
+        if (!SocialUtils.checkAppInstalled(mBuilder.getContext(), WechatConstants.WECHAT_PACKAGE)) {
+            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
+        }
     }
 
     @Override
-    protected void startImpl() {
+    protected void init() throws Exception {
         mWXAPI = WXAPIFactory.createWXAPI(mBuilder.getContext(), mBuilder.getAppId(), true);
         mWXAPI.registerApp(mBuilder.getAppId());
-
-        if (!mWXAPI.isWXAppInstalled()) {
-            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
-        }
-
-        WechatEntryActivity.setTheResultHandler(WechatLogin.this);
-        DelegateHelper.startActivity(mBuilder.getContext(), WechatDelegateActivity.class, WechatLogin.this);
     }
 
     @Override
-    public void onDelegateCreate(SocialDelegateActivity delegateActivity) {
-        super.onDelegateCreate(delegateActivity);
-        try {
-            startLogin();
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
-    }
-
-    private void startLogin() {
+    protected void execute() throws Exception {
+        WechatEntryActivity.setTheResultHandler(new ResultCallbackWrapper(this));
         SendAuth.Req req = new SendAuth.Req();
         req.scope = mBuilder.getScope();
         req.state = mBuilder.getState();
         boolean sendReq = mWXAPI.sendReq(req);
         if (!sendReq) {
-            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
+            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL);
         }
     }
 
     @Override
-    protected void finishImpl() {
-        if (mWXAPI != null) {
+    protected void release() throws Exception {
+        if(mWXAPI != null) {
             mWXAPI.detach();
         }
+        mWXAPI = null;
     }
 
     @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            mWXAPI.handleIntent(data, this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
+    public void handleResult(int requestCode, int resultCode, Intent data) throws Exception {
+        mWXAPI.handleIntent(data, this);
     }
 
     @Override
     public void onReq(BaseReq baseReq) {
-
     }
 
     @Override

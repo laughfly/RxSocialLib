@@ -6,7 +6,7 @@ public class SocialLogger {
 
     private static boolean LOG_ENABLED = false;
 
-    private static String PREFIX = "RxSocialLib";
+    private static String PREFIX = "RxSocialLib::";
 
     public static void setLogEnabled(boolean enable) {
         SocialLogger.LOG_ENABLED = enable;
@@ -53,6 +53,6 @@ public class SocialLogger {
         if(args != null) {
             message = String.format(message, args);
         }
-        Log.println(priority, PREFIX + ":" + tag, message);
+        Log.println(priority, PREFIX  + tag, message);
     }
 }

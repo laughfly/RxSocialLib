@@ -9,7 +9,7 @@ import android.content.Intent;
  *
  * @param <T>
  */
-public interface ResultHandler<T extends SocialDelegateActivity> {
+public interface ResultCallback {
     /**
      * 第三方结果回调
      *
@@ -23,18 +23,4 @@ public interface ResultHandler<T extends SocialDelegateActivity> {
      * 没有返回结果
      */
     void handleNoResult();
-
-    /**
-     * Delegate创建完成
-     *
-     * @param delegate
-     */
-    void onDelegateCreate(T delegate);
-
-    /**
-     * Delegate销毁
-     *
-     * @param delegate
-     */
-    void onDelegateDestroy(T delegate);
 }

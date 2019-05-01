@@ -2,18 +2,17 @@ package com.laughfly.rxsociallib.login;
 
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialConstants;
-import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.SocialAction;
 
-public abstract class AbsSocialLogin<Delegate extends SocialDelegateActivity> extends SocialAction<LoginBuilder, Delegate, SocialLoginResult>{
+public abstract class LoginAction extends SocialAction<LoginBuilder, SocialLoginResult>{
 
-    public AbsSocialLogin() {
+    public LoginAction() {
         super();
     }
 
     @Override
-    public AbsSocialLogin setCallback(SocialCallback<SocialLoginResult> callback) {
+    public LoginAction setCallback(SocialCallback<SocialLoginResult> callback) {
         super.setCallback(callback);
         return this;
     }

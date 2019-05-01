@@ -1,16 +1,15 @@
 package com.laughfly.rxsociallib.platform.qq;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialLogger;
-import com.laughfly.rxsociallib.SocialThreads;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
-import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
@@ -29,54 +28,41 @@ import org.json.JSONObject;
 @LoginFeatures({
     @LoginFeature(platform = "QQ")
 })
-public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiListener {
+public class QQLogin extends LoginAction implements IUiListener {
 
     private Tencent mTencent;
 
     private SocialLoginResult mResult;
 
-    public QQLogin() {
-        super();
-    }
-
     @Override
-    protected void startImpl() {
+    protected void check() throws Exception {
         if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
-            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
+            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
-
-        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQLogin.this);
     }
 
     @Override
-    protected void finishImpl() {
+    protected void init() throws Exception {
+        mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
     }
 
-
     @Override
-    public void onDelegateCreate(final QQDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-                    AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
-                    if (accessToken != null) {
-                        mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
-                        mTencent.setOpenId(accessToken.openId);
-                        if (mTencent.isSessionValid()) {
-                            mTencent.logout(mBuilder.getContext());
-                        }
-                    }
-                    mTencent.login(activity, mBuilder.getScope(), QQLogin.this);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
+    protected void execute() throws Exception {
+        Activity delegate = getDelegate();
+        AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
+        if (accessToken != null) {
+            mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
+            mTencent.setOpenId(accessToken.openId);
+            if (mTencent.isSessionValid()) {
+                mTencent.logout(mBuilder.getContext());
             }
-        });
+        }
+        mTencent.login(delegate, mBuilder.getScope(), QQLogin.this);
+    }
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) throws Exception {
+        Tencent.handleResultData(data, QQLogin.this);
     }
 
     @Override
@@ -176,17 +162,6 @@ public class QQLogin extends AbsSocialLogin<QQDelegateActivity> implements IUiLi
     @Override
     public void onCancel() {
         finishWithCancel();
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            Tencent.handleResultData(data, QQLogin.this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
     }
 
 

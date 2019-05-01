@@ -1,6 +1,6 @@
 apply plugin: 'com.android.application'
 
-def configFile = rootProject.file("config.properties")
+def configFile = file("social-config.properties")
 // Initialize a new Properties() object called keystorePro perties.
 def configProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
@@ -39,10 +39,15 @@ android {
         }
     }
 
+    lintOptions {
+        abortOnError false
+    }
+
 }
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation deps.android.supportv4
     implementation deps.android.appcompat
     implementation deps.android.recyclerview
     implementation deps.android.constraintlayout

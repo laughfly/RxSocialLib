@@ -1,6 +1,6 @@
 apply plugin: 'social-config'
 
-def configFile = rootProject.file("config.properties")
+def configFile = file("social-config.properties")
 // Initialize a new Properties() object called keystorePro perties.
 def configProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
@@ -17,7 +17,7 @@ RxSocialConfig{
         redirectUrl configProperties['WeiboRedirectUrl']
         scope configProperties['WeiboScope']
     }
-    QQStory {
+    WeiboStory {
         appId configProperties['WeiboAppId']
         appSecret configProperties['WeiboAppSecret']
         redirectUrl configProperties['WeiboRedirectUrl']
@@ -41,6 +41,11 @@ RxSocialConfig{
     WechatMoments {
         appId configProperties['WechatAppId']
         login false
+    }
+    Google {
+        appId configProperties['GoogleAppId']
+        scope configProperties['GoogleScope'] //etc 'email,profile,openid'
+        share false
     }
 }
 

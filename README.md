@@ -1,5 +1,5 @@
 # RxSocialLib
-* 支持QQ，QQZone，微信，微信朋友圈，微博，微博故事
+* 支持QQ，QQZone，微信，微信朋友圈，微博，微博故事，Google登录
 * 兼容RxJava/RxJava2数据流
 * 基于平台的官方SDK开发
 # 导入
@@ -7,7 +7,7 @@
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.3.3'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.0'
     }
 }
 ```
@@ -38,7 +38,7 @@ buildscript {
             .setMiniProgramPath("微信小程序地址")
             .setMiniProgramType(SocialConstants.MINIPROGRAM_TYPE_RELEASE)
             .setMiniProgramUserName("user")
-            
+            .build()
             //分享结果回调
             .start(new SocialCallback<SocialShareResult>() {
                
@@ -62,6 +62,7 @@ buildscript {
 ## 登录
 ```java
         RxSocial.login(context)
+            //LoginPlatform根据配置文件自动生成
             .setPlatform(LoginPlatform.Wechat)
             .start(new SocialCallback<SocialLoginResult>() {
                 @Override
@@ -74,6 +75,7 @@ buildscript {
                     Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_SHORT).show();
                 }
             })
+            .build()
             //to RxJava Observable
             .toObservable()
             //to RxJava2 Observable
@@ -119,6 +121,11 @@ RxSocialConfig{
         appId 'yourAppId'
         login false
     }
+    Google {
+        appId 'GoogleAppId'
+        scope 'GoogleScope' //etc 'email,profile,openid'
+        share false
+     }
 }
 ```
 然后在你的app的build.gradle里添加
@@ -130,7 +137,7 @@ apply from:'social-config.gradle'
 ## RxJava/RxJava2
 library对RxJava/RxJava2的依赖用的scope是compileOnly，所以最终生成apk里不会有多余的RxJava/RxJava2库。
 支持的RxJava版本是1.2.7。
-另外你需要自己添加对RxJava/RxJava2的依赖。
+另外需要自己添加对RxJava/RxJava2的依赖。
 
 ## 其他  
 修改social-config.gradle里的平台信息后可能需要Rebuild Project才有效果！

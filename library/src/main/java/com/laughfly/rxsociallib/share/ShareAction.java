@@ -10,7 +10,6 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.internal.SocialAction;
 
@@ -21,9 +20,8 @@ import java.io.File;
  * author:caowy
  * date:2018-04-20
  *
- * @param <Delegate>
  */
-public abstract class AbsSocialShare<Delegate extends SocialDelegateActivity> extends SocialAction<ShareBuilder, Delegate, SocialShareResult> {
+public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShareResult> {
 
     protected static @SocialUriUtils.UriType int URI_TYPES_ALL = SocialUriUtils.TYPE_HTTP | SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_FILE_PATH | SocialUriUtils.TYPE_CONTENT_URI;
 
@@ -31,12 +29,12 @@ public abstract class AbsSocialShare<Delegate extends SocialDelegateActivity> ex
 
     protected static @SocialUriUtils.UriType int URI_TYPES_NETWORK = SocialUriUtils.TYPE_HTTP;
 
-    public AbsSocialShare() {
+    public ShareAction() {
         super();
     }
 
     @Override
-    public AbsSocialShare setCallback(SocialCallback<SocialShareResult> callback) {
+    public ShareAction setCallback(SocialCallback<SocialShareResult> callback) {
         super.setCallback(callback);
         return this;
     }
@@ -66,8 +64,7 @@ public abstract class AbsSocialShare<Delegate extends SocialDelegateActivity> ex
     }
 
     @Override
-    protected void onStart() throws Exception {
-        super.onStart();
+    protected void check() throws Exception {
         @ShareType.Def int type = getShareType();
         if(!isShareTypeSupport(type)) {
             throw new SocialShareException(getPlatform(), SocialConstants.ERR_SHARETYPE_NOT_SUPPORT);
@@ -82,6 +79,7 @@ public abstract class AbsSocialShare<Delegate extends SocialDelegateActivity> ex
             }
             return imageUri;
         } catch (Exception e) {
+            e.printStackTrace();
             throw new SocialShareException(getPlatform(), SocialConstants.ERR_DOWNLOAD_FAILED, imageUri);
         }
     }

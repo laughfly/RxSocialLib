@@ -27,13 +27,13 @@ public class SocialUriUtils {
 
     public static final int TYPE_FILE_URI = 1;
 
-    public static final int TYPE_FILE_PATH = 2;
+    public static final int TYPE_FILE_PATH = 1 << 1;
 
-    public static final int TYPE_CONTENT_URI = 4;
+    public static final int TYPE_CONTENT_URI = 1 << 2;
 
-    public static final int TYPE_HTTP = 8;
+    public static final int TYPE_HTTP = 1 << 3;
 
-    public static final int TYPE_OTHER = 16;
+    public static final int TYPE_OTHER = 1 << 4;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {TYPE_NULL, TYPE_FILE_PATH, TYPE_FILE_URI, TYPE_CONTENT_URI, TYPE_HTTP, TYPE_OTHER})
@@ -93,23 +93,27 @@ public class SocialUriUtils {
         File file = null;
         Cursor cursor = context.getContentResolver().query(uri, projections, null, null, null);
         if(cursor != null) {
-            cursor.moveToFirst();
-            int index = cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
-            if(index != -1) {
-                filePath = cursor.getString(index);
-                fileName = getFileName(filePath);
-            }
-            if(filePath != null) {
-                file = new File(filePath);
-            }
-            if(file == null || !file.exists() || file.length() == 0) {
-                if(fileName == null) {
-                    fileName = getFileName(contentUri);
+            try {
+                cursor.moveToFirst();
+                int index = cursor.getColumnIndex(MediaStore.MediaColumns.DATA);
+                if(index != -1) {
+                    filePath = cursor.getString(index);
+                    fileName = getFileName(filePath);
                 }
-                if(fileName == null) {
-                    fileName = SocialUtils.md5(contentUri);
+                if(filePath != null) {
+                    file = new File(filePath);
                 }
-                file = storeToLocalFile(context, uri, storeDirectory, fileName);
+                if(file == null || !file.exists() || file.length() == 0) {
+                    if(fileName == null) {
+                        fileName = getFileName(contentUri);
+                    }
+                    if(fileName == null) {
+                        fileName = SocialUtils.md5(contentUri);
+                    }
+                    file = storeToLocalFile(context, uri, storeDirectory, fileName);
+                }
+            } finally {
+                cursor.close();
             }
         }
         return file != null && file.exists() ? file.getAbsolutePath() : null;

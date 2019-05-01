@@ -130,6 +130,9 @@ public class ActionListActivity extends Activity {
     private void doLogin() {
         RxSocial.login(ActionListActivity.this)
             .setPlatform(mPlatform)
+            .setClearLastAccount(true)
+//            .setLogoutOnly(true)
+            .build()
             .toObservable()
             .subscribe(new rx.Observer<SocialLoginResult>() {
                 @Override
@@ -241,7 +244,7 @@ public class ActionListActivity extends Activity {
                 break;
         }
         if(builder != null) {
-            builder.toObservable2()
+            builder.build().toObservable2()
                 .subscribe(new Observer<SocialShareResult>() {
 
                     @Override

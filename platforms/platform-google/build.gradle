@@ -1,0 +1,21 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion versions.targetSdk
+    defaultConfig {
+        minSdkVersion versions.minSdk
+    }
+
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    compileOnly deps.android.supportv4
+
+    implementation 'com.google.android.gms:play-services-auth:16.0.1'
+
+    implementation project(':library')
+}
+
+apply from: rootProject.file('maven-deloy.gradle')

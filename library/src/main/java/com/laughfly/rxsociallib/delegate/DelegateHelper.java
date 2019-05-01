@@ -12,14 +12,15 @@ import android.os.Bundle;
  */
 
 public class DelegateHelper {
-    public static void startActivity(Context context, final Class<? extends SocialDelegateActivity> clazz, final ResultHandler resultHandler) {
+    public static void startActivity(Context context, final Class clazz, DelegateCallback delegateCallback, final ResultCallback resultCallback) {
         final Application application = (Application) context.getApplicationContext();
         ALC alc = new ALC(){
             @Override
             public void onActivityCreated(Activity activity, Bundle savedInstanceState) {
                 if(activity.getClass() == clazz) {
                     SocialDelegateActivity delegateActivity = (SocialDelegateActivity) activity;
-                    delegateActivity.setResultHandler(resultHandler);
+                    delegateActivity.setDelegateCallback(delegateCallback);
+                    delegateActivity.setResultCallback(resultCallback);
                     application.unregisterActivityLifecycleCallbacks(this);
                 }
             }

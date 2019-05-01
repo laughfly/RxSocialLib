@@ -27,6 +27,7 @@ public class DefaultFileDownloader extends FileDownloader {
 
     @Override
     public File download(String url) throws Exception {
+        SocialLogger.d("Downloader", "url:" + url);
         long time = System.currentTimeMillis();
         File downloadDirectory = SocialModel.getDownloadDirectory();
 

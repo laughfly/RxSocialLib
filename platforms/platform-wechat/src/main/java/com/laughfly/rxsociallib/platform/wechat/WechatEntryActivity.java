@@ -4,8 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
-import com.laughfly.rxsociallib.SocialLogger;
-import com.laughfly.rxsociallib.delegate.ResultHandler;
+import com.laughfly.rxsociallib.delegate.ResultCallback;
 import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 
 import java.lang.ref.WeakReference;
@@ -22,23 +21,23 @@ public class WechatEntryActivity extends SocialDelegateActivity {
     /**
      * 结果回调监听
      */
-    protected static WeakReference<ResultHandler<?>> sTempResultHandler;
+    protected static WeakReference<ResultCallback> sTempResultHandler;
 
-    public static void setTheResultHandler(ResultHandler<SocialDelegateActivity> handler) {
-        sTempResultHandler = new WeakReference<ResultHandler<?>>(handler);
+    public static void setTheResultHandler(ResultCallback handler) {
+        sTempResultHandler = new WeakReference<>(handler);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         try {
-            ResultHandler<?> tempResultHandler = sTempResultHandler != null ? sTempResultHandler.get() : null;
+            ResultCallback tempResultCallback = sTempResultHandler != null ? sTempResultHandler.get() : null;
             //可能是App重启
-            if (tempResultHandler == null) {
+            if (tempResultCallback == null) {
                 invokeNoResult();
             } else {
-                mResultHandler = tempResultHandler;
-                onCreateImpl(savedInstanceState);
+                mResultCallback = tempResultCallback;
+                invokeHandleResult(0, 0, getIntent());
             }
         } finally {
             sTempResultHandler = null;
@@ -46,17 +45,11 @@ public class WechatEntryActivity extends SocialDelegateActivity {
         }
     }
 
-    protected void onCreateImpl(Bundle savedInstanceState) {
-        SocialLogger.w(TAG, "onCreateImpl, " + getIntent().getExtras());
-        invokeHandleResult(0, 0, getIntent());
-    }
-
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
         invokeHandleResult(0, 0, intent);
-        SocialLogger.w(TAG, "onNewIntent, " + intent.getExtras());
     }
 
 }

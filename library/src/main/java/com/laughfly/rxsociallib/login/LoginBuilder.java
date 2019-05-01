@@ -4,7 +4,6 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
-import com.laughfly.rxsociallib.SocialActionFactory;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
 
 /**
@@ -12,24 +11,42 @@ import com.laughfly.rxsociallib.internal.SocialBuilder;
  * author:caowy
  * date:2018-05-26
  */
-public class LoginBuilder extends SocialBuilder<AbsSocialLogin, SocialLoginResult>{
+public class LoginBuilder extends SocialBuilder<LoginAction, SocialLoginResult>{
 
     public LoginBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
     }
 
-    @Override
-    protected AbsSocialLogin build() {
-        return SocialActionFactory.createLoginAction(getPlatform(), this);
+    public LoginExecutor build() {
+        return new LoginExecutor(LoginBuilder.this);
     }
 
+
     public LoginBuilder setFetchUserProfile(boolean fetchUserProfile) {
-        put("getUserProfile", Boolean.toString(fetchUserProfile));
+        put("getUserProfile", fetchUserProfile);
         return this;
     }
 
     public boolean isFetchUserProfile() {
-        return Boolean.parseBoolean((String)get("getUserProfile"));
+        return get("getUserProfile", false);
+    }
+
+    public LoginBuilder setClearLastAccount(boolean clearLastAccount) {
+        put("clearLastAccount", clearLastAccount);
+        return this;
+    }
+
+    public boolean isClearLastAccount() {
+        return get("clearLastAccount", false);
+    }
+
+    public LoginBuilder setLogoutOnly(boolean logoutOnly) {
+        put("logoutOnly", logoutOnly);
+        return this;
+    }
+
+    public boolean isLogoutOnly() {
+        return get("logoutOnly", false);
     }
 
     protected boolean checkArgs() {

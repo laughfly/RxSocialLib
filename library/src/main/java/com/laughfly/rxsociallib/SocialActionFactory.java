@@ -1,8 +1,12 @@
 package com.laughfly.rxsociallib;
 
-import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import android.support.annotation.NonNull;
+
+import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginBuilder;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.login.NullLoginAction;
+import com.laughfly.rxsociallib.share.NullShareAction;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareBuilder;
 
 /**
@@ -11,27 +15,27 @@ import com.laughfly.rxsociallib.share.ShareBuilder;
  */
 
 public class SocialActionFactory {
-    public static AbsSocialShare createShareAction(String platform, ShareBuilder builder) {
+    public static @NonNull ShareAction createShareAction(String platform, ShareBuilder builder) {
         try {
-            Class<? extends AbsSocialShare> shareClass = SocialModel.getShareClass(platform);
-            AbsSocialShare absSocialShare = shareClass.newInstance();
-            absSocialShare.setBuilder(builder);
-            return absSocialShare;
+            Class<? extends ShareAction> shareClass = SocialModel.getShareClass(platform);
+            ShareAction shareAction = shareClass.newInstance();
+            shareAction.setBuilder(builder);
+            return shareAction;
         } catch (NullPointerException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        return null;
+        return (ShareAction) new NullShareAction().setBuilder(builder);
     }
 
-    public static AbsSocialLogin createLoginAction(String platform, LoginBuilder builder) {
+    public static @NonNull LoginAction createLoginAction(String platform, LoginBuilder builder) {
         try {
-            Class<? extends AbsSocialLogin> shareClass = SocialModel.getLoginClass(platform);
-            AbsSocialLogin absSocialLogin = shareClass.newInstance();
-            absSocialLogin.setBuilder(builder);
-            return absSocialLogin;
+            Class<? extends LoginAction> loginClass = SocialModel.getLoginClass(platform);
+            LoginAction loginAction = loginClass.newInstance();
+            loginAction.setBuilder(builder);
+            return loginAction;
         } catch (NullPointerException | InstantiationException | IllegalAccessException e) {
             e.printStackTrace();
         }
-        return null;
+        return (LoginAction) new NullLoginAction().setBuilder(builder);
     }
 }

@@ -6,11 +6,10 @@ import android.net.Uri;
 
 import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialIntentUtils;
-import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
+import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialShareException;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
@@ -39,57 +38,50 @@ import java.util.List;
     @ShareFeature(platform = WeiboConstants.WEIBO, supportFeatures = WeiboConstants.WEIBO_SHARE_SUPPORT),
     @ShareFeature(platform = WeiboConstants.WEIBO_STORY, supportFeatures = WeiboConstants.WEIBO_STORY_SHARE_SUPPORT)
 })
-public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements WbShareCallback {
+public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private WbShareHandler mWbShareHandler;
 
     private boolean mShareByIntent;
 
-    public WeiboShare() {
-        super();
+    @Override
+    protected Class<? extends SocialDelegateActivity> getDelegateActivityClass() {
+        return WeiboDelegateActivity.class;
     }
 
     @Override
-    protected void startImpl() {
-        if (!WbSdk.isWbInstall(mBuilder.getContext())) {
-            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
-        }
-
+    protected void init() throws Exception {
         WbSdk.install(mBuilder.getContext(),
             new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
-
-        DelegateHelper.startActivity(mBuilder.getContext(), WeiboDelegateActivity.class, WeiboShare.this);
     }
 
     @Override
-    protected void finishImpl() {
-
+    protected void execute() throws Exception {
+        SocialDelegateActivity delegate = getDelegate();
+        mWbShareHandler = new WbShareHandler(delegate);
+        mWbShareHandler.registerApp();
+        if(WeiboConstants.WEIBO.equalsIgnoreCase(getPlatform())) {
+            shareToWeibo(delegate);
+        } else {
+            shareToStory();
+        }
     }
 
     @Override
-    public void onDelegateCreate(final WeiboDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    mWbShareHandler = new WbShareHandler(activity);
-                    mWbShareHandler.registerApp();
-                    if(WeiboConstants.WEIBO.equalsIgnoreCase(getPlatform())) {
-                        shareToWeibo(activity);
-                    } else {
-                        shareToStory(activity);
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
+    public void handleNoResult() {
+        if(mShareByIntent) {
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        } else {
+            super.handleNoResult();
+        }
     }
 
-    private void shareToWeibo(WeiboDelegateActivity activity) throws Exception {
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        mWbShareHandler.doResultIntent(data, this);
+    }
+
+    private void shareToWeibo(SocialDelegateActivity activity) throws Exception {
         int shareType = getShareType();
         switch (shareType) {
             case ShareType.SHARE_TEXT:
@@ -120,7 +112,7 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         }
     }
 
-    private void shareToStory(Activity activity) throws Exception {
+    private void shareToStory() throws Exception {
         int shareType = getShareType();
         switch (shareType) {
             case ShareType.SHARE_IMAGE:
@@ -242,26 +234,6 @@ public class WeiboShare extends AbsSocialShare<WeiboDelegateActivity> implements
         String videoUri = transformUri(mBuilder.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_CONTENT_URI);
         videoSourceObject.videoPath = Uri.parse(videoUri);
         return videoSourceObject;
-    }
-
-    @Override
-    public void handleNoResult() {
-        if(mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
-        } else {
-            super.handleNoResult();
-        }
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            mWbShareHandler.doResultIntent(data, this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
     }
 
     @Override

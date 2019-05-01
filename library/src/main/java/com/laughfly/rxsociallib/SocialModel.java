@@ -5,10 +5,10 @@ import android.os.Environment;
 
 import com.laughfly.rxsociallib.downloader.DefaultFileDownloader;
 import com.laughfly.rxsociallib.downloader.FileDownloader;
-import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
@@ -37,11 +37,11 @@ public class SocialModel {
 
     private static HashMap<String, PlatformConfig> sConfigMap = new HashMap<>();
 
-    private static HashMap<String, Class<? extends AbsSocialShare>> sShareClassMap = new HashMap<>();
+    private static HashMap<String, Class<? extends ShareAction>> sShareClassMap = new HashMap<>();
 
     private static HashMap<String, Integer> sShareSupportFeatures = new HashMap<>();
 
-    private static HashMap<String, Class<? extends AbsSocialLogin>> sLoginClassMap = new HashMap<>();
+    private static HashMap<String, Class<? extends LoginAction>> sLoginClassMap = new HashMap<>();
 
     private static boolean sNoResultAsSuccess;
 
@@ -110,11 +110,11 @@ public class SocialModel {
         return sFileDownloader;
     }
 
-    public static Class<? extends AbsSocialShare> getShareClass(String platform) {
+    public static Class<? extends ShareAction> getShareClass(String platform) {
         return sShareClassMap.get(platform);
     }
 
-    public static Class<? extends AbsSocialLogin> getLoginClass(String platform) {
+    public static Class<? extends LoginAction> getLoginClass(String platform) {
         return sLoginClassMap.get(platform);
     }
 
@@ -134,9 +134,9 @@ public class SocialModel {
                 sConfigMap.putAll(configMap);
             }
 
-            HashMap<String, Class<? extends AbsSocialShare>> shareMap = new HashMap<>();
+            HashMap<String, Class<? extends ShareAction>> shareMap = new HashMap<>();
             HashMap<String, Integer> shareSupportFeatures = new HashMap<>();
-            HashMap<String, Class<? extends AbsSocialLogin>> loginClassMap = new HashMap<>();
+            HashMap<String, Class<? extends LoginAction>> loginClassMap = new HashMap<>();
 
             List<Class> socialClassList = getSocialClassList();
 

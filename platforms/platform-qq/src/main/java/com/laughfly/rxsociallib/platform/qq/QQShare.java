@@ -9,9 +9,8 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialShareException;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
@@ -39,54 +38,61 @@ import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_DEFAULT;
 import static com.tencent.connect.share.QQShare.SHARE_TO_QQ_TYPE_IMAGE;
 
 /**
- * QQ分享，包括QQ好友和QZone
+ * QQ分享
  * author:caowy
  * date:2018-05-11
  */
 @ShareFeatures({
     @ShareFeature(platform = QQConstants.QQ, supportFeatures = QQConstants.QQ_SHARE_SUPPORT)
 })
-public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiListener {
+public class QQShare extends ShareAction implements IUiListener {
 
     private Tencent mTencent;
 
     private boolean mShareByIntent;
 
-    public QQShare() {
-        super();
-    }
-
     @Override
-    protected void startImpl() {
+    protected void check() throws Exception {
         if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
-            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
+            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
-        mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
-        DelegateHelper.startActivity(mBuilder.getContext(), QQDelegateActivity.class, QQShare.this);
     }
 
     @Override
-    protected void finishImpl() {
-    }
-
-    @Override
-    public void onDelegateCreate(final QQDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        SocialThreads.runOnThread(new Runnable() {
+    protected void init() throws Exception {
+        SocialThreads.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                try {
-                    shareToQQ(activity);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
+                mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
             }
         });
     }
 
-    private void shareToQQ(QQDelegateActivity activity) throws Exception {
+    @Override
+    protected void execute() throws Exception {
+        shareToQQ(getDelegate());
+    }
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        //分享成功但停留在QQ，并直接通过任务管理切换回APP
+        if (requestCode != Constants.REQUEST_QQ_SHARE) {
+            finishWithNoResult();
+        } else {
+            Tencent.handleResultData(data, QQShare.this);
+        }
+    }
+
+    @Override
+    public void handleNoResult() {
+        if (mShareByIntent) {
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        } else {
+            super.handleNoResult();
+        }
+    }
+
+    private void shareToQQ(Activity activity) throws Exception {
         @ShareType.Def int type = getShareType();
         switch (type) {
             case ShareType.SHARE_APP:
@@ -134,7 +140,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     private void shareAudio(Activity activity) throws SocialShareException {
         String audioUri = mBuilder.getAudioUri();
-        if(SocialUriUtils.isHttpUrl(audioUri)) {
+        if (SocialUriUtils.isHttpUrl(audioUri)) {
             Bundle params = createParams(ShareType.SHARE_AUDIO);
             params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
             params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
@@ -183,7 +189,7 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
 
     private void shareVideo(Activity activity) {
         String videoUri = mBuilder.getVideoUri();
-        if(SocialUriUtils.isHttpUrl(videoUri)) {
+        if (SocialUriUtils.isHttpUrl(videoUri)) {
             mBuilder.setText(videoUri);
             shareText(activity);
         } else {
@@ -220,7 +226,17 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
     }
 
     private void shareBySDK(Activity activity, Bundle params) {
-        mTencent.shareToQQ(activity, params, QQShare.this);
+        SocialThreads.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    mTencent.shareToQQ(activity, params, QQShare.this);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    finishWithError(e);
+                }
+            }
+        });
     }
 
     private Bundle createParams(@ShareType.Def int shareType) {
@@ -248,31 +264,6 @@ public class QQShare extends AbsSocialShare<QQDelegateActivity> implements IUiLi
                 return SHARE_TO_QQ_TYPE_DEFAULT;
             default:
                 return 0;
-        }
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            //分享成功但停留在QQ，并直接通过任务管理切换回APP
-            if (requestCode != Constants.REQUEST_QQ_SHARE) {
-                finishWithNoResult();
-            } else {
-                Tencent.handleResultData(data, QQShare.this);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
-    }
-
-    @Override
-    public void handleNoResult() {
-        if (mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
-        } else {
-            super.handleNoResult();
         }
     }
 

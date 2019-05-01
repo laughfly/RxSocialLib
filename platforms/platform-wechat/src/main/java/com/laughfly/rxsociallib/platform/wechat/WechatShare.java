@@ -8,11 +8,10 @@ import com.laughfly.rxsociallib.SocialIntentUtils;
 import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
-import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
 import com.laughfly.rxsociallib.exception.SocialException;
+import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.exception.SocialShareException;
-import com.laughfly.rxsociallib.share.AbsSocialShare;
+import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareType;
@@ -40,49 +39,54 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
     @ShareFeature(platform = WechatConstants.WECHAT, supportFeatures = WechatConstants.WECHAT_SHARE_SUPPORT),
     @ShareFeature(platform = WechatConstants.WECHAT_MOMENTS, supportFeatures = WechatConstants.WECHAT_MOMENTS_SHARE_SUPPORT)
 })
-public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implements IWXAPIEventHandler{
+public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
     private IWXAPI mWXApi;
 
     private boolean mShareByIntent;
 
-    public WechatShare() {
-        super();
+    @Override
+    protected void check() throws Exception {
+        if (!SocialUtils.checkAppInstalled(mBuilder.getContext(), WechatConstants.WECHAT_PACKAGE)) {
+            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
+        }
     }
 
     @Override
-    protected void startImpl() {
-        if (mWXApi == null) {
-            String appId = mBuilder.getAppId();
-            mWXApi = WXAPIFactory.createWXAPI(getContext(), appId, true);
-            mWXApi.registerApp(appId);
-        }
-        if (!mWXApi.isWXAppInstalled()) {
-            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL));
-            return;
-        }
-
-        WechatEntryActivity.setTheResultHandler(WechatShare.this);
-        DelegateHelper.startActivity(mBuilder.getContext(), WechatDelegateActivity.class, WechatShare.this);
+    protected void init() throws Exception {
+        mWXApi = WXAPIFactory.createWXAPI(getContext(), mBuilder.getAppId(), true);
+        mWXApi.registerApp(mBuilder.getAppId());
     }
 
     @Override
-    public void onDelegateCreate(SocialDelegateActivity delegateActivity) {
-        super.onDelegateCreate(delegateActivity);
-        SocialThreads.runOnThread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    shareToWechat();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    finishWithError(e);
-                }
-            }
-        });
+    protected void release() throws Exception {
+        if (mWXApi != null) {
+            mWXApi.detach();
+        }
+        mWXApi = null;
     }
 
-    private void shareToWechat() throws SocialShareException {
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) {
+        if (data == null) {
+            finishWithNoResult();
+        } else {
+            mWXApi.handleIntent(data, this);
+        }
+    }
+
+    @Override
+    public void handleNoResult() {
+        if (mShareByIntent) {
+            finishWithSuccess(new SocialShareResult(getPlatform()));
+        } else {
+            super.handleNoResult();
+        }
+    }
+
+    @Override
+    protected void execute() throws Exception {
         int shareType = getShareType();
         switch (shareType) {
             case ShareType.SHARE_TEXT:
@@ -112,7 +116,6 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
             case ShareType.SHARE_MULTI_IMAGE:
             case ShareType.SHARE_NONE:
                 break;
-
         }
     }
 
@@ -176,7 +179,7 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
 
     private void shareVideo() throws SocialShareException {
         String videoUri = mBuilder.getVideoUri();
-        if(SocialUriUtils.isHttpUrl(videoUri)) {
+        if (SocialUriUtils.isHttpUrl(videoUri)) {
             WXVideoObject videoObject = new WXVideoObject();
             videoObject.videoUrl = mBuilder.getVideoUri();
 
@@ -245,37 +248,6 @@ public class WechatShare extends AbsSocialShare<SocialDelegateActivity> implemen
                 }
             }
         });
-    }
-
-    @Override
-    protected void finishImpl() {
-        if (mWXApi != null) {
-            mWXApi.detach();
-        }
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
-        try {
-            if (data == null) {
-                finishWithNoResult();
-            } else {
-                mWXApi.handleIntent(data, this);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
-    }
-
-    @Override
-    public void handleNoResult() {
-        if(mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
-        } else {
-            super.handleNoResult();
-        }
     }
 
     @Override

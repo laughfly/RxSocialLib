@@ -1,6 +1,6 @@
 package com.laughfly.rxsociallib.plugin
 
-import com.android.build.gradle.AppExtension
+
 import org.gradle.api.Project
 
 /**
@@ -11,7 +11,8 @@ import org.gradle.api.Project
 class SocialConfigExtension {
     static Map<String, String> platformLibMap = ['Weibo':'weibo', 'WeiboStory':'weibo',
                                                  'Wechat':'wechat', 'WechatMoments':'wechat',
-                                                 'QQ':'qq', 'QQZone':'qq']
+                                                 'QQ':'qq', 'QQZone':'qq',
+                                                 'Google':'google']
 
     Project project
     ConfigGenerator generator
@@ -24,9 +25,6 @@ class SocialConfigExtension {
         generator.project = project
         generator.config = this
         generator.generate()
-
-        PlatformConfigTransform transform = new PlatformConfigTransform(project, generator)
-        project.extensions.getByType(AppExtension).registerTransform(transform)
     }
 
     def methodMissing(String name, def args) {

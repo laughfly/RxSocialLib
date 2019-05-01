@@ -34,7 +34,7 @@ public class PlatformListActivity extends Activity {
 
     LayoutInflater mLayoutInflater;
 
-    String[] ALL_PLATFORMS = new String[]{"Weibo", "WeiboStory", "Wechat", "WechatMoments", "QQ", "QQZone"};
+    String[] ALL_PLATFORMS = new String[]{"Weibo", "WeiboStory", "Wechat", "WechatMoments", "QQ", "QQZone", "Google"};
 
     HashMap<String, String> mPlatformNames = new HashMap<>();
     {
@@ -44,6 +44,7 @@ public class PlatformListActivity extends Activity {
         mPlatformNames.put("WeiboStory", "微博故事");
         mPlatformNames.put("Wechat", "微信");
         mPlatformNames.put("WechatMoments", "微信朋友圈");
+        mPlatformNames.put("Google", "Google");
     }
 
     HashMap<String, Integer> mPlatformIcons = new HashMap<>();
@@ -54,6 +55,7 @@ public class PlatformListActivity extends Activity {
         mPlatformIcons.put("WeiboStory", R.mipmap.ic_weibostory);
         mPlatformIcons.put("Wechat", R.mipmap.ic_wechat);
         mPlatformIcons.put("WechatMoments", R.mipmap.ic_wechatmoments);
+        mPlatformIcons.put("Google", R.mipmap.ic_google);
     }
 
     List<String> mPlatforms = new ArrayList<>();
@@ -84,7 +86,6 @@ public class PlatformListActivity extends Activity {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.addItemDecoration(new DividerItemDecoration(this, RecyclerView.VERTICAL));
         mRecyclerView.setAdapter(new ARecyclerViewAdapter());
-
     }
 
     private void showActionList(String platform) {

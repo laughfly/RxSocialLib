@@ -19,6 +19,7 @@ dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
     compileOnly deps.android.annotations
+    compileOnly deps.android.supportv4
 
     implementation project(':library')
 }

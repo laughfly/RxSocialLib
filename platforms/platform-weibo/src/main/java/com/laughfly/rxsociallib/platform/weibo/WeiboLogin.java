@@ -3,9 +3,8 @@ package com.laughfly.rxsociallib.platform.weibo;
 import android.content.Intent;
 
 import com.laughfly.rxsociallib.SocialConstants;
-import com.laughfly.rxsociallib.delegate.DelegateHelper;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.login.AbsSocialLogin;
+import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
 import com.laughfly.rxsociallib.login.SocialLoginResult;
@@ -24,47 +23,26 @@ import com.sina.weibo.sdk.auth.sso.SsoHandler;
 @LoginFeatures({
     @LoginFeature(platform = "Weibo")
 })
-public class WeiboLogin extends AbsSocialLogin<WeiboDelegateActivity> implements WbAuthListener {
+public class WeiboLogin extends LoginAction implements WbAuthListener {
 
     private SsoHandler mSsoHandler;
 
-    public WeiboLogin() {
-        super();
-    }
-
     @Override
-    protected void startImpl() {
+    protected void init() throws Exception {
         WbSdk.install(mBuilder.getContext(),
             new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
-        DelegateHelper.startActivity(mBuilder.getContext(), WeiboDelegateActivity.class, WeiboLogin.this);
     }
 
     @Override
-    protected void finishImpl() {
+    protected void execute() throws Exception {
+        mSsoHandler = new SsoHandler(getDelegate());
+        mSsoHandler.authorize(this);
     }
 
     @Override
     public void handleResult(int requestCode, int resultCode, Intent data) {
-        super.handleResult(requestCode, resultCode, data);
         if (requestCode == 0) return;
-        try {
-            mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
-    }
-
-    @Override
-    public void onDelegateCreate(WeiboDelegateActivity activity) {
-        super.onDelegateCreate(activity);
-        try {
-            mSsoHandler = new SsoHandler(activity);
-            mSsoHandler.authorize(this);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
-        }
+        mSsoHandler.authorizeCallBack(requestCode, resultCode, data);
     }
 
     @Override
