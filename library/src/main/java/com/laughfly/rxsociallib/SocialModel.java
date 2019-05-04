@@ -31,6 +31,8 @@ public class SocialModel {
 
     public static String FILE_CONFIG = "rxsocial_config.json";
 
+    private static Context sApplicationContext;
+
     private static File sDownloadDirectory;
 
     private static FileDownloader sFileDownloader;
@@ -43,22 +45,26 @@ public class SocialModel {
 
     private static HashMap<String, Class<? extends LoginAction>> sLoginClassMap = new HashMap<>();
 
-    private static boolean sNoResultAsSuccess;
+    private static boolean sTreatNoResultAsSuccess;
 
     private static boolean sInitialized;
 
     static {
         sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "RxSocial");
         sFileDownloader = new DefaultFileDownloader();
-        sNoResultAsSuccess = true;
+        sTreatNoResultAsSuccess = true;
     }
 
-    public static void setNoResultAsSuccess(boolean noResultAsSuccess) {
-        sNoResultAsSuccess = noResultAsSuccess;
+    public static Context getApplicationContext() {
+        return sApplicationContext;
     }
 
-    public static boolean getNoResultAsSuccess() {
-        return sNoResultAsSuccess;
+    public static void setTreatNoResultAsSuccess(boolean treatNoResultAsSuccess) {
+        sTreatNoResultAsSuccess = treatNoResultAsSuccess;
+    }
+
+    public static boolean getTreatNoResultAsSuccess() {
+        return sTreatNoResultAsSuccess;
     }
 
     public static boolean getSupportLogin(String platform) {
@@ -118,6 +124,10 @@ public class SocialModel {
         return sLoginClassMap.get(platform);
     }
 
+    /**
+     * 由插件按照配置生成
+     * @return
+     */
     public static List<Class> getSocialClassList() {
         return Collections.emptyList();
     }
@@ -169,9 +179,11 @@ public class SocialModel {
             sLoginClassMap.clear();
             sLoginClassMap.putAll(loginClassMap);
 
+            sApplicationContext = context.getApplicationContext();
             sInitialized = true;
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
 }

@@ -59,7 +59,7 @@ public class RxSocial {
      * @param noResultAsSuccess
      */
     public static void setNoResultAsShareSuccess(boolean noResultAsSuccess) {
-        SocialModel.setNoResultAsSuccess(noResultAsSuccess);
+        SocialModel.setTreatNoResultAsSuccess(noResultAsSuccess);
     }
 
     /**
@@ -67,12 +67,10 @@ public class RxSocial {
      * author:caowy
      * date:2018-04-25
      *
-     * @param context
      * @return
      */
-    public static LoginBuilderWrapper login(Context context) {
-        initialize(context.getApplicationContext());
-        return new LoginBuilderWrapper(context.getApplicationContext());
+    public static LoginBuilderWrapper loginBuilder() {
+        return new LoginBuilderWrapper(SocialModel.getApplicationContext());
     }
 
     /**
@@ -80,12 +78,10 @@ public class RxSocial {
      * author:caowy
      * date:2018-04-25
      *
-     * @param context
      * @return
      */
-    public static ShareBuilderWrapper share(Context context) {
-        initialize(context.getApplicationContext());
-        return new ShareBuilderWrapper(context.getApplicationContext());
+    public static ShareBuilderWrapper shareBuilder() {
+        return new ShareBuilderWrapper(SocialModel.getApplicationContext());
     }
 
 

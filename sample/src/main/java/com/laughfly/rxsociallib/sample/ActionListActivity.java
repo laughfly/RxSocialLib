@@ -128,7 +128,7 @@ public class ActionListActivity extends Activity {
     }
 
     private void doLogin() {
-        RxSocial.login(ActionListActivity.this)
+        RxSocial.loginBuilder()
             .setPlatform(mPlatform)
             .setClearLastAccount(true)
 //            .setLogoutOnly(true)
@@ -165,13 +165,13 @@ public class ActionListActivity extends Activity {
         ShareBuilder builder = null;
         switch (type) {
             case SHARE_TEXT:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type));
                 break;
             case SHARE_WEB:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
@@ -179,21 +179,21 @@ public class ActionListActivity extends Activity {
                     .setThumbUri(TestData.getThumbUri(type));
                 break;
             case SHARE_IMAGE:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
                     .setImageUri(TestData.getImageUri(type));
                 break;
             case SHARE_MULTI_IMAGE:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
                     .setImageList(TestData.getImageList());
                 break;
             case SHARE_AUDIO:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
@@ -203,28 +203,28 @@ public class ActionListActivity extends Activity {
                 break;
             case SHARE_LOCAL_VIDEO:
             case SHARE_NETWORK_VIDEO:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
                     .setVideoUri(TestData.getVideoUri(type));
                 break;
             case SHARE_FILE:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
                     .setFileUri(TestData.getFileUri());
                 break;
             case SHARE_MULTI_FILE:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
                     .setFileList(TestData.getFileList());
                 break;
             case SHARE_APP:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))
@@ -232,7 +232,7 @@ public class ActionListActivity extends Activity {
                     .setAppInfo(TestData.getAppInfo());
                 break;
             case SHARE_MINI_PROGRAM:
-                builder = RxSocial.share(this)
+                builder = RxSocial.shareBuilder()
                     .setPlatform(mPlatform)
                     .setTitle(TestData.getTitle(type))
                     .setText(TestData.getText(type))

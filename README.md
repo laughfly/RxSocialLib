@@ -7,7 +7,7 @@
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.0'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.1'
     }
 }
 ```
@@ -18,7 +18,7 @@ buildscript {
 ```
 ## 分享
 ```java
-    RxSocial.share(context)
+    RxSocial.shareBuilder()
             //SharePlatform根据配置文件自动生成
             .setPlatform(SharePlatform.Wechat)
             .setTitle("标题")
@@ -61,7 +61,7 @@ buildscript {
 ``` 
 ## 登录
 ```java
-        RxSocial.login(context)
+        RxSocial.loginBuilder()
             //LoginPlatform根据配置文件自动生成
             .setPlatform(LoginPlatform.Wechat)
             .start(new SocialCallback<SocialLoginResult>() {

@@ -11,6 +11,7 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    compileOnly deps.android.annotations
     compileOnly deps.android.supportv4
 
     implementation 'com.google.android.gms:play-services-auth:16.0.1'

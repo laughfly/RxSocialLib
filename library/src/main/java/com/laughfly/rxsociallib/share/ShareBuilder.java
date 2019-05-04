@@ -315,6 +315,6 @@ public class ShareBuilder extends SocialBuilder<ShareAction, SocialShareResult> 
     }
 
     public boolean getNoResultAsSuccess() {
-        return get("noResultAsSuccess", SocialModel.getNoResultAsSuccess());
+        return get("noResultAsSuccess", SocialModel.getTreatNoResultAsSuccess());
     }
 }

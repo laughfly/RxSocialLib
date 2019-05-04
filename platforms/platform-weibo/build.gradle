@@ -2,7 +2,6 @@ apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion versions.targetSdk
-    buildToolsVersion versions.buildTools
     defaultConfig {
         minSdkVersion versions.minSdk
         consumerProguardFiles 'proguard-rules.pro'

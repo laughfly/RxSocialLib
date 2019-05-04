@@ -123,7 +123,12 @@ class ConfigGenerator {
 
             task.group = "other"
 
-            String generateBuildConfigTaskName = variant.getVariantData().getScope().getGenerateBuildConfigTask().name
+            String generateBuildConfigTaskName
+            if (checkGradleVersion("3.2")) {
+                generateBuildConfigTaskName = variant.getVariantData().getTaskContainer().getGenerateBuildConfigTask().name
+            } else {
+                generateBuildConfigTaskName = variant.getVariantData().getScope().getGenerateBuildConfigTask().name
+            }
             def generateBuildConfigTask = project.tasks.getByName(generateBuildConfigTaskName)
             if (generateBuildConfigTask) {
                 task.dependsOn generateBuildConfigTask
