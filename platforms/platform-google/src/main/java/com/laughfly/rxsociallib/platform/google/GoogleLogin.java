@@ -52,10 +52,13 @@ public class GoogleLogin extends LoginAction {
         for (int i = 1; i < scopes.length; i++) {
             _scopes[i - 1] = new Scope(scopes[i]);
         }
-        GoogleSignInOptions signInOptions = new GoogleSignInOptions.Builder()
-            .requestIdToken(mBuilder.getAppId())
-            .requestScopes(_scope, _scopes)
-            .build();
+        GoogleSignInOptions.Builder builder = new GoogleSignInOptions.Builder();
+        if (mBuilder.isServerSideMode()) {
+            builder.requestServerAuthCode(mBuilder.getAppId());
+        } else {
+            builder.requestIdToken(mBuilder.getAppId());
+        }
+        GoogleSignInOptions signInOptions = builder.requestScopes(_scope, _scopes).build();
 
         mGoogleSignInClient = GoogleSignIn.getClient(mBuilder.getContext(), signInOptions);
     }
@@ -63,7 +66,7 @@ public class GoogleLogin extends LoginAction {
     @Override
     protected void execute() throws Exception {
         DefaultDelegateActivity delegate = getDelegate();
-        if(mBuilder.isLogoutOnly()) {
+        if (mBuilder.isLogoutOnly()) {
             logoutOnly();
         } else {
             startLogin(delegate);
@@ -77,7 +80,7 @@ public class GoogleLogin extends LoginAction {
 
     private void startLogin(final DefaultDelegateActivity activity) {
         GoogleSignInAccount lastSignedInAccount = GoogleSignIn.getLastSignedInAccount(mBuilder.getContext());
-        if(mBuilder.isClearLastAccount() && lastSignedInAccount != null) {
+        if (mBuilder.isClearLastAccount() && lastSignedInAccount != null) {
             mGoogleSignInClient.signOut().addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
@@ -140,15 +143,25 @@ public class GoogleLogin extends LoginAction {
                 loginResult.resultObject = account;
                 loginResult.openId = account.getId();
 
-                UserInfo userInfo = new UserInfo();
-                userInfo.nickname = account.getDisplayName();
-                userInfo.avatarUrl = account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : null;
-                loginResult.userInfo = userInfo;
+                if (!TextUtils.isEmpty(account.getDisplayName())) {
+                    UserInfo userInfo = new UserInfo();
+                    userInfo.nickname = account.getDisplayName();
+                    userInfo.avatarUrl = account.getPhotoUrl() != null ? account.getPhotoUrl().toString() : null;
+                    loginResult.userInfo = userInfo;
+                }
 
-                AccessToken accessToken = new AccessToken();
-                accessToken.openId = account.getId();
-                accessToken.accessToken = account.getIdToken();
-                loginResult.accessToken = accessToken;
+                if (mBuilder.isServerSideMode()) {
+                    loginResult.serverAuthCode = account.getServerAuthCode();
+                } else {
+                    AccessToken accessToken = new AccessToken();
+                    accessToken.openId = account.getId();
+                    accessToken.accessToken = account.getIdToken();
+                    loginResult.accessToken = accessToken;
+
+                    if (mBuilder.isSaveAccessToken()) {
+                        saveAccessToken(accessToken);
+                    }
+                }
                 finishWithSuccess(loginResult);
             } else {
                 finishWithNoResult();

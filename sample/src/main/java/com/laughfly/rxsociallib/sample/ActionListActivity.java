@@ -133,6 +133,7 @@ public class ActionListActivity extends Activity {
             .setClearLastAccount(false)
             .setSaveAccessToken(false)
             .setLogoutOnly(false)
+            .setServerSideMode(true)
             .setFetchUserProfile(false)
             .build()
             .toObservable()

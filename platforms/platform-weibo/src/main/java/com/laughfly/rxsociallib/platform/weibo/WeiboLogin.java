@@ -98,7 +98,7 @@ public class WeiboLogin extends LoginAction implements WbAuthListener {
         try {
             if (accessToken.isSessionValid()) {
                 SocialLoginResult loginResult = new SocialLoginResult();
-                AccessToken convertToken = AccessTokenConverter.convert(accessToken, accessToken.getUid());
+                AccessToken convertToken = AccessTokenConverter.convert(accessToken);
                 loginResult.platform = getPlatform();
                 loginResult.openId = accessToken.getUid();
                 loginResult.accessToken = convertToken;

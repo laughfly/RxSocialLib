@@ -8,13 +8,12 @@ import com.sina.weibo.sdk.auth.Oauth2AccessToken;
  * email:cwy.fly2@gmail.com
  */
 class AccessTokenConverter {
-    public static AccessToken convert(Oauth2AccessToken token, String openId) {
+    public static AccessToken convert(Oauth2AccessToken token) {
         AccessToken accessToken = new AccessToken();
         accessToken.accessToken = token.getToken();
         accessToken.expiresIn = token.getExpiresTime();
         accessToken.refreshToken = token.getRefreshToken();
-        accessToken.uid = token.getUid();
-        accessToken.openId = openId;
+        accessToken.openId = token.getUid();
         return accessToken;
     }
 }
