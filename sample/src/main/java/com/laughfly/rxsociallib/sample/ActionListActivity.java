@@ -130,8 +130,10 @@ public class ActionListActivity extends Activity {
     private void doLogin() {
         RxSocial.loginBuilder()
             .setPlatform(mPlatform)
-            .setClearLastAccount(true)
-//            .setLogoutOnly(true)
+            .setClearLastAccount(false)
+            .setSaveAccessToken(false)
+            .setLogoutOnly(false)
+            .setFetchUserProfile(false)
             .build()
             .toObservable()
             .subscribe(new rx.Observer<SocialLoginResult>() {
@@ -158,7 +160,12 @@ public class ActionListActivity extends Activity {
     }
 
     private void handleLoginSuccess(SocialLoginResult result) {
-        Toast.makeText(ActionListActivity.this, "登录成功: " + result.uid, Toast.LENGTH_SHORT).show();
+        if(result.logoutOnly) {
+            Toast.makeText(ActionListActivity.this, "注销成功: " + result.platform, Toast.LENGTH_SHORT).show();
+        } else {
+            String nameOrId = result.userInfo != null ? result.userInfo.nickname : result.openId;
+            Toast.makeText(ActionListActivity.this, "登录成功: " + nameOrId, Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void doShare(int type) {

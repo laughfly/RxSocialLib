@@ -42,10 +42,10 @@ RxSocialConfig{
         appId configProperties['WechatAppId']
         login false
     }
-    Google {
-        appId configProperties['GoogleAppId']
-        scope configProperties['GoogleScope'] //etc 'email,profile,openid'
-        share false
-    }
+//    Google {
+//        appId configProperties['GoogleAppId']
+//        scope configProperties['GoogleScope'] //etc 'email,profile,openid'
+//        share false
+//    }
 }
 

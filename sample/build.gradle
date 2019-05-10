@@ -47,12 +47,15 @@ android {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation deps.android.supportv4
     implementation deps.android.appcompat
     implementation deps.android.recyclerview
-    implementation deps.android.constraintlayout
-    debugImplementation 'com.squareup.leakcanary:leakcanary-android:1.6.3'
-    releaseImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.6.3'
+    implementation 'com.android.support.constraint:constraint-layout:2.0.0-alpha5'
+    debugImplementation ('com.squareup.leakcanary:leakcanary-android:1.6.3') {
+        exclude group : 'com.android.support'
+    }
+    releaseImplementation ('com.squareup.leakcanary:leakcanary-android-no-op:1.6.3') {
+        exclude group : 'com.android.support'
+    }
 
     implementation deps.rxjava
     implementation deps.rxjava2

@@ -11,10 +11,13 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
+    implementation ('com.google.android.gms:play-services-auth:16.0.1') {
+        exclude group : 'com.android.support'
+    }
+
     compileOnly deps.android.annotations
     compileOnly deps.android.supportv4
 
-    implementation 'com.google.android.gms:play-services-auth:16.0.1'
 
     implementation project(':library')
 }

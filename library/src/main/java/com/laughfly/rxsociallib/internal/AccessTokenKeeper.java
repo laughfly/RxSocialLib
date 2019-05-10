@@ -28,14 +28,12 @@ import com.laughfly.rxsociallib.AccessToken;
  * date:2018-04-25
  */
 public class AccessTokenKeeper {
-    private static final String PREFERENCES_NAME = "com_flytone_social_sdk";
+    private static final String PREFERENCES_NAME = "com_laughfly_rxsociallib";
 
-    private static final String KEY_ACCESS_TOKEN = "access_token";
+    private static final String KEY_ACCESS_TOKEN = "access_token_";
 
     /**
-     * 清空 SharedPreferences 中 Token信息。
-     *
-     * @param context 应用程序上下文环境
+     * 清空 SharedPreferences 中 所有的Token信息。
      */
     public static void clear(Context context) {
         if (null == context) {
@@ -46,6 +44,12 @@ public class AccessTokenKeeper {
         Editor editor = pref.edit();
         editor.clear();
         editor.apply();
+    }
+
+    public static void clear(Context context, String platform) {
+        if(null == context) return;
+        SharedPreferences pref = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE);
+        pref.edit().remove(platform + KEY_ACCESS_TOKEN).apply();
     }
 
     public static void writeAccessToken(Context context, String platform, AccessToken accessToken) {

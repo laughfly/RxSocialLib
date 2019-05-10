@@ -7,7 +7,7 @@
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.1'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.2'
     }
 }
 ```
@@ -121,11 +121,6 @@ RxSocialConfig{
         appId 'yourAppId'
         login false
     }
-    Google {
-        appId 'GoogleAppId'
-        scope 'GoogleScope' //etc 'email,profile,openid'
-        share false
-     }
 }
 ```
 然后在你的app的build.gradle里添加

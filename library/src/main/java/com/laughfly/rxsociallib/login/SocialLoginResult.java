@@ -12,11 +12,15 @@ public class SocialLoginResult implements SocialResult{
 
     public String platform;
 
+    public String unionId;
+
+    public String openId;
+
+    public String serverAuthCode;
+
     public boolean logoutOnly;
 
     public Object resultObject;
-
-    public String uid;
 
     public AccessToken accessToken;
 

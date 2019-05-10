@@ -1,7 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.laughfly.rxsociallib.platform.qq">
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <application>
+    <application
+        android:usesCleartextTraffic="true">
         <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <!--QQ SDK-->
         <activity

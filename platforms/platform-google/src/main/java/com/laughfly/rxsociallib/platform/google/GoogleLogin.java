@@ -138,7 +138,7 @@ public class GoogleLogin extends LoginAction {
             if (account != null) {
                 SocialLoginResult loginResult = new SocialLoginResult();
                 loginResult.resultObject = account;
-                loginResult.uid = account.getId();
+                loginResult.openId = account.getId();
 
                 UserInfo userInfo = new UserInfo();
                 userInfo.nickname = account.getDisplayName();

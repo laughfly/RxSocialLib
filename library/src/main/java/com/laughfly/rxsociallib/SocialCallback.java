@@ -4,6 +4,8 @@ import android.support.annotation.MainThread;
 
 import com.laughfly.rxsociallib.exception.SocialException;
 
+import static com.laughfly.rxsociallib.SocialThreads.runOnUiThread;
+
 /**
  * 结果回调
  * author:caowy
@@ -53,7 +55,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onStart(final String platform) {
             if(callback != null) {
-                SocialThreads.runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onStart(platform);
@@ -65,7 +67,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onError(final String platform, final SocialException e) {
             if(callback != null) {
-                SocialThreads.runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onError(platform, e);
@@ -77,7 +79,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onSuccess(final String platform, final T resp) {
             if(callback != null) {
-                SocialThreads.runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onSuccess(platform, resp);
@@ -89,7 +91,7 @@ public abstract class SocialCallback<T> {
         @Override
         public void onFinish(final String platform) {
             if(callback != null) {
-                SocialThreads.runOnUiThread(new Runnable() {
+                runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         callback.onFinish(platform);

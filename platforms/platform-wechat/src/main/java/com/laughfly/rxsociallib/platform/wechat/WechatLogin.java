@@ -1,14 +1,15 @@
 package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
+import android.support.annotation.MainThread;
+import android.support.annotation.WorkerThread;
 
 import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.SocialConstants;
-import com.laughfly.rxsociallib.SocialLogger;
-import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
+import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
@@ -21,7 +22,10 @@ import com.tencent.mm.opensdk.openapi.IWXAPI;
 import com.tencent.mm.opensdk.openapi.IWXAPIEventHandler;
 import com.tencent.mm.opensdk.openapi.WXAPIFactory;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import static com.laughfly.rxsociallib.SocialThreads.runOnThread;
 
 /**
  * 微信登录
@@ -34,6 +38,11 @@ import org.json.JSONObject;
 public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
 
     private IWXAPI mWXAPI;
+
+    @Override
+    protected boolean useDelegate() {
+        return false;
+    }
 
     @Override
     protected void check() throws Exception {
@@ -50,6 +59,31 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
 
     @Override
     protected void execute() throws Exception {
+        if (mBuilder.isLogoutOnly()) {
+            AccessTokenKeeper.clear(mBuilder.getContext(), getPlatform());
+            finishWithLogout();
+        } else {
+            if (mBuilder.isClearLastAccount()) {
+                AccessTokenKeeper.clear(mBuilder.getContext(), getPlatform());
+            }
+            loginSSO();
+        }
+    }
+
+    @Override
+    protected void release() throws Exception {
+        if (mWXAPI != null) {
+            mWXAPI.detach();
+        }
+        mWXAPI = null;
+    }
+
+    @Override
+    public void handleResult(int requestCode, int resultCode, Intent data) throws Exception {
+        mWXAPI.handleIntent(data, this);
+    }
+
+    private void loginSSO() throws SocialLoginException {
         WechatEntryActivity.setTheResultHandler(new ResultCallbackWrapper(this));
         SendAuth.Req req = new SendAuth.Req();
         req.scope = mBuilder.getScope();
@@ -61,52 +95,49 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
     }
 
     @Override
-    protected void release() throws Exception {
-        if(mWXAPI != null) {
-            mWXAPI.detach();
-        }
-        mWXAPI = null;
-    }
-
-    @Override
-    public void handleResult(int requestCode, int resultCode, Intent data) throws Exception {
-        mWXAPI.handleIntent(data, this);
-    }
-
-    @Override
     public void onReq(BaseReq baseReq) {
     }
 
     @Override
+    @MainThread
     public void onResp(BaseResp baseResp) {
+        if (baseResp instanceof SendAuth.Resp) {
+            runOnThread(new Runnable() {
+                @Override
+                public void run() {
+                    handleResp((SendAuth.Resp) baseResp);
+                }
+            });
+        } else {
+            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER));
+        }
+    }
+
+    @WorkerThread
+    private void handleResp(SendAuth.Resp resp) {
+        switch (resp.errCode) {
+            case BaseResp.ErrCode.ERR_OK:
+                handleSuccess(resp);
+                break;
+            case BaseResp.ErrCode.ERR_USER_CANCEL:
+                finishWithCancel();
+                break;
+            case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, resp.errCode, resp.errStr, resp));
+                break;
+            default:
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
+                break;
+        }
+    }
+
+    @WorkerThread
+    private void handleSuccess(SendAuth.Resp resp) {
         try {
-            if (baseResp != null) {
-                if (!(baseResp instanceof SendAuth.Resp)) {
-                    finishWithCancel();
-                    return;
-                }
-                final SendAuth.Resp resp = (SendAuth.Resp) baseResp;
-                switch (resp.errCode) {
-                    case 0:
-                        SocialThreads.runOnThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                doOnComplete(resp);
-                            }
-                        });
-                        break;
-                    case -2:
-                    case -4:
-                        SocialLogger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
-                        finishWithCancel();
-                        break;
-                    default:
-                        SocialLogger.e("SocialLogin", "Wechat, errCode=" + resp.errCode);
-                        finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, resp.errCode, resp.errStr, resp));
-                        break;
-                }
+            if (mBuilder.isServerSideMode()) {
+                setServerAuthCode(resp);
             } else {
-                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER));
+                setAccessToken(resp);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -114,60 +145,56 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
         }
     }
 
-    private void doOnComplete(SendAuth.Resp resp) {
-        if (mBuilder.isFetchUserProfile()) {
-            fetchUserProfile(resp);
-        } else {
-            fetchBaseProfile(resp);
-        }
-    }
-
-    private void fetchBaseProfile(SendAuth.Resp resp) {
+    private void setServerAuthCode(SendAuth.Resp resp) {
         SocialLoginResult loginResult = new SocialLoginResult();
         loginResult.platform = getPlatform();
-        loginResult.uid = resp.code;
+        loginResult.serverAuthCode = resp.code;
+        loginResult.openId = resp.openId;
         loginResult.resultObject = resp;
         finishWithSuccess(loginResult);
     }
 
-    private void fetchUserProfile(SendAuth.Resp resp) {
-        try {
-            String accessTokenApi = getAccessTokenApi(resp.code);
-            String accessTokenJson = SocialUtils.quickHttpGet(accessTokenApi);
-            JSONObject jsonObject = new JSONObject(accessTokenJson);
-            String access_token = jsonObject.optString("access_token");
-            long expires_in = jsonObject.optLong("expires_in");
-            String refresh_token = jsonObject.optString("refresh_token");
-            String openid = jsonObject.optString("openid");
-            String userInfoApi = getUserInfoApi(access_token, openid);
+    private void setAccessToken(SendAuth.Resp resp) throws JSONException {
+        String accessTokenApi = getAccessTokenApi(resp.code);
+        String accessTokenJson = SocialUtils.quickHttpGet(accessTokenApi);
+        JSONObject jsonObject = new JSONObject(accessTokenJson);
+        String access_token = jsonObject.optString("access_token");
+        long expires_in = jsonObject.optLong("expires_in");
+        String refresh_token = jsonObject.optString("refresh_token");
+        String openId = jsonObject.optString("openid");
+
+        AccessToken accessToken = new AccessToken();
+        accessToken.accessToken = access_token;
+        accessToken.expiresIn = expires_in;
+        accessToken.openId = openId;
+        accessToken.refreshToken = refresh_token;
+
+        if(mBuilder.isSaveAccessToken()) {
+            saveAccessToken(accessToken);
+        }
+
+        SocialLoginResult result = new SocialLoginResult();
+        result.platform = getPlatform();
+        result.openId = openId;
+        result.accessToken = accessToken;
+        result.resultObject = resp;
+
+        if (mBuilder.isFetchUserProfile()) {
+            String userInfoApi = getUserInfoApi(access_token, openId);
             String userInfoJsonString = SocialUtils.quickHttpGet(userInfoApi);
             JSONObject userJson = new JSONObject(userInfoJsonString);
             String nickname = userJson.optString("nickname");
             String sex = userJson.optString("sex");
             String headimgurl = userJson.optString("headimgurl");
 
-            SocialLoginResult loginResult = new SocialLoginResult();
-            loginResult.platform = getPlatform();
-
-            AccessToken accessToken = new AccessToken();
-            accessToken.accessToken = access_token;
-            accessToken.refreshToken = refresh_token;
-            accessToken.expiresIn = expires_in;
-            accessToken.openId = openid;
-            loginResult.accessToken = accessToken;
-
             UserInfo userInfo = new UserInfo();
             userInfo.nickname = (nickname);
-            userInfo.gender = "1".equals(sex) ? 1 : "2".equals(sex) ? 0 : 2;
+            userInfo.gender = "1".equals(sex) ? UserInfo.GENDER_MALE : "2".equals(sex) ? UserInfo.GENDER_FEMALE : UserInfo.GENDER_UNKNOWN;
             userInfo.avatarUrl = headimgurl;
-            loginResult.userInfo = userInfo;
-
-            loginResult.resultObject = resp;
-            finishWithSuccess(loginResult);
-        } catch (Exception e) {
-            e.printStackTrace();
-            finishWithError(e);
+            result.userInfo = userInfo;
         }
+
+        finishWithSuccess(result);
     }
 
     private String getAccessTokenApi(String code) {

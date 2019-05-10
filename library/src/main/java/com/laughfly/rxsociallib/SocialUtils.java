@@ -260,4 +260,9 @@ public class SocialUtils {
             return ""; // Impossibru!
         }
     }
+
+    public static String decrypt(String text, String iv, String key) {
+
+        return null;
+    }
 }

@@ -267,8 +267,4 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
 
     protected abstract void finishWithError(Exception e);
 
-//    protected abstract void startImpl();
-//
-//    protected abstract void finishImpl();
-
 }

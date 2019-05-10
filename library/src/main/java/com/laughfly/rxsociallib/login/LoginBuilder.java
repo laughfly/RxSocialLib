@@ -31,6 +31,15 @@ public class LoginBuilder extends SocialBuilder<LoginAction, SocialLoginResult>{
         return get("getUserProfile", false);
     }
 
+    public LoginBuilder setSaveAccessToken(boolean saveAccessToken) {
+        put("saveAccessToken", saveAccessToken);
+        return this;
+    }
+
+    public boolean isSaveAccessToken() {
+        return get("saveAccessToken", true);
+    }
+
     public LoginBuilder setClearLastAccount(boolean clearLastAccount) {
         put("clearLastAccount", clearLastAccount);
         return this;
@@ -47,6 +56,15 @@ public class LoginBuilder extends SocialBuilder<LoginAction, SocialLoginResult>{
 
     public boolean isLogoutOnly() {
         return get("logoutOnly", false);
+    }
+
+    public LoginBuilder setServerSideMode(boolean serverSideMode) {
+        put("serverSideMode", serverSideMode);
+        return this;
+    }
+
+    public boolean isServerSideMode() {
+        return get("serverSideMode", false);
     }
 
     protected boolean checkArgs() {

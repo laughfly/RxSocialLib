@@ -53,9 +53,9 @@ public class QQShare extends ShareAction implements IUiListener {
 
     @Override
     protected void check() throws Exception {
-        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
-            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
-        }
+//        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
+//            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
+//        }
     }
 
     @Override

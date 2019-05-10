@@ -6,9 +6,7 @@ import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.SocialConstants;
-import com.laughfly.rxsociallib.SocialLogger;
 import com.laughfly.rxsociallib.exception.SocialLoginException;
-import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
@@ -18,7 +16,12 @@ import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
 import com.tencent.tauth.UiError;
 
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import static com.laughfly.rxsociallib.login.UserInfo.GENDER_FEMALE;
+import static com.laughfly.rxsociallib.login.UserInfo.GENDER_MALE;
+import static com.laughfly.rxsociallib.login.UserInfo.GENDER_UNKNOWN;
 
 /**
  * QQ登录
@@ -32,13 +35,15 @@ public class QQLogin extends LoginAction implements IUiListener {
 
     private Tencent mTencent;
 
-    private SocialLoginResult mResult;
+    private com.laughfly.rxsociallib.login.UserInfo mUserInfo;
+
+    private AccessToken mAccessToken;
 
     @Override
     protected void check() throws Exception {
-        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
-            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
-        }
+//        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
+//            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
+//        }
     }
 
     @Override
@@ -49,15 +54,96 @@ public class QQLogin extends LoginAction implements IUiListener {
     @Override
     protected void execute() throws Exception {
         Activity delegate = getDelegate();
-        AccessToken accessToken = AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
-        if (accessToken != null) {
-            mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
-            mTencent.setOpenId(accessToken.openId);
-            if (mTencent.isSessionValid()) {
-                mTencent.logout(mBuilder.getContext());
+        if (mBuilder.isLogoutOnly()) {
+            logoutOnly();
+        } else {
+            login(delegate);
+        }
+    }
+
+    private void logoutOnly() {
+        logout();
+        finishWithLogout();
+    }
+
+    private void logout() {
+        mTencent.logout(mBuilder.getContext());
+    }
+
+    private void login(Activity delegate) {
+        if(mBuilder.isClearLastAccount()) {
+            mTencent.logout(mBuilder.getContext());
+            clearAccessToken();
+        } else {
+            AccessToken accessToken = readAccessToken();
+            if(accessToken != null) {
+                mTencent.setOpenId(accessToken.openId);
+                mTencent.setAccessToken(accessToken.accessToken, accessToken.expiresIn + "");
             }
         }
-        mTencent.login(delegate, mBuilder.getScope(), QQLogin.this);
+        if(mTencent.isSessionValid()) {
+            mTencent.logout(mBuilder.getContext());
+        }
+        mTencent.login(delegate, mBuilder.getScope(), this);
+    }
+
+    private void updateOrFinish() {
+        if(mBuilder.isFetchUserProfile()) {
+            updateUserInfo();
+        } else {
+            finishWithLogin();
+        }
+    }
+
+    private void updateUserInfo() {
+        UserInfo userInfo = new UserInfo(mBuilder.getContext(), mTencent.getQQToken());
+        userInfo.getUserInfo(this);
+    }
+
+    private void setAccessToken(JSONObject jsonObject) throws JSONException {
+        String access_token = jsonObject.getString("access_token");
+        String expires_in = jsonObject.optString("expires_in");
+        String openid = jsonObject.optString("openid");
+        mTencent.setAccessToken(access_token, expires_in);
+        mTencent.setOpenId(openid);
+
+        AccessToken _accessToken = new AccessToken();
+        _accessToken.openId = mTencent.getOpenId();
+        _accessToken.accessToken = mTencent.getAccessToken();
+        _accessToken.expiresIn = mTencent.getExpiresIn();
+
+        mAccessToken = _accessToken;
+        if(mBuilder.isSaveAccessToken()) {
+            saveAccessToken(_accessToken);
+        }
+    }
+
+    private void setUserInfo(JSONObject jsonObject) {
+        String nickname = jsonObject.optString("nickname");
+        String gender = jsonObject.optString("gender");
+        String figureurl_qq_1 = jsonObject.optString("figureurl_qq_1");
+        String figureurl_qq_2 = jsonObject.optString("figureurl_qq_2");
+
+        com.laughfly.rxsociallib.login.UserInfo userInfo = new com.laughfly.rxsociallib.login.UserInfo();
+        userInfo.nickname = (nickname);
+        userInfo.gender = "男".equals(gender) ? GENDER_MALE : "女".equals(gender) ? GENDER_FEMALE : GENDER_UNKNOWN;
+        userInfo.avatarUrl = !TextUtils.isEmpty(figureurl_qq_2) ? figureurl_qq_2 : figureurl_qq_1;
+
+        mUserInfo = userInfo;
+    }
+
+    private void finishWithLogin() {
+        SocialLoginResult result = new SocialLoginResult();
+        result.platform = getPlatform();
+        result.openId = mTencent.getOpenId();
+
+        result.accessToken = mAccessToken != null ? mAccessToken : readAccessToken();
+
+        if(mBuilder.isFetchUserProfile()) {
+            result.userInfo = mUserInfo;
+        }
+
+        finishWithSuccess(result);
     }
 
     @Override
@@ -68,89 +154,23 @@ public class QQLogin extends LoginAction implements IUiListener {
     @Override
     public void onComplete(Object o) {
         try {
-            if (mBuilder.isFetchUserProfile()) {
-                fetchUserProfile(o);
-            } else {
-                fetchBaseProfile(o);
+            JSONObject jsonObject = (JSONObject) o;
+            int ret = jsonObject.getInt("ret");
+            if(0 != ret) {
+                String msg = jsonObject.optString("msg");
+                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL, ret, msg, o));
+                return;
+            }
+            if(jsonObject.has("access_token")) {
+                setAccessToken(jsonObject);
+                updateOrFinish();
+            } else if(jsonObject.has("nickname")) {
+                setUserInfo(jsonObject);
+                finishWithLogin();
             }
         } catch (Exception e) {
             e.printStackTrace();
             finishWithError(e);
-        }
-    }
-
-    private void fetchUserProfile(Object o) {
-        JSONObject jsonObject = (JSONObject) o;
-        int ret = jsonObject.optInt("ret");
-        String msg = jsonObject.optString("msg");
-        if (ret == 0) {
-            if (mResult == null) {
-                mResult = new SocialLoginResult();
-                mResult.platform = getPlatform();
-            }
-            String accessToken = jsonObject.optString("access_token");
-            if (accessToken != null && accessToken.length() > 0) { //拿到accessToken
-                //从QQ获得用户信息，进行鉴权
-                String openid = jsonObject.optString("openid");
-                long expiresIn = jsonObject.optLong("expires_in");
-                mTencent.setAccessToken(accessToken, expiresIn + "");
-                mTencent.setOpenId(openid);
-                UserInfo userInfo = new UserInfo(mBuilder.getContext(), mTencent.getQQToken());
-                userInfo.getUserInfo(this);
-            } else { //拿到用户信息
-                String nickname = jsonObject.optString("nickname");
-                String gender = jsonObject.optString("gender");
-                String figureurl_qq_1 = jsonObject.optString("figureurl_qq_1");
-                String figureurl_qq_2 = jsonObject.optString("figureurl_qq_2");
-
-                mResult.uid = mTencent.getOpenId();
-
-                AccessToken _accessToken = new AccessToken();
-                _accessToken.openId = mTencent.getOpenId();
-                _accessToken.accessToken = mTencent.getAccessToken();
-                _accessToken.expiresIn = mTencent.getExpiresIn();
-                mResult.accessToken = _accessToken;
-
-                com.laughfly.rxsociallib.login.UserInfo userInfo = new com.laughfly.rxsociallib.login.UserInfo();
-                userInfo.nickname = (nickname);
-                userInfo.gender = "男".equals(gender) ? 1 : "女".equals(gender) ? 0 : 2;
-                userInfo.avatarUrl = !TextUtils.isEmpty(figureurl_qq_2) ? figureurl_qq_2 : figureurl_qq_1;
-                mResult.userInfo = userInfo;
-
-                mResult.resultObject = o;
-                finishWithSuccess(mResult);
-            }
-        } else {
-            SocialLogger.e("SocialLogin", "QQ, errCode=" + ret);
-            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
-        }
-    }
-
-    private void fetchBaseProfile(Object o) {
-        JSONObject jsonObject = (JSONObject) o;
-        int ret = jsonObject.optInt("ret");
-        String msg = jsonObject.optString("msg");
-        if (ret == 0) {
-            SocialLoginResult result = new SocialLoginResult();
-            result.platform = getPlatform();
-            String accessToken = jsonObject.optString("access_token");
-            if (accessToken != null && accessToken.length() > 0) { //拿到accessToken
-                String openid = jsonObject.optString("openid");
-                long expiresIn = jsonObject.optLong("expires_in");
-                AccessToken _accessToken = new AccessToken();
-                _accessToken.openId = openid;
-                _accessToken.accessToken = accessToken;
-                _accessToken.expiresIn = expiresIn;
-                result.accessToken = _accessToken;
-                result.uid = openid;
-                result.resultObject = o;
-                finishWithSuccess(result);
-            } else {
-                finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
-            }
-        } else {
-            SocialLogger.e("SocialLogin", "QQ, errCode=" + ret);
-            finishWithError(new SocialLoginException(getPlatform(), SocialConstants.ERR_OTHER, ret, msg, o));
         }
     }
 

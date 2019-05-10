@@ -58,7 +58,7 @@ class ConfigGenerator {
 
                 variant.outputs.each { output ->
                     try {
-                        def task = output.processManifest
+                        def task = getProcessManifestTask(output)
                         if (task != null) {
                             task.doLast {
                                 generateConfigManifest(output, variant)
