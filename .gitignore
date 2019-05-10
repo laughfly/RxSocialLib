@@ -12,3 +12,4 @@
 /*.jks
 /*.keystore
 /repo
+/maven-deloy-config.properties

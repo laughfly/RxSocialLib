@@ -6,6 +6,8 @@ def configProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
 if (configFile.exists()) {
     configProperties.load(new FileInputStream(configFile))
+} else {
+    configProperties.load(new FileInputStream(file("social-config-placeholder.properties")))
 }
 
 android {
@@ -18,20 +20,24 @@ android {
         versionName "1.0"
     }
 
-    signingConfigs {
-        debug {
-            storeFile file(configProperties['keystoreFile'])
-            keyAlias configProperties['keyAlias']
-            storePassword configProperties['storePassword']
-            keyPassword configProperties['keyPassword']
-        }
-        release {
-            storeFile file(configProperties['keystoreFile'])
-            keyAlias configProperties['keyAlias']
-            storePassword configProperties['storePassword']
-            keyPassword configProperties['keyPassword']
+    //TODO 替换成自己的签名配置后，删除if
+    if(configFile.exists()) {
+        signingConfigs {
+            debug {
+                storeFile file(configProperties['keystoreFile'])
+                keyAlias configProperties['keyAlias']
+                storePassword configProperties['storePassword']
+                keyPassword configProperties['keyPassword']
+            }
+            release {
+                storeFile file(configProperties['keystoreFile'])
+                keyAlias configProperties['keyAlias']
+                storePassword configProperties['storePassword']
+                keyPassword configProperties['keyPassword']
+            }
         }
     }
+
     buildTypes {
         release {
             minifyEnabled false

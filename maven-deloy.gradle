@@ -1,11 +1,13 @@
 apply plugin: 'com.novoda.bintray-release' // must be applied after your artifact generating plugin (eg. java / com.android.library)
 
-def configFile = rootProject.file("local.properties")
+def configFile = rootProject.file("maven-deloy-config.properties")
 // Initialize a new Properties() object called keystorePro perties.
 def configProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
 if (configFile.exists()) {
     configProperties.load(new FileInputStream(configFile))
+} else {
+    configProperties.load(new FileInputStream(file("maven-deloy-config-placeholder.properties")))
 }
 
 publish {

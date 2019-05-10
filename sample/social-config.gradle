@@ -6,6 +6,8 @@ def configProperties = new Properties()
 // Load your keystore.properties file into the keystoreProperties object.
 if (configFile.exists()) {
     configProperties.load(new FileInputStream(configFile))
+} else {
+    configProperties.load(new FileInputStream(file("social-config-placeholder.properties")))
 }
 
 RxSocialConfig{
