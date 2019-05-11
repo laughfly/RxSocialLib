@@ -7,7 +7,7 @@ def configProperties = new Properties()
 if (configFile.exists()) {
     configProperties.load(new FileInputStream(configFile))
 } else {
-    configProperties.load(new FileInputStream(file("maven-deloy-config-placeholder.properties")))
+    configProperties.load(new FileInputStream(rootProject.file("maven-deloy-config-placeholder.properties")))
 }
 
 publish {
