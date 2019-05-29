@@ -8,15 +8,16 @@ import com.laughfly.rxsociallib.internal.SocialExecutor;
  * email:cwy.fly2@gmail.com
  */
 
-public class LoginExecutor extends SocialExecutor<LoginAction, SocialLoginResult>{
-    private LoginBuilder mBuilder;
+public class LoginExecutor extends SocialExecutor<LoginAction, LoginParams, LoginResult>{
 
-    public LoginExecutor(LoginBuilder builder) {
-        mBuilder = builder;
+    private LoginParams mParams;
+
+    public LoginExecutor(LoginParams params) {
+        mParams = params;
     }
 
     protected LoginAction createAction() {
-        return SocialActionFactory.createLoginAction(mBuilder.getPlatform(), mBuilder);
+        return SocialActionFactory.createLoginAction(mParams);
     }
 
 }

@@ -22,17 +22,14 @@ import java.lang.ref.WeakReference;
  * author:caowy
  * date:2018-04-20
  *
- * @param <Builder>
  * @param <Result>
  */
-public abstract class SocialAction<Builder extends SocialBuilder, Result extends SocialResult> {
+public abstract class SocialAction<Params extends SocialParams, Result extends SocialResult> {
 
     protected String TAG = getClass().getSimpleName();
 
-    /**
-     *
-     */
-    protected Builder mBuilder;
+    protected Params mParams;
+
     /**
      *
      */
@@ -41,18 +38,18 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
     /**
      *
      */
-    private final SocialCallback.Wrapper<Result> mCallback;
+    private final SocialCallback.Wrapper<Params, Result> mCallback;
 
     public SocialAction() {
         mCallback = new SocialCallback.Wrapper<>();
     }
 
-    public SocialAction setBuilder(Builder builder) {
-        mBuilder = builder;
+    public SocialAction setParams(Params params) {
+        mParams = params;
         return this;
     }
 
-    public SocialAction setCallback(SocialCallback<Result> callback) {
+    public SocialAction setCallback(SocialCallback<Params, Result> callback) {
         mCallback.callback = callback;
         return this;
     }
@@ -116,7 +113,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
             @Override
             public void run() {
                 try {
-                    mCallback.onStart(mBuilder.getPlatform());
+                    mCallback.onStart(mParams.getPlatform(), mParams);
 
                     check();
 
@@ -137,7 +134,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
 
     protected void finishWithSuccess(Result result) {
         try {
-            mCallback.onSuccess(mBuilder.getPlatform(), result);
+            mCallback.onSuccess(mParams.getPlatform(), mParams, result);
             finish();
         } catch (Exception e) {
             e.printStackTrace();
@@ -146,7 +143,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
 
     protected void finish() {
         try {
-            mCallback.onFinish(mBuilder.getPlatform());
+            mCallback.onFinish(mParams.getPlatform(), mParams);
             release();
         } catch (Exception e) {
             e.printStackTrace();
@@ -174,7 +171,7 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
 
     protected void finishWithError(SocialException e) {
         try {
-            mCallback.onError(getPlatform(), e);
+            mCallback.onError(getPlatform(), mParams, e);
             finish();
         } catch (Exception e1) {
             e1.printStackTrace();
@@ -182,15 +179,15 @@ public abstract class SocialAction<Builder extends SocialBuilder, Result extends
     }
 
     protected String getPlatform() {
-        return mBuilder.getPlatform();
+        return mParams.getPlatform();
     }
 
     protected Context getContext() {
-        return mBuilder.getContext();
+        return mParams.getContext();
     }
 
-    protected Builder getBuilder() {
-        return mBuilder;
+    public Params getParams() {
+        return mParams;
     }
 
     protected<T extends SocialDelegateActivity> T getDelegate() {

@@ -8,7 +8,7 @@ import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
-import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.login.LoginResult;
 import com.sina.weibo.sdk.WbSdk;
 import com.sina.weibo.sdk.auth.AuthInfo;
 import com.sina.weibo.sdk.auth.Oauth2AccessToken;
@@ -34,17 +34,17 @@ public class WeiboLogin extends LoginAction implements WbAuthListener {
 
     @Override
     protected void init() throws Exception {
-        WbSdk.install(mBuilder.getContext(),
-            new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
+        WbSdk.install(mParams.getContext(),
+            new AuthInfo(mParams.getContext(), mParams.getAppId(), mParams.getRedirectUrl(), mParams.getScope()));
     }
 
     @Override
     protected void execute() throws Exception {
-        if(mBuilder.isLogoutOnly()) {
+        if(mParams.isLogoutOnly()) {
             clearAccessToken();
             finishWithLogout();
         } else {
-            if(mBuilder.isClearLastAccount()) {
+            if(mParams.isClearLastAccount()) {
                 clearAccessToken();
             }
             AccessToken accessToken = readAccessToken();
@@ -73,10 +73,10 @@ public class WeiboLogin extends LoginAction implements WbAuthListener {
 
     private void updateAccessToken(AccessToken accessToken) {
         IRequestService requestService = RequestService.getInstance();
-        RequestParam.Builder builder = new RequestParam.Builder(mBuilder.getContext());
+        RequestParam.Builder builder = new RequestParam.Builder(mParams.getContext());
         builder.setShortUrl("https://api.weibo.com/oauth2/access_token");
-        builder.addPostParam("client_id", mBuilder.getAppId());
-        builder.addPostParam("appKey", mBuilder.getAppId());
+        builder.addPostParam("client_id", mParams.getAppId());
+        builder.addPostParam("appKey", mParams.getAppId());
         builder.addPostParam("grant_type", "refresh_token");
         builder.addPostParam("refresh_token", accessToken.refreshToken);
         requestService.asyncRequest(builder.build(), new SimpleTarget() {
@@ -97,19 +97,19 @@ public class WeiboLogin extends LoginAction implements WbAuthListener {
     private void setAccessToken(Oauth2AccessToken accessToken) {
         try {
             if (accessToken.isSessionValid()) {
-                SocialLoginResult loginResult = new SocialLoginResult();
+                LoginResult loginResult = new LoginResult();
                 AccessToken convertToken = AccessTokenConverter.convert(accessToken);
                 loginResult.platform = getPlatform();
                 loginResult.openId = accessToken.getUid();
                 loginResult.accessToken = convertToken;
                 loginResult.resultObject = accessToken;
 
-                if(mBuilder.isSaveAccessToken()) {
+                if(mParams.isSaveAccessToken()) {
                     saveAccessToken(convertToken);
                 }
                 finishWithSuccess(loginResult);
             } else {
-                if(mBuilder.isSaveAccessToken()) {
+                if(mParams.isSaveAccessToken()) {
                     clearAccessToken();
                 }
                 int code = 0;

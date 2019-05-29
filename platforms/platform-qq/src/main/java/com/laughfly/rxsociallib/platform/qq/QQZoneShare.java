@@ -13,8 +13,8 @@ import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareResult;
 import com.laughfly.rxsociallib.share.ShareType;
-import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
@@ -50,14 +50,14 @@ public class QQZoneShare extends ShareAction implements IUiListener {
 
     @Override
     protected void check() throws Exception {
-        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
+        if (!QQUtils.isQQInstalled(mParams.getContext()) && !QQUtils.isTimInstalled(mParams.getContext())) {
             throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
     }
 
     @Override
     protected void init() throws Exception {
-        mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
+        mTencent = Tencent.createInstance(mParams.getAppId(), mParams.getContext());
     }
 
     @Override
@@ -108,9 +108,9 @@ public class QQZoneShare extends ShareAction implements IUiListener {
         }
 
         params.putStringArrayList(SHARE_TO_QQ_IMAGE_URL, imageList);
-        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+        params.putString(SHARE_TO_QQ_TITLE, mParams.getTitle());
+        params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mParams.getWebUrl());
 
         shareBySDK(activity, params);
     }
@@ -123,15 +123,15 @@ public class QQZoneShare extends ShareAction implements IUiListener {
     private void publishMood(Activity activity, int type) throws SocialShareException {
         Bundle params = createParams(type);
 
-        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+        params.putString(SHARE_TO_QQ_TITLE, mParams.getTitle());
+        params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mParams.getWebUrl());
         ArrayList<String> imageList = new ArrayList<>();
-        if (mBuilder.hasImage()) {
+        if (mParams.hasImage()) {
             imageList.add(getImagePath(QQConstants.IMAGE_SIZE_LIMIT));
         }
-        if (mBuilder.hasImageList()) {
-            imageList.addAll(mBuilder.getImageList());
+        if (mParams.hasImageList()) {
+            imageList.addAll(mParams.getImageList());
         }
 
         ListIterator<String> iterator = imageList.listIterator();
@@ -151,8 +151,8 @@ public class QQZoneShare extends ShareAction implements IUiListener {
     private void publishVideo(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_LOCAL_VIDEO);
 
-        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(PUBLISH_TO_QZONE_VIDEO_PATH, transformUri(mBuilder.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_PATH));
+        params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
+        params.putString(PUBLISH_TO_QZONE_VIDEO_PATH, transformUri(mParams.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_PATH));
 
         publishBySDK(activity, params);
     }
@@ -180,8 +180,8 @@ public class QQZoneShare extends ShareAction implements IUiListener {
 
         params.putInt(SHARE_TO_QZONE_KEY_TYPE, toQQShareType(shareType));
 
-        if (mBuilder.getShareAppName() != null) {
-            params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getShareAppName());
+        if (mParams.getShareAppName() != null) {
+            params.putString(SHARE_TO_QQ_APP_NAME, mParams.getShareAppName());
         }
 
         return params;
@@ -204,7 +204,7 @@ public class QQZoneShare extends ShareAction implements IUiListener {
 
     @Override
     public void onComplete(Object o) {
-        SocialShareResult result = new SocialShareResult(getPlatform());
+        ShareResult result = new ShareResult(getPlatform());
         finishWithSuccess(result);
     }
 

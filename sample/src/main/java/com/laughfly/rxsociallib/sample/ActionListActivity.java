@@ -17,9 +17,9 @@ import android.widget.Toast;
 
 import com.laughfly.rxsociallib.RxSocial;
 import com.laughfly.rxsociallib.exception.SocialException;
-import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.login.LoginResult;
 import com.laughfly.rxsociallib.share.ShareBuilder;
-import com.laughfly.rxsociallib.share.SocialShareResult;
+import com.laughfly.rxsociallib.share.ShareResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -133,11 +133,11 @@ public class ActionListActivity extends Activity {
             .setClearLastAccount(false)
             .setSaveAccessToken(false)
             .setLogoutOnly(false)
-            .setServerSideMode(true)
+            .setServerSideMode(false)
             .setFetchUserProfile(false)
             .build()
             .toObservable()
-            .subscribe(new rx.Observer<SocialLoginResult>() {
+            .subscribe(new rx.Observer<LoginResult>() {
                 @Override
                 public void onCompleted() {
 
@@ -149,18 +149,19 @@ public class ActionListActivity extends Activity {
                 }
 
                 @Override
-                public void onNext(SocialLoginResult socialLoginResult) {
-                    handleLoginSuccess(socialLoginResult);
+                public void onNext(LoginResult loginResult) {
+                    handleLoginSuccess(loginResult);
                 }
             });
     }
 
     private void handleLoginFail(Throwable e) {
         int errorCode = e instanceof SocialException ? ((SocialException) e).getErrCode() : 0;
+
         Toast.makeText(ActionListActivity.this, "登录失败: " + errorCode, Toast.LENGTH_SHORT).show();
     }
 
-    private void handleLoginSuccess(SocialLoginResult result) {
+    private void handleLoginSuccess(LoginResult result) {
         if(result.logoutOnly) {
             Toast.makeText(ActionListActivity.this, "注销成功: " + result.platform, Toast.LENGTH_SHORT).show();
         } else {
@@ -253,14 +254,14 @@ public class ActionListActivity extends Activity {
         }
         if(builder != null) {
             builder.build().toObservable2()
-                .subscribe(new Observer<SocialShareResult>() {
+                .subscribe(new Observer<ShareResult>() {
 
                     @Override
                     public void onSubscribe(final Disposable d) {
                     }
 
                     @Override
-                    public void onNext(SocialShareResult result) {
+                    public void onNext(ShareResult result) {
                         handleShareSuccess(result);
                     }
 
@@ -283,7 +284,7 @@ public class ActionListActivity extends Activity {
         Toast.makeText(ActionListActivity.this, "分享失败: " + errorCode, Toast.LENGTH_SHORT).show();
     }
 
-    private void handleShareSuccess(SocialShareResult result) {
+    private void handleShareSuccess(ShareResult result) {
         Toast.makeText(ActionListActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
     }
 

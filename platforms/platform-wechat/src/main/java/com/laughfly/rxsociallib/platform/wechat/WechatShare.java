@@ -14,8 +14,8 @@ import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareResult;
 import com.laughfly.rxsociallib.share.ShareType;
-import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
@@ -47,15 +47,15 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
     @Override
     protected void check() throws Exception {
-        if (!SocialUtils.checkAppInstalled(mBuilder.getContext(), WechatConstants.WECHAT_PACKAGE)) {
+        if (!SocialUtils.checkAppInstalled(mParams.getContext(), WechatConstants.WECHAT_PACKAGE)) {
             throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
     }
 
     @Override
     protected void init() throws Exception {
-        mWXApi = WXAPIFactory.createWXAPI(getContext(), mBuilder.getAppId(), true);
-        mWXApi.registerApp(mBuilder.getAppId());
+        mWXApi = WXAPIFactory.createWXAPI(getContext(), mParams.getAppId(), true);
+        mWXApi.registerApp(mParams.getAppId());
     }
 
     @Override
@@ -79,7 +79,7 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     @Override
     public void handleNoResult() {
         if (mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
+            finishWithSuccess(new ShareResult(getPlatform()));
         } else {
             super.handleNoResult();
         }
@@ -121,24 +121,24 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
     private void shareText() {
         WXTextObject textObject = new WXTextObject();
-        textObject.text = mBuilder.getText();
+        textObject.text = mParams.getText();
         WXMediaMessage mediaMessage = new WXMediaMessage();
         mediaMessage.mediaObject = textObject;
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
-        mediaMessage.messageExt = mBuilder.getExText();
+        mediaMessage.title = mParams.getTitle();
+        mediaMessage.description = mParams.getText();
+        mediaMessage.messageExt = mParams.getExText();
 
         shareBySDK(mediaMessage);
     }
 
     private void shareWebPage() throws SocialShareException {
         WXWebpageObject webpageObject = new WXWebpageObject();
-        webpageObject.webpageUrl = mBuilder.getWebUrl();
+        webpageObject.webpageUrl = mParams.getWebUrl();
         WXMediaMessage mediaMessage = new WXMediaMessage();
         mediaMessage.mediaObject = webpageObject;
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
-        mediaMessage.messageExt = mBuilder.getExText();
+        mediaMessage.title = mParams.getTitle();
+        mediaMessage.description = mParams.getText();
+        mediaMessage.messageExt = mParams.getExText();
         mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
         shareBySDK(mediaMessage);
@@ -149,12 +149,12 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
      */
     private void shareAudio() throws SocialShareException {
         WXMusicObject musicObject = new WXMusicObject();
-        musicObject.musicDataUrl = mBuilder.getAudioUri();
-        musicObject.musicUrl = mBuilder.getWebUrl();
+        musicObject.musicDataUrl = mParams.getAudioUri();
+        musicObject.musicUrl = mParams.getWebUrl();
 
         WXMediaMessage mediaMessage = new WXMediaMessage();
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
+        mediaMessage.title = mParams.getTitle();
+        mediaMessage.description = mParams.getText();
         mediaMessage.mediaObject = musicObject;
         mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
@@ -178,15 +178,15 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     }
 
     private void shareVideo() throws SocialShareException {
-        String videoUri = mBuilder.getVideoUri();
+        String videoUri = mParams.getVideoUri();
         if (SocialUriUtils.isHttpUrl(videoUri)) {
             WXVideoObject videoObject = new WXVideoObject();
-            videoObject.videoUrl = mBuilder.getVideoUri();
+            videoObject.videoUrl = mParams.getVideoUri();
 
             WXMediaMessage mediaMessage = new WXMediaMessage();
             mediaMessage.mediaObject = videoObject;
-            mediaMessage.title = mBuilder.getTitle();
-            mediaMessage.description = mBuilder.getText();
+            mediaMessage.title = mParams.getTitle();
+            mediaMessage.description = mParams.getText();
             mediaMessage.thumbData = getThumbBytes(WechatConstants.THUMB_SIZE_LIMIT);
 
             shareBySDK(mediaMessage);
@@ -198,7 +198,7 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     }
 
     private void shareFile() {
-        final Intent fileShare = SocialIntentUtils.createFileShare(Uri.parse(mBuilder.getFileUri()), WechatConstants.WECHAT_PACKAGE, WechatConstants.WECHAT_SHARE_TARGET_CLASS);
+        final Intent fileShare = SocialIntentUtils.createFileShare(Uri.parse(mParams.getFileUri()), WechatConstants.WECHAT_PACKAGE, WechatConstants.WECHAT_SHARE_TARGET_CLASS);
 
         shareByIntent(fileShare);
     }
@@ -210,14 +210,14 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
      */
     private void shareMiniProgram() throws SocialShareException {
         WXMiniProgramObject programObject = new WXMiniProgramObject();
-        programObject.webpageUrl = mBuilder.getWebUrl();
-        programObject.userName = mBuilder.getMiniProgramUserName();
-        programObject.path = mBuilder.getMiniProgramPath();
-        programObject.miniprogramType = mBuilder.getMiniProgramType();
+        programObject.webpageUrl = mParams.getWebUrl();
+        programObject.userName = mParams.getMiniProgramUserName();
+        programObject.path = mParams.getMiniProgramPath();
+        programObject.miniprogramType = mParams.getMiniProgramType();
 
         WXMediaMessage mediaMessage = new WXMediaMessage(programObject);
-        mediaMessage.title = mBuilder.getTitle();
-        mediaMessage.description = mBuilder.getText();
+        mediaMessage.title = mParams.getTitle();
+        mediaMessage.description = mParams.getText();
         mediaMessage.thumbData = getThumbBytes(WechatConstants.MINI_PROG_IMAGE_LIMIT);
 
         shareBySDK(mediaMessage);
@@ -259,7 +259,7 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     public void onResp(BaseResp baseResp) {
         switch (baseResp.errCode) {
             case BaseResp.ErrCode.ERR_OK:
-                finishWithSuccess(new SocialShareResult(getPlatform()));
+                finishWithSuccess(new ShareResult(getPlatform()));
                 break;
             case BaseResp.ErrCode.ERR_USER_CANCEL:
                 finishWithCancel();

@@ -8,15 +8,15 @@ import com.laughfly.rxsociallib.internal.SocialExecutor;
  * email:cwy.fly2@gmail.com
  */
 
-public class ShareExecutor extends SocialExecutor<ShareAction, SocialShareResult>{
-    private ShareBuilder mShareBuilder;
+public class ShareExecutor extends SocialExecutor<ShareAction, ShareParams, ShareResult>{
+    private ShareParams mShareParams;
 
-    public ShareExecutor(ShareBuilder shareBuilder) {
-        mShareBuilder = shareBuilder;
+    public ShareExecutor(ShareParams shareParams) {
+        mShareParams = shareParams;
     }
 
     protected ShareAction createAction() {
-        return SocialActionFactory.createShareAction(mShareBuilder.getPlatform(), mShareBuilder);
+        return SocialActionFactory.createShareAction(mShareParams);
     }
 
 }

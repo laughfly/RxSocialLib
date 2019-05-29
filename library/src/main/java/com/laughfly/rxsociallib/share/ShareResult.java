@@ -7,11 +7,11 @@ import com.laughfly.rxsociallib.internal.SocialResult;
  * author:caowy
  * date:2018-05-26
  */
-public class SocialShareResult implements SocialResult{
+public class ShareResult implements SocialResult{
 
     private String platform;
 
-    public SocialShareResult(String platform) {
+    public ShareResult(String platform) {
         this.platform = platform;
     }
 

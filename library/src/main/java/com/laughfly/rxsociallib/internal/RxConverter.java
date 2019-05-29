@@ -20,7 +20,7 @@ import rx.functions.Cancellable;
  */
 
 public class RxConverter {
-    public static<Result> Observable<Result> toObservable(SocialAction action) {
+    public static<Params, Result> Observable<Result> toObservable(SocialAction action) {
         return Observable.create(new Action1<Emitter<Result>>() {
             @Override
             public void call(Emitter<Result> emitter) {
@@ -30,19 +30,19 @@ public class RxConverter {
                         action.cancel();
                     }
                 });
-                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                SocialCallback<Params, Result> callback = new SocialCallback<Params, Result>() {
                     @Override
-                    public void onError(String platform, SocialException e) {
+                    public void onError(String platform, Params params, SocialException e) {
                         emitter.onError(e);
                     }
 
                     @Override
-                    public void onSuccess(String platform, Result resp) {
+                    public void onSuccess(String platform, Params params, Result resp) {
                         emitter.onNext(resp);
                     }
 
                     @Override
-                    public void onFinish(String platform) {
+                    public void onFinish(String platform, Params params) {
                         emitter.onCompleted();
                     }
                 };
@@ -52,7 +52,7 @@ public class RxConverter {
         }, Emitter.BackpressureMode.LATEST);
     }
 
-    public static<Result> io.reactivex.Observable<Result> toObservable2(SocialAction action) {
+    public static<Params, Result> io.reactivex.Observable<Result> toObservable2(SocialAction action) {
         return io.reactivex.Observable.create(new ObservableOnSubscribe<Result>() {
             @Override
             public void subscribe(ObservableEmitter<Result> emitter) throws Exception {
@@ -62,19 +62,19 @@ public class RxConverter {
                         action.cancel();
                     }
                 });
-                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                SocialCallback<Params, Result> callback = new SocialCallback<Params, Result>() {
                     @Override
-                    public void onError(String platform, SocialException e) {
+                    public void onError(String platform, Params params, SocialException e) {
                         emitter.onError(e);
                     }
 
                     @Override
-                    public void onSuccess(String platform, Result resp) {
+                    public void onSuccess(String platform, Params params, Result resp) {
                         emitter.onNext(resp);
                     }
 
                     @Override
-                    public void onFinish(String platform) {
+                    public void onFinish(String platform, Params params) {
                         emitter.onComplete();
                     }
                 };
@@ -84,7 +84,7 @@ public class RxConverter {
         });
     }
 
-    public static<Result> Flowable<Result> toFlowable(SocialAction action) {
+    public static<Params, Result> Flowable<Result> toFlowable(SocialAction action) {
         return Flowable.create(new FlowableOnSubscribe<Result>() {
             @Override
             public void subscribe(FlowableEmitter<Result> emitter) throws Exception {
@@ -94,19 +94,19 @@ public class RxConverter {
                         action.cancel();
                     }
                 });
-                SocialCallback<Result> callback = new SocialCallback<Result>() {
+                SocialCallback<Params, Result> callback = new SocialCallback<Params, Result>() {
                     @Override
-                    public void onError(String platform, SocialException e) {
+                    public void onError(String platform, Params params, SocialException e) {
                         emitter.onError(e);
                     }
 
                     @Override
-                    public void onSuccess(String platform, Result resp) {
+                    public void onSuccess(String platform, Params params, Result resp) {
                         emitter.onNext(resp);
                     }
 
                     @Override
-                    public void onFinish(String platform) {
+                    public void onFinish(String platform, Params params) {
                         emitter.onComplete();
                     }
                 };

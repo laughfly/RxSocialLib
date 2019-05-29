@@ -21,7 +21,7 @@ import java.io.File;
  * date:2018-04-20
  *
  */
-public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShareResult> {
+public abstract class ShareAction extends SocialAction<ShareParams, ShareResult> {
 
     protected static @SocialUriUtils.UriType int URI_TYPES_ALL = SocialUriUtils.TYPE_HTTP | SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_FILE_PATH | SocialUriUtils.TYPE_CONTENT_URI;
 
@@ -34,15 +34,15 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
     }
 
     @Override
-    public ShareAction setCallback(SocialCallback<SocialShareResult> callback) {
+    public ShareAction setCallback(SocialCallback<ShareParams, ShareResult> callback) {
         super.setCallback(callback);
         return this;
     }
 
     @Override
     public void handleNoResult() {
-        if(mBuilder.getNoResultAsSuccess()) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
+        if(mParams.getNoResultAsSuccess()) {
+            finishWithSuccess(new ShareResult(getPlatform()));
         } else {
             super.handleNoResult();
         }
@@ -104,14 +104,14 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
             if(SocialUriUtils.TYPE_HTTP == uriType) {//download to file path
                 uri = downloadFileIfNeed(uri);
             } else if(SocialUriUtils.TYPE_CONTENT_URI == uriType) {//to file path
-                uri = SocialUriUtils.toFilePath(mBuilder.getContext(), uri, SocialModel.getDownloadDirectory());
+                uri = SocialUriUtils.toFilePath(mParams.getContext(), uri, SocialModel.getDownloadDirectory());
             } else if(SocialUriUtils.TYPE_FILE_URI == uriType) {//to file path
                 uri = SocialUriUtils.toFilePath(uri);
             }
             //transform file path
             switch (targetType) {
                 case SocialUriUtils.TYPE_CONTENT_URI:
-                    transformUri = SocialUriUtils.getContentUri(mBuilder.getContext(), new File(uri)).toString();
+                    transformUri = SocialUriUtils.getContentUri(mParams.getContext(), new File(uri)).toString();
                     break;
                 case SocialUriUtils.TYPE_FILE_PATH:
                     transformUri = uri;
@@ -125,7 +125,7 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
     }
 
     protected String getImagePath(int sizeLimit) throws SocialShareException {
-        Bitmap imageBitmap = mBuilder.getImageBitmap();
+        Bitmap imageBitmap = mParams.getImageBitmap();
         if(imageBitmap != null) {
             File thumbFile = new File(SocialModel.getDownloadDirectory(), imageBitmap.getGenerationId() + (imageBitmap.hasAlpha() ? ".png" : ".jpg"));
             boolean saved = SocialUtils.saveBitmapToFile(imageBitmap, thumbFile, sizeLimit);
@@ -133,16 +133,16 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
                 return thumbFile.getAbsolutePath();
             }
         }
-        int imageResId = mBuilder.getImageResId();
+        int imageResId = mParams.getImageResId();
         if(imageResId != 0) {
-            Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), imageResId);
+            Bitmap bitmap = BitmapFactory.decodeResource(mParams.getContext().getResources(), imageResId);
             File thumbFile = new File(SocialModel.getDownloadDirectory(), bitmap.getGenerationId() + (bitmap.hasAlpha() ? ".png" : ".jpg"));
             boolean saved = SocialUtils.saveBitmapToFile(bitmap, thumbFile, sizeLimit);
             if(saved) {
                 return thumbFile.getAbsolutePath();
             }
         }
-        String imageUri = mBuilder.getImageUri();
+        String imageUri = mParams.getImageUri();
         if(!TextUtils.isEmpty(imageUri)) {
             imageUri = transformUri(imageUri, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH);
             return imageUri;
@@ -151,7 +151,7 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
     }
 
     protected String getThumbPath(int sizeLimit) throws SocialShareException {
-        Bitmap thumbBitmap = mBuilder.getThumbBitmap();
+        Bitmap thumbBitmap = mParams.getThumbBitmap();
         if(thumbBitmap != null) {
             File thumbFile = new File(SocialModel.getDownloadDirectory(), thumbBitmap.getGenerationId() + (thumbBitmap.hasAlpha() ? ".png" : ".jpg"));
             boolean saved = SocialUtils.saveBitmapToFile(thumbBitmap, thumbFile, sizeLimit);
@@ -159,16 +159,16 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
                 return thumbFile.getAbsolutePath();
             }
         }
-        int thumbResId = mBuilder.getThumbResId();
+        int thumbResId = mParams.getThumbResId();
         if(thumbResId != 0) {
-            Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), thumbResId);
+            Bitmap bitmap = BitmapFactory.decodeResource(mParams.getContext().getResources(), thumbResId);
             File thumbFile = new File(SocialModel.getDownloadDirectory(), bitmap.getGenerationId() + (bitmap.hasAlpha() ? ".png" : ".jpg"));
             boolean saved = SocialUtils.saveBitmapToFile(bitmap, thumbFile, sizeLimit);
             if(saved) {
                 return thumbFile.getAbsolutePath();
             }
         }
-        String thumbUri = mBuilder.getThumbUri();
+        String thumbUri = mParams.getThumbUri();
         if(!TextUtils.isEmpty(thumbUri)) {
             thumbUri = transformUri(thumbUri, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH);
             return thumbUri;
@@ -177,18 +177,18 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
     }
 
     protected byte[] getThumbBytes(int sizeLimit) throws SocialShareException {
-        Bitmap thumbBitmap = mBuilder.getThumbBitmap();
+        Bitmap thumbBitmap = mParams.getThumbBitmap();
         if(thumbBitmap != null) {
             return SocialUtils.bitmapToBytes(thumbBitmap, sizeLimit, false);
         }
-        String thumbUri = mBuilder.getThumbUri();
+        String thumbUri = mParams.getThumbUri();
         if(!TextUtils.isEmpty(thumbUri)) {
             thumbUri = transformUri(thumbUri, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH);
             return SocialUtils.loadImageBytes(thumbUri, sizeLimit);
         }
-        int thumbResId = mBuilder.getThumbResId();
+        int thumbResId = mParams.getThumbResId();
         if(thumbResId != 0) {
-            Bitmap bitmap = BitmapFactory.decodeResource(mBuilder.getContext().getResources(), thumbResId);
+            Bitmap bitmap = BitmapFactory.decodeResource(mParams.getContext().getResources(), thumbResId);
             return SocialUtils.bitmapToBytes(bitmap, sizeLimit, true);
         }
         return null;
@@ -213,43 +213,43 @@ public abstract class ShareAction extends SocialAction<ShareBuilder, SocialShare
     }
 
     protected @ShareType.Def int getShareType() {
-        ShareBuilder builder = getBuilder();
-        if(builder.hasMiniProgram()) {
+        ShareParams params = getParams();
+        if(params.hasMiniProgram()) {
             return ShareType.SHARE_MINI_PROGRAM;
         }
-        if(builder.hasVideo()) {
-            if(SocialUriUtils.isHttpUrl(builder.getVideoUri())) {
+        if(params.hasVideo()) {
+            if(SocialUriUtils.isHttpUrl(params.getVideoUri())) {
                 return ShareType.SHARE_NETWORK_VIDEO;
             } else {
                 return ShareType.SHARE_LOCAL_VIDEO;
             }
         }
 
-        if(builder.hasAudio()) {
+        if(params.hasAudio()) {
             return ShareType.SHARE_AUDIO;
         }
 
-        if (builder.hasImage()) {
+        if (params.hasImage()) {
             return ShareType.SHARE_IMAGE;
         }
 
-        if (builder.hasImageList()) {
+        if (params.hasImageList()) {
             return ShareType.SHARE_MULTI_IMAGE;
         }
 
-        if (builder.hasAppInfo()) {
+        if (params.hasAppInfo()) {
             return ShareType.SHARE_APP;
         }
 
-        if(builder.hasFileList()) {
+        if(params.hasFileList()) {
             return ShareType.SHARE_MULTI_FILE;
         }
 
-        if (builder.hasFilePath()) {
+        if (params.hasFilePath()) {
             return ShareType.SHARE_FILE;
         }
 
-        if(builder.hasWebUrl()) {
+        if(params.hasWebUrl()) {
             return ShareType.SHARE_WEB;
         }
 

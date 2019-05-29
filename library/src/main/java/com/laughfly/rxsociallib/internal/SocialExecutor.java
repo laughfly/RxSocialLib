@@ -11,12 +11,12 @@ import rx.Observable;
  * email:cwy.fly2@gmail.com
  */
 
-public abstract class SocialExecutor<Action extends SocialAction, Result extends SocialResult> {
+public abstract class SocialExecutor<Action extends SocialAction, Params extends SocialParams, Result extends SocialResult> {
     private Action mSocialAction;
 
     protected abstract Action createAction();
 
-    public void start(SocialCallback<Result> callback){
+    public void start(SocialCallback<Params, Result> callback){
         Action action = createAction();
         action.setCallback(callback);
         action.start();

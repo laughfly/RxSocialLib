@@ -1,7 +1,6 @@
 package com.laughfly.rxsociallib.login;
 
 import android.content.Context;
-import android.text.TextUtils;
 
 import com.laughfly.rxsociallib.PlatformConfig;
 import com.laughfly.rxsociallib.internal.SocialBuilder;
@@ -11,65 +10,45 @@ import com.laughfly.rxsociallib.internal.SocialBuilder;
  * author:caowy
  * date:2018-05-26
  */
-public class LoginBuilder extends SocialBuilder<LoginAction, SocialLoginResult>{
+public class LoginBuilder extends SocialBuilder<LoginParams>{
 
     public LoginBuilder(Context context, String platform, PlatformConfig platformConfig) {
         super(context, platform, platformConfig);
     }
 
+    @Override
+    protected LoginParams createParams() {
+        return new LoginParams();
+    }
+
     public LoginExecutor build() {
-        return new LoginExecutor(LoginBuilder.this);
+        return new LoginExecutor(mParams);
     }
 
 
     public LoginBuilder setFetchUserProfile(boolean fetchUserProfile) {
-        put("getUserProfile", fetchUserProfile);
+        mParams.setFetchUserProfile(fetchUserProfile);
         return this;
-    }
-
-    public boolean isFetchUserProfile() {
-        return get("getUserProfile", false);
     }
 
     public LoginBuilder setSaveAccessToken(boolean saveAccessToken) {
-        put("saveAccessToken", saveAccessToken);
+        mParams.setSaveAccessToken(saveAccessToken);
         return this;
-    }
-
-    public boolean isSaveAccessToken() {
-        return get("saveAccessToken", true);
     }
 
     public LoginBuilder setClearLastAccount(boolean clearLastAccount) {
-        put("clearLastAccount", clearLastAccount);
+        mParams.setClearLastAccount(clearLastAccount);
         return this;
-    }
-
-    public boolean isClearLastAccount() {
-        return get("clearLastAccount", false);
     }
 
     public LoginBuilder setLogoutOnly(boolean logoutOnly) {
-        put("logoutOnly", logoutOnly);
+        mParams.setLogoutOnly(logoutOnly);
         return this;
-    }
-
-    public boolean isLogoutOnly() {
-        return get("logoutOnly", false);
     }
 
     public LoginBuilder setServerSideMode(boolean serverSideMode) {
-        put("serverSideMode", serverSideMode);
+        mParams.setServerSideMode(serverSideMode);
         return this;
-    }
-
-    public boolean isServerSideMode() {
-        return get("serverSideMode", false);
-    }
-
-    protected boolean checkArgs() {
-        if(getContext() == null) return false;
-        return !TextUtils.isEmpty(getAppId());
     }
 
 }

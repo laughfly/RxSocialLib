@@ -7,14 +7,14 @@ import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.internal.SocialAction;
 
-public abstract class LoginAction extends SocialAction<LoginBuilder, SocialLoginResult>{
+public abstract class LoginAction extends SocialAction<LoginParams, LoginResult>{
 
     public LoginAction() {
         super();
     }
 
     @Override
-    public LoginAction setCallback(SocialCallback<SocialLoginResult> callback) {
+    public LoginAction setCallback(SocialCallback<LoginParams, LoginResult> callback) {
         super.setCallback(callback);
         return this;
     }
@@ -35,21 +35,21 @@ public abstract class LoginAction extends SocialAction<LoginBuilder, SocialLogin
     }
 
     protected void finishWithLogout() {
-        SocialLoginResult result = new SocialLoginResult();
+        LoginResult result = new LoginResult();
         result.platform = getPlatform();
         result.logoutOnly = true;
         finishWithSuccess(result);
     }
 
     protected void clearAccessToken() {
-        AccessTokenKeeper.clear(mBuilder.getContext(), getPlatform());
+        AccessTokenKeeper.clear(mParams.getContext(), getPlatform());
     }
 
     protected void saveAccessToken(AccessToken accessToken) {
-        AccessTokenKeeper.writeAccessToken(mBuilder.getContext(), getPlatform(), accessToken);
+        AccessTokenKeeper.writeAccessToken(mParams.getContext(), getPlatform(), accessToken);
     }
 
     protected AccessToken readAccessToken() {
-        return AccessTokenKeeper.readAccessToken(mBuilder.getContext(), getPlatform());
+        return AccessTokenKeeper.readAccessToken(mParams.getContext(), getPlatform());
     }
 }

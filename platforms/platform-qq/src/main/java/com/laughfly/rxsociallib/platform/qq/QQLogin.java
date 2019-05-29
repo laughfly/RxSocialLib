@@ -10,7 +10,7 @@ import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
-import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.login.LoginResult;
 import com.tencent.connect.UserInfo;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
@@ -48,13 +48,13 @@ public class QQLogin extends LoginAction implements IUiListener {
 
     @Override
     protected void init() throws Exception {
-        mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
+        mTencent = Tencent.createInstance(mParams.getAppId(), mParams.getContext());
     }
 
     @Override
     protected void execute() throws Exception {
         Activity delegate = getDelegate();
-        if (mBuilder.isLogoutOnly()) {
+        if (mParams.isLogoutOnly()) {
             logoutOnly();
         } else {
             login(delegate);
@@ -67,12 +67,12 @@ public class QQLogin extends LoginAction implements IUiListener {
     }
 
     private void logout() {
-        mTencent.logout(mBuilder.getContext());
+        mTencent.logout(mParams.getContext());
     }
 
     private void login(Activity delegate) {
-        if(mBuilder.isClearLastAccount()) {
-            mTencent.logout(mBuilder.getContext());
+        if(mParams.isClearLastAccount()) {
+            mTencent.logout(mParams.getContext());
             clearAccessToken();
         } else {
             AccessToken accessToken = readAccessToken();
@@ -82,13 +82,13 @@ public class QQLogin extends LoginAction implements IUiListener {
             }
         }
         if(mTencent.isSessionValid()) {
-            mTencent.logout(mBuilder.getContext());
+            mTencent.logout(mParams.getContext());
         }
-        mTencent.login(delegate, mBuilder.getScope(), this);
+        mTencent.login(delegate, mParams.getScope(), this);
     }
 
     private void updateOrFinish() {
-        if(mBuilder.isFetchUserProfile()) {
+        if(mParams.isFetchUserProfile()) {
             updateUserInfo();
         } else {
             finishWithLogin();
@@ -96,7 +96,7 @@ public class QQLogin extends LoginAction implements IUiListener {
     }
 
     private void updateUserInfo() {
-        UserInfo userInfo = new UserInfo(mBuilder.getContext(), mTencent.getQQToken());
+        UserInfo userInfo = new UserInfo(mParams.getContext(), mTencent.getQQToken());
         userInfo.getUserInfo(this);
     }
 
@@ -113,7 +113,7 @@ public class QQLogin extends LoginAction implements IUiListener {
         _accessToken.expiresIn = mTencent.getExpiresIn();
 
         mAccessToken = _accessToken;
-        if(mBuilder.isSaveAccessToken()) {
+        if(mParams.isSaveAccessToken()) {
             saveAccessToken(_accessToken);
         }
     }
@@ -133,13 +133,13 @@ public class QQLogin extends LoginAction implements IUiListener {
     }
 
     private void finishWithLogin() {
-        SocialLoginResult result = new SocialLoginResult();
+        LoginResult result = new LoginResult();
         result.platform = getPlatform();
         result.openId = mTencent.getOpenId();
 
         result.accessToken = mAccessToken != null ? mAccessToken : readAccessToken();
 
-        if(mBuilder.isFetchUserProfile()) {
+        if(mParams.isFetchUserProfile()) {
             result.userInfo = mUserInfo;
         }
 

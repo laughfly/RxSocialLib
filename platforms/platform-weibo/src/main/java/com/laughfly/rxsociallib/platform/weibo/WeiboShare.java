@@ -12,8 +12,8 @@ import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareResult;
 import com.laughfly.rxsociallib.share.ShareType;
-import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.sina.weibo.sdk.WbSdk;
 import com.sina.weibo.sdk.api.ImageObject;
 import com.sina.weibo.sdk.api.StoryMessage;
@@ -51,8 +51,8 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     @Override
     protected void init() throws Exception {
-        WbSdk.install(mBuilder.getContext(),
-            new AuthInfo(mBuilder.getContext(), mBuilder.getAppId(), mBuilder.getRedirectUrl(), mBuilder.getScope()));
+        WbSdk.install(mParams.getContext(),
+            new AuthInfo(mParams.getContext(), mParams.getAppId(), mParams.getRedirectUrl(), mParams.getScope()));
     }
 
     @Override
@@ -70,7 +70,7 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
     @Override
     public void handleNoResult() {
         if(mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
+            finishWithSuccess(new ShareResult(getPlatform()));
         } else {
             super.handleNoResult();
         }
@@ -134,7 +134,7 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private void shareImage() throws Exception {
         WeiboMultiMessage message = createMessage();
-        if(mBuilder.hasText()) {
+        if(mParams.hasText()) {
             message.textObject = createTextObject();
         }
         message.imageObject = createImageObj();
@@ -143,14 +143,13 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private void shareWeb() throws SocialShareException {
         WeiboMultiMessage message = createMessage();
-        message.mediaObject = createWebObject();
+        message.mediaObject = createWebObject(mParams.getWebUrl());
         shareBySDK(message);
     }
 
     private void shareAudio() throws SocialShareException {
         WeiboMultiMessage message = createMessage();
-        mBuilder.setWebUrl(mBuilder.getAudioUri());
-        message.mediaObject = createWebObject();
+        message.mediaObject = createWebObject(mParams.getAudioUri());
         shareBySDK(message);
     }
 
@@ -163,7 +162,7 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private void shareMultiImage(Activity activity) throws SocialShareException {
         ArrayList<Uri> imageUriList = new ArrayList<>();
-        List<String> imageList = mBuilder.getImageList();
+        List<String> imageList = mParams.getImageList();
         for (String image : imageList) {
             imageUriList.add(Uri.parse(transformUri(image, URI_TYPES_ALL, SocialUriUtils.TYPE_FILE_PATH)));
         }
@@ -184,7 +183,7 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private void shareVideoStory() {
         StoryMessage storyMessage = new StoryMessage();
-        String videoUri = mBuilder.getVideoUri();
+        String videoUri = mParams.getVideoUri();
         if(SocialUriUtils.isFilePath(videoUri)) {
             videoUri = SocialUriUtils.toFileUri(videoUri);
         }
@@ -207,7 +206,7 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
 
     private TextObject createTextObject() {
         TextObject textObject = new TextObject();
-        textObject.text = mBuilder.getText();
+        textObject.text = mParams.getText();
         return textObject;
     }
 
@@ -217,28 +216,28 @@ public class WeiboShare extends ShareAction implements WbShareCallback {
         return imageObject;
     }
 
-    private WebpageObject createWebObject() throws SocialShareException {
+    private WebpageObject createWebObject(String webUrl) throws SocialShareException {
         WebpageObject webpageObject = new WebpageObject();
         webpageObject.identify = Utility.generateGUID();
-        webpageObject.title = mBuilder.getTitle();
-        webpageObject.description = mBuilder.getText();
-        webpageObject.actionUrl = mBuilder.getWebUrl();
+        webpageObject.title = mParams.getTitle();
+        webpageObject.description = mParams.getText();
+        webpageObject.actionUrl = webUrl;
         webpageObject.thumbData = getThumbBytes(WeiboConstants.WEIBO_THUMB_LIMIT);
-        webpageObject.defaultText = mBuilder.getText();
+        webpageObject.defaultText = mParams.getText();
         return webpageObject;
     }
 
     private VideoSourceObject createVideoObject() throws SocialShareException {
         //获取视频
         VideoSourceObject videoSourceObject = new VideoSourceObject();
-        String videoUri = transformUri(mBuilder.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_CONTENT_URI);
+        String videoUri = transformUri(mParams.getVideoUri(), URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_URI | SocialUriUtils.TYPE_CONTENT_URI);
         videoSourceObject.videoPath = Uri.parse(videoUri);
         return videoSourceObject;
     }
 
     @Override
     public void onWbShareSuccess() {
-        finishWithSuccess(new SocialShareResult(getPlatform()));
+        finishWithSuccess(new ShareResult(getPlatform()));
     }
 
     @Override

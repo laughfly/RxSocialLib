@@ -11,16 +11,15 @@ import static com.laughfly.rxsociallib.SocialThreads.runOnUiThread;
  * author:caowy
  * date:2018-04-20
  *
- * @param <T>
  */
-public abstract class SocialCallback<T> {
+public abstract class SocialCallback<P, R> {
 
     /**
      * 开始
      * @param platform
      */
     @MainThread
-    public void onStart(String platform){}
+    public void onStart(String platform, P params){}
 
     /**
      * 发生错误
@@ -29,7 +28,7 @@ public abstract class SocialCallback<T> {
      * @param e
      */
     @MainThread
-    public abstract void onError(String platform, SocialException e);
+    public abstract void onError(String platform, P params, SocialException e);
 
     /**
      * 操作成功
@@ -38,7 +37,7 @@ public abstract class SocialCallback<T> {
      * @param resp
      */
     @MainThread
-    public abstract void onSuccess(String platform, T resp);
+    public abstract void onSuccess(String platform, P params, R resp);
 
     /**
      * 操作结束，不管有没有结果或者结果是什么
@@ -46,55 +45,55 @@ public abstract class SocialCallback<T> {
      * @param platform
      */
     @MainThread
-    public void onFinish(String platform){}
+    public void onFinish(String platform, P params){}
 
-    public static class Wrapper<T> extends SocialCallback<T>{
+    public static class Wrapper<P, R> extends SocialCallback<P, R>{
 
-        public SocialCallback<T> callback;
+        public SocialCallback<P, R> callback;
 
         @Override
-        public void onStart(final String platform) {
+        public void onStart(final String platform, P params) {
             if(callback != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onStart(platform);
+                        callback.onStart(platform, params);
                     }
                 });
             }
         }
 
         @Override
-        public void onError(final String platform, final SocialException e) {
+        public void onError(final String platform, P params, final SocialException e) {
             if(callback != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onError(platform, e);
+                        callback.onError(platform, params, e);
                     }
                 });
             }
         }
 
         @Override
-        public void onSuccess(final String platform, final T resp) {
+        public void onSuccess(final String platform, P params, final R resp) {
             if(callback != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onSuccess(platform, resp);
+                        callback.onSuccess(platform, params, resp);
                     }
                 });
             }
         }
 
         @Override
-        public void onFinish(final String platform) {
+        public void onFinish(final String platform, P params) {
             if(callback != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        callback.onFinish(platform);
+                        callback.onFinish(platform, params);
                     }
                 });
             }

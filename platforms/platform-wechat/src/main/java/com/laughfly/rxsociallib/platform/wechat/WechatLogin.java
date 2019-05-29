@@ -13,7 +13,7 @@ import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
-import com.laughfly.rxsociallib.login.SocialLoginResult;
+import com.laughfly.rxsociallib.login.LoginResult;
 import com.laughfly.rxsociallib.login.UserInfo;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
@@ -46,25 +46,25 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
 
     @Override
     protected void check() throws Exception {
-        if (!SocialUtils.checkAppInstalled(mBuilder.getContext(), WechatConstants.WECHAT_PACKAGE)) {
+        if (!SocialUtils.checkAppInstalled(mParams.getContext(), WechatConstants.WECHAT_PACKAGE)) {
             throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
     }
 
     @Override
     protected void init() throws Exception {
-        mWXAPI = WXAPIFactory.createWXAPI(mBuilder.getContext(), mBuilder.getAppId(), true);
-        mWXAPI.registerApp(mBuilder.getAppId());
+        mWXAPI = WXAPIFactory.createWXAPI(mParams.getContext(), mParams.getAppId(), true);
+        mWXAPI.registerApp(mParams.getAppId());
     }
 
     @Override
     protected void execute() throws Exception {
-        if (mBuilder.isLogoutOnly()) {
-            AccessTokenKeeper.clear(mBuilder.getContext(), getPlatform());
+        if (mParams.isLogoutOnly()) {
+            AccessTokenKeeper.clear(mParams.getContext(), getPlatform());
             finishWithLogout();
         } else {
-            if (mBuilder.isClearLastAccount()) {
-                AccessTokenKeeper.clear(mBuilder.getContext(), getPlatform());
+            if (mParams.isClearLastAccount()) {
+                AccessTokenKeeper.clear(mParams.getContext(), getPlatform());
             }
             loginSSO();
         }
@@ -86,8 +86,8 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
     private void loginSSO() throws SocialLoginException {
         WechatEntryActivity.setTheResultHandler(new ResultCallbackWrapper(this));
         SendAuth.Req req = new SendAuth.Req();
-        req.scope = mBuilder.getScope();
-        req.state = mBuilder.getState();
+        req.scope = mParams.getScope();
+        req.state = mParams.getState();
         boolean sendReq = mWXAPI.sendReq(req);
         if (!sendReq) {
             throw new SocialLoginException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL);
@@ -134,7 +134,7 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
     @WorkerThread
     private void handleSuccess(SendAuth.Resp resp) {
         try {
-            if (mBuilder.isServerSideMode()) {
+            if (mParams.isServerSideMode()) {
                 setServerAuthCode(resp);
             } else {
                 setAccessToken(resp);
@@ -146,7 +146,7 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
     }
 
     private void setServerAuthCode(SendAuth.Resp resp) {
-        SocialLoginResult loginResult = new SocialLoginResult();
+        LoginResult loginResult = new LoginResult();
         loginResult.platform = getPlatform();
         loginResult.serverAuthCode = resp.code;
         loginResult.openId = resp.openId;
@@ -169,17 +169,17 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
         accessToken.openId = openId;
         accessToken.refreshToken = refresh_token;
 
-        if(mBuilder.isSaveAccessToken()) {
+        if(mParams.isSaveAccessToken()) {
             saveAccessToken(accessToken);
         }
 
-        SocialLoginResult result = new SocialLoginResult();
+        LoginResult result = new LoginResult();
         result.platform = getPlatform();
         result.openId = openId;
         result.accessToken = accessToken;
         result.resultObject = resp;
 
-        if (mBuilder.isFetchUserProfile()) {
+        if (mParams.isFetchUserProfile()) {
             String userInfoApi = getUserInfoApi(access_token, openId);
             String userInfoJsonString = SocialUtils.quickHttpGet(userInfoApi);
             JSONObject userJson = new JSONObject(userInfoJsonString);
@@ -199,8 +199,8 @@ public class WechatLogin extends LoginAction implements IWXAPIEventHandler {
 
     private String getAccessTokenApi(String code) {
         return "https://api.weixin.qq.com/sns/oauth2/access_token?"
-            + "appid=" + mBuilder.getAppId()
-            + "&secret=" + mBuilder.getAppSecret()
+            + "appid=" + mParams.getAppId()
+            + "&secret=" + mParams.getAppSecret()
             + "&code=" + code
             + "&grant_type=authorization_code";
     }

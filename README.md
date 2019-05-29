@@ -7,7 +7,7 @@
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.laughfly.rxsociallib:plugin:0.3.4.2'
+        classpath 'com.laughfly.rxsociallib:plugin:0.3.5.0'
     }
 }
 ```

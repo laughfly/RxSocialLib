@@ -13,8 +13,8 @@ import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
+import com.laughfly.rxsociallib.share.ShareResult;
 import com.laughfly.rxsociallib.share.ShareType;
-import com.laughfly.rxsociallib.share.SocialShareResult;
 import com.tencent.connect.common.Constants;
 import com.tencent.tauth.IUiListener;
 import com.tencent.tauth.Tencent;
@@ -53,7 +53,7 @@ public class QQShare extends ShareAction implements IUiListener {
 
     @Override
     protected void check() throws Exception {
-//        if (!QQUtils.isQQInstalled(mBuilder.getContext()) && !QQUtils.isTimInstalled(mBuilder.getContext())) {
+//        if (!QQUtils.isQQInstalled(mParams.getContext()) && !QQUtils.isTimInstalled(mParams.getContext())) {
 //            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
 //        }
     }
@@ -63,7 +63,7 @@ public class QQShare extends ShareAction implements IUiListener {
         SocialThreads.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mTencent = Tencent.createInstance(mBuilder.getAppId(), mBuilder.getContext());
+                mTencent = Tencent.createInstance(mParams.getAppId(), mParams.getContext());
             }
         });
     }
@@ -86,7 +86,7 @@ public class QQShare extends ShareAction implements IUiListener {
     @Override
     public void handleNoResult() {
         if (mShareByIntent) {
-            finishWithSuccess(new SocialShareResult(getPlatform()));
+            finishWithSuccess(new ShareResult(getPlatform()));
         } else {
             super.handleNoResult();
         }
@@ -102,7 +102,7 @@ public class QQShare extends ShareAction implements IUiListener {
                 shareAudio(activity);
                 break;
             case ShareType.SHARE_FILE:
-                shareFile(activity);
+                shareFile(activity, mParams.getFileUri());
                 break;
             case ShareType.SHARE_IMAGE:
                 shareImage(activity);
@@ -112,7 +112,7 @@ public class QQShare extends ShareAction implements IUiListener {
                 shareVideo(activity);
                 break;
             case ShareType.SHARE_TEXT:
-                shareText(activity);
+                shareText(activity, mParams.getTitle(), mParams.getText());
                 break;
             case ShareType.SHARE_WEB:
                 shareWeb(activity);
@@ -130,35 +130,34 @@ public class QQShare extends ShareAction implements IUiListener {
 
     private void shareApp(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_APP);
-        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
-        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+        params.putString(SHARE_TO_QQ_TITLE, mParams.getTitle());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mParams.getWebUrl());
+        params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
         params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
-        params.putString(SHARE_TO_QQ_ARK_INFO, mBuilder.getAppInfo());
+        params.putString(SHARE_TO_QQ_ARK_INFO, mParams.getAppInfo());
         shareBySDK(activity, params);
     }
 
     private void shareAudio(Activity activity) throws SocialShareException {
-        String audioUri = mBuilder.getAudioUri();
+        String audioUri = mParams.getAudioUri();
         if (SocialUriUtils.isHttpUrl(audioUri)) {
             Bundle params = createParams(ShareType.SHARE_AUDIO);
-            params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-            params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
-            params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
+            params.putString(SHARE_TO_QQ_TITLE, mParams.getTitle());
+            params.putString(SHARE_TO_QQ_TARGET_URL, mParams.getWebUrl());
+            params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
             params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
-            params.putString(SHARE_TO_QQ_AUDIO_URL, mBuilder.getAudioUri());
+            params.putString(SHARE_TO_QQ_AUDIO_URL, mParams.getAudioUri());
             shareBySDK(activity, params);
         } else {
-            mBuilder.setFileUri(audioUri);
-            shareFile(activity);
+            shareFile(activity, audioUri);
         }
     }
 
     private void shareWeb(Activity activity) throws SocialShareException {
         Bundle params = createParams(ShareType.SHARE_WEB);
-        params.putString(SHARE_TO_QQ_TITLE, mBuilder.getTitle());
-        params.putString(SHARE_TO_QQ_SUMMARY, mBuilder.getText());
-        params.putString(SHARE_TO_QQ_TARGET_URL, mBuilder.getWebUrl());
+        params.putString(SHARE_TO_QQ_TITLE, mParams.getTitle());
+        params.putString(SHARE_TO_QQ_SUMMARY, mParams.getText());
+        params.putString(SHARE_TO_QQ_TARGET_URL, mParams.getWebUrl());
         params.putString(SHARE_TO_QQ_IMAGE_URL, getThumbPath(QQConstants.THUMB_SIZE_LIMIT));
         shareBySDK(activity, params);
     }
@@ -170,14 +169,13 @@ public class QQShare extends ShareAction implements IUiListener {
         shareBySDK(activity, params);
     }
 
-    private void shareFile(Activity activity) {
-        String fileUri = mBuilder.getFileUri();
+    private void shareFile(Activity activity, String fileUri) {
         Intent shareFile = SocialIntentUtils.createFileShare(Uri.parse(fileUri));
         shareByIntent(activity, shareFile);
     }
 
     private void shareFileList(Activity activity) throws SocialShareException {
-        List<String> fileList = mBuilder.getFileList();
+        List<String> fileList = mParams.getFileList();
         ArrayList<Uri> fileUriList = new ArrayList<>();
         for (String file : fileList) {
             file = transformUri(file, URI_TYPES_LOCAL, SocialUriUtils.TYPE_FILE_PATH);
@@ -188,17 +186,16 @@ public class QQShare extends ShareAction implements IUiListener {
     }
 
     private void shareVideo(Activity activity) {
-        String videoUri = mBuilder.getVideoUri();
+        String videoUri = mParams.getVideoUri();
         if (SocialUriUtils.isHttpUrl(videoUri)) {
-            mBuilder.setText(videoUri);
-            shareText(activity);
+            shareText(activity, mParams.getTitle(), videoUri);
         } else {
-            shareByIntent(activity, SocialIntentUtils.createFileShare(Uri.parse(mBuilder.getVideoUri())));
+            shareByIntent(activity, SocialIntentUtils.createFileShare(Uri.parse(mParams.getVideoUri())));
         }
     }
 
-    private void shareText(Activity activity) {
-        shareByIntent(activity, SocialIntentUtils.createTextShare(mBuilder.getTitle(), mBuilder.getText()));
+    private void shareText(Activity activity, String title, String text) {
+        shareByIntent(activity, SocialIntentUtils.createTextShare(title, text));
     }
 
     private void shareByIntent(Activity activity, Intent originalIntent) {
@@ -244,8 +241,8 @@ public class QQShare extends ShareAction implements IUiListener {
 
         params.putInt(SHARE_TO_QQ_KEY_TYPE, toQQShareType(shareType));
 
-        if (mBuilder.getShareAppName() != null) {
-            params.putString(SHARE_TO_QQ_APP_NAME, mBuilder.getShareAppName());
+        if (mParams.getShareAppName() != null) {
+            params.putString(SHARE_TO_QQ_APP_NAME, mParams.getShareAppName());
         }
 
         return params;
@@ -269,7 +266,7 @@ public class QQShare extends ShareAction implements IUiListener {
 
     @Override
     public void onComplete(Object o) {
-        SocialShareResult result = new SocialShareResult(getPlatform());
+        ShareResult result = new ShareResult(getPlatform());
         finishWithSuccess(result);
     }
 

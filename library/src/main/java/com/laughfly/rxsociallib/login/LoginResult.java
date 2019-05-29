@@ -8,7 +8,7 @@ import com.laughfly.rxsociallib.internal.SocialResult;
  * author:caowy
  * date:2018-05-26
  */
-public class SocialLoginResult implements SocialResult{
+public class LoginResult implements SocialResult{
 
     public String platform;
 
