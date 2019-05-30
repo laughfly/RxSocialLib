@@ -40,15 +40,15 @@ buildscript {
             .setMiniProgramUserName("user")
             .build()
             //分享结果回调
-            .start(new SocialCallback<SocialShareResult>() {
+            .start(new SocialCallback<ShareParams, SocialShareResult>() {
                
                 @Override
-                public void onError(String platform, SocialException e) {
+                public void onError(String platform, ShareParams shareParams, SocialException e) {
                     Toast.makeText(MainActivity.this, "分享失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
             
                 @Override
-                public void onSuccess(String platform, SocialShareResult resp) {
+                public void onSuccess(String platform, ShareParams shareParams, SocialShareResult resp) {
                     Toast.makeText(MainActivity.this, "分享成功", Toast.LENGTH_SHORT).show();
                 }
             })
@@ -64,14 +64,19 @@ buildscript {
         RxSocial.loginBuilder()
             //LoginPlatform根据配置文件自动生成
             .setPlatform(LoginPlatform.Wechat)
-            .start(new SocialCallback<SocialLoginResult>() {
+            .setClearLastAccount(boolean)//清除上次保存的账号
+            .setSaveAccessToken(boolean)//保存AccessToken
+            .setLogoutOnly(boolean)//注销
+            .setServerSideMode(boolean)//ServerSideMode，返回ServerAuthCode
+            .setFetchUserProfile(boolean)//获取更详细的用户信息
+            .start(new SocialCallback<LoginParams, SocialLoginResult>() {
                 @Override
-                public void onError(String platform, SocialException e) {
+                public void onError(String platform, LoginParams loginParams, SocialException e) {
                     Toast.makeText(MainActivity.this, "登录失败: " + e.getErrCode(), Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
-                public void onSuccess(String platform, SocialLoginResult resp) {
+                public void onSuccess(String platform, LoginParams loginParams, SocialLoginResult resp) {
                     Toast.makeText(MainActivity.this, "登录成功\nuid: " + socialLoginResult.uid, Toast.LENGTH_SHORT).show();
                 }
             })
