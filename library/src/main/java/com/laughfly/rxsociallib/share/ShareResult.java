@@ -11,6 +11,8 @@ public class ShareResult implements SocialResult{
 
     private String platform;
 
+    private String extMsg;
+
     public ShareResult(String platform) {
         this.platform = platform;
     }
@@ -19,4 +21,11 @@ public class ShareResult implements SocialResult{
         return platform;
     }
 
+    public String getExtMsg() {
+        return extMsg;
+    }
+
+    public void setExtMsg(String extMsg) {
+        this.extMsg = extMsg;
+    }
 }

@@ -16,7 +16,7 @@ class WechatConstants {
 
     static final int WECHAT_SHARE_SUPPORT  = ShareType.SHARE_TEXT | ShareType.SHARE_WEB |
         ShareType.SHARE_IMAGE | ShareType.SHARE_LOCAL_VIDEO | ShareType.SHARE_AUDIO | ShareType.SHARE_FILE|
-        ShareType.SHARE_MINI_PROGRAM;
+        ShareType.SHARE_MINI_PROGRAM | ShareType.SHARE_START_MINI_PROGRAM;
     static final int WECHAT_MOMENTS_SHARE_SUPPORT  = ShareType.SHARE_TEXT | ShareType.SHARE_WEB |
         ShareType.SHARE_IMAGE | ShareType.SHARE_NETWORK_VIDEO | ShareType.SHARE_AUDIO;
 

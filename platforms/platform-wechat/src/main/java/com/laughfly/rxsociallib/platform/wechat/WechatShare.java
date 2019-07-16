@@ -16,8 +16,10 @@ import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
 import com.laughfly.rxsociallib.share.ShareResult;
 import com.laughfly.rxsociallib.share.ShareType;
+import com.tencent.mm.opensdk.constants.ConstantsAPI;
 import com.tencent.mm.opensdk.modelbase.BaseReq;
 import com.tencent.mm.opensdk.modelbase.BaseResp;
+import com.tencent.mm.opensdk.modelbiz.WXLaunchMiniProgram;
 import com.tencent.mm.opensdk.modelmsg.SendMessageToWX;
 import com.tencent.mm.opensdk.modelmsg.WXImageObject;
 import com.tencent.mm.opensdk.modelmsg.WXMediaMessage;
@@ -36,8 +38,8 @@ import com.tencent.mm.opensdk.openapi.WXAPIFactory;
  * date:2018-05-26
  */
 @ShareFeatures({
-    @ShareFeature(platform = WechatConstants.WECHAT, supportFeatures = WechatConstants.WECHAT_SHARE_SUPPORT),
-    @ShareFeature(platform = WechatConstants.WECHAT_MOMENTS, supportFeatures = WechatConstants.WECHAT_MOMENTS_SHARE_SUPPORT)
+        @ShareFeature(platform = WechatConstants.WECHAT, supportFeatures = WechatConstants.WECHAT_SHARE_SUPPORT),
+        @ShareFeature(platform = WechatConstants.WECHAT_MOMENTS, supportFeatures = WechatConstants.WECHAT_MOMENTS_SHARE_SUPPORT)
 })
 public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
@@ -110,6 +112,9 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
                 break;
             case ShareType.SHARE_MINI_PROGRAM:
                 shareMiniProgram();
+                break;
+            case ShareType.SHARE_START_MINI_PROGRAM:
+                startMiniProgram();
                 break;
             case ShareType.SHARE_APP:
             case ShareType.SHARE_MULTI_FILE:
@@ -223,6 +228,19 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
         shareBySDK(mediaMessage);
     }
 
+    private void startMiniProgram() throws SocialShareException {
+        WXLaunchMiniProgram.Req launchReq = new WXLaunchMiniProgram.Req();
+        launchReq.userName = mParams.getMiniProgramUserName();
+        launchReq.path = mParams.getMiniProgramPath();
+        launchReq.miniprogramType = mParams.getMiniProgramType();
+        launchReq.extData = mParams.getMiniProgramExtData();
+
+        boolean sendReq = mWXApi.sendReq(launchReq);
+        if (!sendReq) {
+            finishWithError(new SocialShareException(getPlatform(), SocialConstants.ERR_REQUEST_FAIL));
+        }
+    }
+
 
     private void shareBySDK(WXMediaMessage mediaMessage) {
         SendMessageToWX.Req req = new SendMessageToWX.Req();
@@ -257,19 +275,27 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
     @Override
     public void onResp(BaseResp baseResp) {
-        switch (baseResp.errCode) {
-            case BaseResp.ErrCode.ERR_OK:
-                finishWithSuccess(new ShareResult(getPlatform()));
-                break;
-            case BaseResp.ErrCode.ERR_USER_CANCEL:
-                finishWithCancel();
-                break;
-            case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
-                break;
-            default:
-                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
-                break;
+        if(baseResp.getType() == ConstantsAPI.COMMAND_LAUNCH_WX_MINIPROGRAM) {
+            WXLaunchMiniProgram.Resp launchMiniProResp = (WXLaunchMiniProgram.Resp) baseResp;
+            String extMsg = launchMiniProResp.extMsg; //对应小程序组件 <button open-type="launchApp"> 中的 app-parameter 属性
+            ShareResult result = new ShareResult(getPlatform());
+            result.setExtMsg(extMsg);
+            finishWithSuccess(result);
+        } else {
+            switch (baseResp.errCode) {
+                case BaseResp.ErrCode.ERR_OK:
+                    finishWithSuccess(new ShareResult(getPlatform()));
+                    break;
+                case BaseResp.ErrCode.ERR_USER_CANCEL:
+                    finishWithCancel();
+                    break;
+                case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                    finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
+                    break;
+                default:
+                    finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
+                    break;
+            }
         }
     }
 

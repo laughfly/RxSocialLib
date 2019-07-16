@@ -22,10 +22,11 @@ public interface ShareType {
     int SHARE_MINI_PROGRAM = 1 << 8;
     int SHARE_MULTI_FILE = 1 << 9;
     int SHARE_NETWORK_VIDEO = 1 << 10;
+    int SHARE_START_MINI_PROGRAM = 1 << 11;
 
     @Retention(RetentionPolicy.SOURCE)
     @IntDef(flag = true, value = {SHARE_NONE, SHARE_TEXT, SHARE_WEB, SHARE_IMAGE, SHARE_MULTI_IMAGE,
         SHARE_LOCAL_VIDEO, SHARE_AUDIO, SHARE_FILE, SHARE_APP, SHARE_MINI_PROGRAM, SHARE_MULTI_FILE,
-        SHARE_NETWORK_VIDEO})
+        SHARE_NETWORK_VIDEO, SHARE_START_MINI_PROGRAM})
     @interface Def {}
 }

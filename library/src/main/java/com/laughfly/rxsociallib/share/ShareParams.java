@@ -177,8 +177,16 @@ public class ShareParams extends SocialParams {
         return getString("miniProgramPath");
     }
 
+    void setMiniProgramExtData(String extData) {
+        putString("miniProgramExtData", extData);
+    }
+
+    public String getMiniProgramExtData() {
+        return getString("miniProgramExtData");
+    }
+
     public boolean hasMiniProgram() {
-        return containsKey("miniProgramPath");
+        return containsKey("miniProgramUserName");
     }
 
     void setAudioUri(String uri) {

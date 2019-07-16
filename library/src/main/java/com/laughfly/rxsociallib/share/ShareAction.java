@@ -215,7 +215,11 @@ public abstract class ShareAction extends SocialAction<ShareParams, ShareResult>
     protected @ShareType.Def int getShareType() {
         ShareParams params = getParams();
         if(params.hasMiniProgram()) {
-            return ShareType.SHARE_MINI_PROGRAM;
+            if(params.hasText() || params.hasWebUrl()) {
+                return ShareType.SHARE_MINI_PROGRAM;
+            } else {
+                return ShareType.SHARE_START_MINI_PROGRAM;
+            }
         }
         if(params.hasVideo()) {
             if(SocialUriUtils.isHttpUrl(params.getVideoUri())) {

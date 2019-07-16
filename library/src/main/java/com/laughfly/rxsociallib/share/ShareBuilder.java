@@ -119,6 +119,11 @@ public class ShareBuilder extends SocialBuilder<ShareParams> {
         return this;
     }
 
+    public ShareBuilder setMiniProgramExtData(String extData) {
+        mParams.setMiniProgramExtData(extData);
+        return this;
+    }
+
     public ShareBuilder setAudioUri(String uri) {
         mParams.setAudioUri(uri);
         return this;
