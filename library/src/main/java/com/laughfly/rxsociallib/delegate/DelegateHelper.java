@@ -12,7 +12,7 @@ import android.os.Bundle;
  */
 
 public class DelegateHelper {
-    public static void startActivity(Context context, final Class clazz, DelegateCallback delegateCallback, final ResultCallback resultCallback) {
+    public static void startActivity(Context context, final Class clazz, final DelegateCallback delegateCallback, final ResultCallback resultCallback) {
         final Application application = (Application) context.getApplicationContext();
         ALC alc = new ALC(){
             @Override

@@ -9,7 +9,6 @@ import com.laughfly.rxsociallib.SocialThreads;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
 import com.laughfly.rxsociallib.exception.SocialException;
-import com.laughfly.rxsociallib.exception.SocialLoginException;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
@@ -50,7 +49,7 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     @Override
     protected void check() throws Exception {
         if (!SocialUtils.checkAppInstalled(mParams.getContext(), WechatConstants.WECHAT_PACKAGE)) {
-            throw new SocialLoginException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
+            throw new SocialShareException(getPlatform(), SocialConstants.ERR_APP_NOT_INSTALL);
         }
     }
 
@@ -58,6 +57,7 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
     protected void init() throws Exception {
         mWXApi = WXAPIFactory.createWXAPI(getContext(), mParams.getAppId(), true);
         mWXApi.registerApp(mParams.getAppId());
+        WechatEntryActivity.setTheResultHandler(new ResultCallbackWrapper(this));
     }
 
     @Override
@@ -275,27 +275,27 @@ public class WechatShare extends ShareAction implements IWXAPIEventHandler {
 
     @Override
     public void onResp(BaseResp baseResp) {
-        if(baseResp.getType() == ConstantsAPI.COMMAND_LAUNCH_WX_MINIPROGRAM) {
-            WXLaunchMiniProgram.Resp launchMiniProResp = (WXLaunchMiniProgram.Resp) baseResp;
-            String extMsg = launchMiniProResp.extMsg; //对应小程序组件 <button open-type="launchApp"> 中的 app-parameter 属性
-            ShareResult result = new ShareResult(getPlatform());
-            result.setExtMsg(extMsg);
-            finishWithSuccess(result);
-        } else {
-            switch (baseResp.errCode) {
-                case BaseResp.ErrCode.ERR_OK:
+        switch (baseResp.errCode) {
+            case BaseResp.ErrCode.ERR_OK:
+                if (baseResp.getType() == ConstantsAPI.COMMAND_LAUNCH_WX_MINIPROGRAM) {
+                    WXLaunchMiniProgram.Resp launchMiniProResp = (WXLaunchMiniProgram.Resp) baseResp;
+                    String extMsg = launchMiniProResp.extMsg; //对应小程序组件 <button open-type="launchApp"> 中的 app-parameter 属性
+                    ShareResult result = new ShareResult(getPlatform());
+                    result.setExtMsg(extMsg);
+                    finishWithSuccess(result);
+                } else {
                     finishWithSuccess(new ShareResult(getPlatform()));
-                    break;
-                case BaseResp.ErrCode.ERR_USER_CANCEL:
-                    finishWithCancel();
-                    break;
-                case BaseResp.ErrCode.ERR_AUTH_DENIED:
-                    finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
-                    break;
-                default:
-                    finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
-                    break;
-            }
+                }
+                break;
+            case BaseResp.ErrCode.ERR_USER_CANCEL:
+                finishWithCancel();
+                break;
+            case BaseResp.ErrCode.ERR_AUTH_DENIED:
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_AUTH_DENIED, baseResp.errCode, baseResp.errStr, baseResp));
+                break;
+            default:
+                finishWithError(new SocialException(getPlatform(), SocialConstants.ERR_OTHER, baseResp.errCode, baseResp.errStr, baseResp));
+                break;
         }
     }
 

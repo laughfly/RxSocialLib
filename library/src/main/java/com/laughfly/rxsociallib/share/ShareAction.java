@@ -10,6 +10,7 @@ import com.laughfly.rxsociallib.SocialConstants;
 import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.SocialUriUtils;
 import com.laughfly.rxsociallib.SocialUtils;
+import com.laughfly.rxsociallib.exception.SocialException;
 import com.laughfly.rxsociallib.exception.SocialShareException;
 import com.laughfly.rxsociallib.internal.SocialAction;
 
@@ -60,7 +61,11 @@ public abstract class ShareAction extends SocialAction<ShareParams, ShareResult>
 
     @Override
     protected void finishWithError(Exception e) {
-        finishWithError(new SocialShareException(getPlatform(), e));
+        if(!(e instanceof SocialException)) {
+            finishWithError(new SocialShareException(getPlatform(), e));
+        } else {
+            finishWithError((SocialException)e);
+        }
     }
 
     @Override

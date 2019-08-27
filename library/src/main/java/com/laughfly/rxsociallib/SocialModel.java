@@ -8,6 +8,7 @@ import com.laughfly.rxsociallib.downloader.FileDownloader;
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginFeature;
 import com.laughfly.rxsociallib.login.LoginFeatures;
+import com.laughfly.rxsociallib.miniprog.MiniProgramCallback;
 import com.laughfly.rxsociallib.share.ShareAction;
 import com.laughfly.rxsociallib.share.ShareFeature;
 import com.laughfly.rxsociallib.share.ShareFeatures;
@@ -16,6 +17,7 @@ import com.laughfly.rxsociallib.share.ShareType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +47,8 @@ public class SocialModel {
 
     private static HashMap<String, Class<? extends LoginAction>> sLoginClassMap = new HashMap<>();
 
+    private static List<MiniProgramCallback> sMiniProgramCallbacks = new ArrayList<>();
+
     private static boolean sTreatNoResultAsSuccess;
 
     private static boolean sInitialized;
@@ -52,7 +56,7 @@ public class SocialModel {
     static {
         sDownloadDirectory = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS), "RxSocial");
         sFileDownloader = new DefaultFileDownloader();
-        sTreatNoResultAsSuccess = true;
+        sTreatNoResultAsSuccess = false;
     }
 
     public static Context getApplicationContext() {
@@ -186,4 +190,17 @@ public class SocialModel {
         }
     }
 
+    public static List<MiniProgramCallback> getMiniProgramCallbacks() {
+        return sMiniProgramCallbacks;
+    }
+
+    public static void registerMiniProgramCallback(MiniProgramCallback callback) {
+        if(!sMiniProgramCallbacks.contains(callback)) {
+            sMiniProgramCallbacks.add(callback);
+        }
+    }
+
+    public static void unregisterMiniProgramCallback(MiniProgramCallback callback) {
+        sMiniProgramCallbacks.remove(callback);
+    }
 }

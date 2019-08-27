@@ -20,10 +20,10 @@ import rx.functions.Cancellable;
  */
 
 public class RxConverter {
-    public static<Params, Result> Observable<Result> toObservable(SocialAction action) {
+    public static<Params, Result> Observable<Result> toObservable(final SocialAction action) {
         return Observable.create(new Action1<Emitter<Result>>() {
             @Override
-            public void call(Emitter<Result> emitter) {
+            public void call(final Emitter<Result> emitter) {
                 emitter.setCancellation(new Cancellable() {
                     @Override
                     public void cancel() throws Exception {
@@ -52,10 +52,10 @@ public class RxConverter {
         }, Emitter.BackpressureMode.LATEST);
     }
 
-    public static<Params, Result> io.reactivex.Observable<Result> toObservable2(SocialAction action) {
+    public static<Params, Result> io.reactivex.Observable<Result> toObservable2(final SocialAction action) {
         return io.reactivex.Observable.create(new ObservableOnSubscribe<Result>() {
             @Override
-            public void subscribe(ObservableEmitter<Result> emitter) throws Exception {
+            public void subscribe(final ObservableEmitter<Result> emitter) throws Exception {
                 emitter.setCancellable(new io.reactivex.functions.Cancellable() {
                     @Override
                     public void cancel() throws Exception {
@@ -84,10 +84,10 @@ public class RxConverter {
         });
     }
 
-    public static<Params, Result> Flowable<Result> toFlowable(SocialAction action) {
+    public static<Params, Result> Flowable<Result> toFlowable(final SocialAction action) {
         return Flowable.create(new FlowableOnSubscribe<Result>() {
             @Override
-            public void subscribe(FlowableEmitter<Result> emitter) throws Exception {
+            public void subscribe(final FlowableEmitter<Result> emitter) throws Exception {
                 emitter.setCancellable(new io.reactivex.functions.Cancellable() {
                     @Override
                     public void cancel() throws Exception {

@@ -4,10 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 
+import com.laughfly.rxsociallib.SocialLogger;
+import com.laughfly.rxsociallib.SocialModel;
 import com.laughfly.rxsociallib.delegate.ResultCallback;
 import com.laughfly.rxsociallib.delegate.SocialDelegateActivity;
+import com.laughfly.rxsociallib.miniprog.MiniProgramCallback;
 
-import java.lang.ref.WeakReference;
+import java.lang.ref.SoftReference;
+import java.util.List;
 
 /**
  * 微信的结果回调类
@@ -21,15 +25,17 @@ public class WechatEntryActivity extends SocialDelegateActivity {
     /**
      * 结果回调监听
      */
-    protected static WeakReference<ResultCallback> sTempResultHandler;
+    protected static SoftReference<ResultCallback> sTempResultHandler;
 
     public static void setTheResultHandler(ResultCallback handler) {
-        sTempResultHandler = new WeakReference<>(handler);
+        sTempResultHandler = new SoftReference<>(handler);
     }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        SocialLogger.d(TAG, "onCreate: " + getIntent());
+        handleMiniProgramCallback(getIntent());
         try {
             ResultCallback tempResultCallback = sTempResultHandler != null ? sTempResultHandler.get() : null;
             //可能是App重启
@@ -43,13 +49,24 @@ public class WechatEntryActivity extends SocialDelegateActivity {
             sTempResultHandler = null;
             finish();
         }
+
     }
 
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         setIntent(intent);
+        SocialLogger.d(TAG, "onNewIntent: " + getIntent());
+        handleMiniProgramCallback(intent);
         invokeHandleResult(0, 0, intent);
     }
 
+    private void handleMiniProgramCallback(Intent intent) {
+        List<MiniProgramCallback> miniProgramCallbacks = SocialModel.getMiniProgramCallbacks();
+        for (MiniProgramCallback callback : miniProgramCallbacks) {
+            if(callback instanceof WechatMiniProgramCallback && ((WechatMiniProgramCallback) callback).accept(intent)) {
+                ((WechatMiniProgramCallback) callback).handleIntent(intent);
+            }
+        }
+    }
 }

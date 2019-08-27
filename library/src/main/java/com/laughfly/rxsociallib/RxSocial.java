@@ -5,6 +5,7 @@ import android.content.Context;
 import com.laughfly.rxsociallib.downloader.FileDownloader;
 import com.laughfly.rxsociallib.internal.AccessTokenKeeper;
 import com.laughfly.rxsociallib.login.LoginBuilder;
+import com.laughfly.rxsociallib.miniprog.MiniProgramCallback;
 import com.laughfly.rxsociallib.share.ShareBuilder;
 import com.laughfly.rxsociallib.share.ShareType;
 
@@ -84,6 +85,13 @@ public class RxSocial {
         return new ShareBuilderWrapper(SocialModel.getApplicationContext());
     }
 
+    public static void registerMiniProgramCallback(MiniProgramCallback callback) {
+        SocialModel.registerMiniProgramCallback(callback);
+    }
+
+    public static void unregisterMiniProgramCallback(MiniProgramCallback callback) {
+        SocialModel.unregisterMiniProgramCallback(callback);
+    }
 
     /**
      * 获取社交平台的登录信息

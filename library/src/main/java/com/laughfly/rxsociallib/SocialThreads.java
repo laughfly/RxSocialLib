@@ -39,11 +39,7 @@ public class SocialThreads {
     }
 
     public static void runOnUiThread(Runnable r, Object token) {
-        if (Looper.myLooper() != Looper.getMainLooper()) {
-            postOnUiThread(r, token, 0);
-        } else {
-            r.run();
-        }
+        postOnUiThread(r, token, 0);
     }
 
     public static void postOnUiThread(Runnable r, long delayMillis) {
