@@ -1,8 +1,9 @@
 package com.laughfly.rxsociallib.platform.google;
 
 import android.content.Intent;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
+
+import androidx.annotation.NonNull;
 
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;

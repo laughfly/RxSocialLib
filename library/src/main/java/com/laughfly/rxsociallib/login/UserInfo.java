@@ -1,6 +1,6 @@
 package com.laughfly.rxsociallib.login;
 
-import android.support.annotation.IntDef;
+import androidx.annotation.IntDef;
 
 /**
  * Created by caowy on 2019/4/2.

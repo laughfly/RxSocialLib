@@ -1,6 +1,6 @@
 package com.laughfly.rxsociallib;
 
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 import com.laughfly.rxsociallib.login.LoginAction;
 import com.laughfly.rxsociallib.login.LoginParams;

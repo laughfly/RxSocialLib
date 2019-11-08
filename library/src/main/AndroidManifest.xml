@@ -12,7 +12,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"/>
         <provider
             android:authorities="${applicationId}.rxsocial.fileprovider"
-            android:name="android.support.v4.content.FileProvider"
+            android:name="androidx.core.content.FileProvider"
             android:grantUriPermissions="true"
             android:exported="false">
             <meta-data

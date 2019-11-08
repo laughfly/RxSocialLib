@@ -2,7 +2,8 @@ package com.laughfly.rxsociallib.internal;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.annotation.CallSuper;
+
+import androidx.annotation.CallSuper;
 
 import com.laughfly.rxsociallib.SocialCallback;
 import com.laughfly.rxsociallib.SocialLogger;

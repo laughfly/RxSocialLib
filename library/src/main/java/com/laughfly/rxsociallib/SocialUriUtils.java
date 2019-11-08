@@ -5,9 +5,10 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
-import android.support.annotation.IntDef;
-import android.support.v4.content.FileProvider;
 import android.text.TextUtils;
+
+import androidx.annotation.IntDef;
+import androidx.core.content.FileProvider;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

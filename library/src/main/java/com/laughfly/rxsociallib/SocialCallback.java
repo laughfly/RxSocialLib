@@ -1,6 +1,6 @@
 package com.laughfly.rxsociallib;
 
-import android.support.annotation.MainThread;
+import androidx.annotation.MainThread;
 
 import com.laughfly.rxsociallib.exception.SocialException;
 

@@ -1,8 +1,9 @@
 package com.laughfly.rxsociallib.platform.wechat;
 
 import android.content.Intent;
-import android.support.annotation.MainThread;
-import android.support.annotation.WorkerThread;
+
+import androidx.annotation.MainThread;
+import androidx.annotation.WorkerThread;
 
 import com.laughfly.rxsociallib.AccessToken;
 import com.laughfly.rxsociallib.SocialConstants;
